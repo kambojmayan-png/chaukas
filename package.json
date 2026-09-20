@@ -2,6 +2,11 @@
   "name": "chaukas",
   "version": "0.1.0",
   "private": true,
+  "license": "Apache-2.0",
+  "author": "Mayan Kamboj (https://github.com/kambojmayan-png)",
+  "contributors": [
+    "Garvit Agrawal (https://github.com/GarvitAgrawal04)"
+  ],
   "scripts": {
     "predev": "node scripts/gen-voice-manifest.mjs",
     "dev": "next dev",

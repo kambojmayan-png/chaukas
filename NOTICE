@@ -1,0 +1,11 @@
+Chaukas
+Copyright 2026 Mayan Kamboj (github.com/kambojmayan-png)
+Copyright 2026 Garvit Agrawal (github.com/GarvitAgrawal04)
+
+The source code in this repository is licensed under the Apache License,
+Version 2.0. See the LICENSE file.
+
+NOT covered by the Apache License: the audio files in public/voice/.
+They were synthesised with third-party text-to-speech voices that carry
+non-commercial licences (see docs/VOICE_CREDITS.md). They are included for
+demonstration only and must be replaced before any commercial use.
