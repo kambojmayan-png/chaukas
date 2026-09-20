@@ -2,6 +2,7 @@
 
 import React from 'react';
 import type { Choice, Message, Lang } from '@/engine/engine';
+import { t } from '@/lib/i18n';
 
 interface SystemDialogProps {
   title?: string;
@@ -13,13 +14,15 @@ interface SystemDialogProps {
 }
 
 export function SystemDialog({
-  title = 'System Permission',
+  title,
   messages = [],
   choices = [],
   lang,
   done,
   onChoose,
 }: SystemDialogProps) {
+  const displayTitle = title || t('system_permission', lang);
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4 bg-black/60 backdrop-blur-xs relative z-30">
       <div className="w-full max-w-[320px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-5 space-y-4 text-center">
@@ -31,10 +34,10 @@ export function SystemDialog({
         {/* Dialog Header */}
         <div>
           <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#FF5A1F] block">
-            System Request
+            {t('system_request', lang)}
           </span>
           <h2 className="text-lg font-bold text-[#111111] leading-tight">
-            {title}
+            {displayTitle}
           </h2>
         </div>
 

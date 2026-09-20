@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { SCENARIOS, PRACTICE_PIN } from '@/scenarios';
 import { useDrill } from '@/lib/useDrill';
 import { useReveal } from '@/lib/useReveal';
+import { useLang } from '@/lib/useLang';
+import { LangToggle } from '@/components/LangToggle';
+import { t } from '@/lib/i18n';
 import {
   speak,
   playLine,
@@ -150,9 +153,8 @@ export default function DrillPage() {
   const [scenarioIndex, setScenarioIndex] = useState<number>(0);
   const [onlyMode, setOnlyMode] = useState<boolean>(false);
   const [targetScenarioId, setTargetScenarioId] = useState<string | null>(null);
-  const [lang, setLang] = useState<Lang>('en');
+  const [lang] = useLang();
   const [voiceChoice, setVoiceChoice] = useState<VoiceChoice>('hi');
-  const [userOverrodeVoice, setUserOverrodeVoice] = useState<boolean>(false);
   const [muted, setMuted] = useState<boolean>(false);
   const [runKey, setRunKey] = useState<number>(0);
   const [source, setSource] = useState<string>('direct');
@@ -172,11 +174,6 @@ export default function DrillPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-
-      // Support ?lang=hi
-      if (params.get('lang') === 'hi') {
-        setLang('hi');
-      }
 
       if (params.get('src') === 'family') {
         setSource('family_link');
@@ -198,7 +195,6 @@ export default function DrillPage() {
       const savedVoice = getSavedVoiceChoice();
       if (savedVoice) {
         setVoiceChoice(savedVoice);
-        setUserOverrodeVoice(true);
       }
 
       // Load saved wallet
@@ -240,19 +236,14 @@ export default function DrillPage() {
   if (!scenario) {
     return (
       <main className="min-h-screen p-6 flex flex-col items-center justify-center">
-        <p className="text-red-600 font-bold">Scenario not found.</p>
+        <p className="text-red-600 font-bold">{t('scenario_not_found', lang)}</p>
       </main>
     );
   }
 
-  const handleLangChange = (newLang: Lang) => {
-    setLang(newLang);
-  };
-
   const handleVoiceChange = (choice: VoiceChoice) => {
     stopSpeaking();
     setVoiceChoice(choice);
-    setUserOverrodeVoice(true);
     try {
       sessionStorage.setItem('chaukas_voice_choice', choice);
     } catch {
@@ -386,7 +377,7 @@ export default function DrillPage() {
   return (
     <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-4 md:p-8 flex flex-col items-center">
       {/* Top Header Bar with Breadcrumb, Wallet, Mute Toggle, Language Toggle, and Caller Voice */}
-      <div className="w-full max-w-[420px] flex flex-col gap-2 mb-4">
+      <div className="w-full max-w-[440px] flex flex-col gap-2 mb-4">
         <div className="flex items-center justify-between">
           <Link
             href="/"
@@ -397,12 +388,12 @@ export default function DrillPage() {
             className="text-sm font-bold text-[#111111] hover:underline flex items-center gap-1 min-h-[40px]"
           >
             <span>←</span>
-            <span>Home</span>
+            <span>{t('home', lang)}</span>
           </Link>
 
           {/* Wallet Balance in Header */}
           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border-2 border-[#111111] rounded-md shadow-hard-sm font-mono font-bold text-xs">
-            <span className="text-[#111111]/70">Wallet:</span>
+            <span className="text-[#111111]/70">{t('wallet', lang)}</span>
             <span className="tabular-nums text-[#111111]">
               ₹{animatedBalance.toLocaleString('en-IN')}
             </span>
@@ -422,77 +413,59 @@ export default function DrillPage() {
                   return next;
                 });
               }}
-              aria-label={muted ? 'Unmute sound' : 'Mute sound'}
+              aria-label={muted ? t('sound_muted', lang) : t('sound_on', lang)}
               className="min-h-[36px] px-2.5 py-1 text-xs font-mono font-bold border-2 border-[#111111] rounded-md bg-white shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center gap-1 cursor-pointer"
             >
               <span>{muted ? '🔇' : '🔊'}</span>
             </button>
+          </div>
+        </div>
 
-            {/* Language Toggle (UI & Captions) */}
-            <div className="flex items-center border-2 border-[#111111] rounded-md overflow-hidden bg-white shadow-hard-sm">
+        {/* Controls Row: Language Toggle and Caller Voice placed next to each other */}
+        <div className="flex flex-wrap items-center justify-between gap-2 bg-white border-2 border-[#111111] rounded-md p-2 shadow-hard-sm">
+          {/* Shared Language Toggle */}
+          <LangToggle />
+
+          {/* Caller Voice Control */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-mono font-bold text-[#111111]/80 whitespace-nowrap">
+              {t('caller_voice', lang)}
+            </span>
+            <div className="flex items-center border-2 border-[#111111] rounded overflow-hidden">
               <button
                 type="button"
-                onClick={() => handleLangChange('en')}
-                className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${
-                  lang === 'en'
+                onClick={() => handleVoiceChange('hi')}
+                className={`px-2 py-0.5 text-xs font-bold transition-colors cursor-pointer ${
+                  voiceChoice === 'hi'
                     ? 'bg-[#111111] text-white'
-                    : 'text-[#111111] hover:bg-[#F6F3EC]'
+                    : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
+                }`}
+              >
+                हिंदी
+              </button>
+              <button
+                type="button"
+                onClick={() => handleVoiceChange('en')}
+                className={`px-2 py-0.5 text-xs font-bold transition-colors cursor-pointer border-l-2 border-r-2 border-[#111111] ${
+                  voiceChoice === 'en'
+                    ? 'bg-[#111111] text-white'
+                    : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
                 }`}
               >
                 EN
               </button>
               <button
                 type="button"
-                onClick={() => handleLangChange('hi')}
-                className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${
-                  lang === 'hi'
+                onClick={() => handleVoiceChange('off')}
+                className={`px-2 py-0.5 text-xs font-bold transition-colors cursor-pointer ${
+                  voiceChoice === 'off'
                     ? 'bg-[#111111] text-white'
-                    : 'text-[#111111] hover:bg-[#F6F3EC]'
+                    : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
                 }`}
               >
-                हिंदी
+                {t('off', lang)}
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* Caller Voice Control */}
-        <div className="flex items-center justify-between bg-white border-2 border-[#111111] rounded-md px-3 py-1.5 shadow-hard-sm">
-          <span className="text-xs font-mono font-bold text-[#111111]">Caller voice:</span>
-          <div className="flex items-center border-2 border-[#111111] rounded overflow-hidden">
-            <button
-              type="button"
-              onClick={() => handleVoiceChange('hi')}
-              className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${
-                voiceChoice === 'hi'
-                  ? 'bg-[#111111] text-white'
-                  : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
-              }`}
-            >
-              हिंदी
-            </button>
-            <button
-              type="button"
-              onClick={() => handleVoiceChange('en')}
-              className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer border-l-2 border-r-2 border-[#111111] ${
-                voiceChoice === 'en'
-                  ? 'bg-[#111111] text-white'
-                  : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
-              }`}
-            >
-              English
-            </button>
-            <button
-              type="button"
-              onClick={() => handleVoiceChange('off')}
-              className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${
-                voiceChoice === 'off'
-                  ? 'bg-[#111111] text-white'
-                  : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
-              }`}
-            >
-              Off
-            </button>
           </div>
         </div>
       </div>
@@ -502,7 +475,7 @@ export default function DrillPage() {
         <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 my-auto space-y-6 text-center">
           <div className="flex items-center justify-between border-b border-[#111111]/20 pb-2">
             <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F]">
-              {lang === 'hi' ? 'त्वरित जाँच' : 'Pre-Check'}
+              {t('precheck_title', lang)}
             </span>
             <span className="text-xs font-mono font-bold text-[#111111]/70">
               {precheckIndex + 1} of {precheckScenarios.length}
@@ -523,14 +496,14 @@ export default function DrillPage() {
               onClick={() => handlePrecheckAnswer('yes')}
               className="py-3 px-6 bg-white text-[#111111] border-2 border-[#111111] rounded shadow-hard-sm font-bold text-base hover:bg-neutral-100 active:bg-neutral-200 transition-colors cursor-pointer text-center"
             >
-              {lang === 'hi' ? 'हाँ (Yes)' : 'Yes'}
+              {t('yes', lang)}
             </button>
             <button
               type="button"
               onClick={() => handlePrecheckAnswer('no')}
               className="py-3 px-6 bg-white text-[#111111] border-2 border-[#111111] rounded shadow-hard-sm font-bold text-base hover:bg-neutral-100 active:bg-neutral-200 transition-colors cursor-pointer text-center"
             >
-              {lang === 'hi' ? 'नहीं (No)' : 'No'}
+              {t('no', lang)}
             </button>
           </div>
 
@@ -541,7 +514,7 @@ export default function DrillPage() {
               onClick={handleSkipPrecheck}
               className="text-xs font-mono text-[#111111]/70 hover:text-[#111111] underline cursor-pointer"
             >
-              {lang === 'hi' ? 'सवालों को छोड़ें' : 'skip questions'}
+              {t('skip_questions', lang)}
             </button>
           </div>
         </div>
@@ -552,11 +525,13 @@ export default function DrillPage() {
         <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 my-auto space-y-5">
           <div className="flex items-center justify-between">
             <div className="inline-block bg-[#FF5A1F] text-white text-xs font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded">
-              {onlyMode ? 'Targeted Practice' : `Drill ${scenarioIndex + 1} of ${SCENARIOS.length}`}
+              {onlyMode
+                ? t('targeted_practice', lang)
+                : t('drill_n_of_3', lang, {
+                    n: scenarioIndex + 1,
+                  })}
             </div>
-            <span className="text-xs font-mono text-[#111111]/70 font-semibold">
-              {scenario.archetype}
-            </span>
+            {/* Raw scenario.archetype REMOVED per constraint 5 */}
           </div>
 
           <h1 className="text-2xl font-bold tracking-tight text-[#111111]">
@@ -569,7 +544,7 @@ export default function DrillPage() {
 
           <div className="text-xs text-[#111111]/90 font-mono space-y-1 bg-neutral-100 p-3.5 rounded border border-[#111111]/30">
             <p className="font-bold text-[#111111] leading-relaxed">
-              Practice money ₹60,000 · Practice PIN 4827 · never type a real PIN anywhere but your UPI app
+              {t('drill_safety_notice', lang)}
             </p>
           </div>
 
@@ -579,7 +554,11 @@ export default function DrillPage() {
             onClick={handleStartDrill}
             className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-lg border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>{onlyMode ? 'Start Drill' : `Start Drill ${scenarioIndex + 1}`}</span>
+            <span>
+              {onlyMode
+                ? t('start_drill', lang)
+                : t('start_drill_n', lang, { n: scenarioIndex + 1 })}
+            </span>
             <span>→</span>
           </button>
         </div>
@@ -933,12 +912,13 @@ function DrillRunner({
           <div className="w-full mb-2">
             <PressureTimer
               seconds={node.timerSec}
+              lang={lang}
               onTimeout={() => safeAct({ type: 'timeout' })}
             />
           </div>
         )}
 
-        <PhoneFrame from={node.from} surface={node.surface}>
+        <PhoneFrame from={node.from} surface={node.surface} lang={lang}>
           {/* Top SMS Notification Banner for any revealed message with via: 'sms' */}
           {smsBannerMessages.length > 0 && (
             <div className="absolute top-2 left-2 right-2 z-40 space-y-1.5 pointer-events-auto">
@@ -950,9 +930,9 @@ function DrillRunner({
                   <div className="flex items-center justify-between text-xs font-mono font-bold text-[#FF5A1F] border-b border-[#111111]/10 pb-1 mb-1">
                     <span className="flex items-center gap-1">
                       <span>💬</span>
-                      <span>SMS · BANK ALERT</span>
+                      <span>{t('sms_banner_title', lang)}</span>
                     </span>
-                    <span className="text-[10px] text-[#111111]/60">NOW</span>
+                    <span className="text-[10px] text-[#111111]/60">{t('now', lang)}</span>
                   </div>
                   <p className="text-xs md:text-sm font-semibold text-[#111111] leading-tight select-all">
                     {sms.text[lang] || sms.text.en}
@@ -967,13 +947,17 @@ function DrillRunner({
             <div className="flex-1 flex flex-col justify-between p-6 bg-[#0E0E10] text-[#F6F3EC] select-none text-center">
               <div className="pt-8 space-y-2">
                 <span className="text-xs font-mono text-[#FF5A1F] uppercase tracking-widest block animate-pulse">
-                  {node.surface === 'videocall' ? 'Incoming Video Call…' : 'Incoming Call…'}
+                  {node.surface === 'videocall'
+                    ? t('incoming_videocall', lang)
+                    : t('incoming_call', lang)}
                 </span>
                 <h2 className="text-2xl font-bold tracking-tight text-white">
                   {node.from || 'Unknown Caller'}
                 </h2>
                 <p className="text-xs font-mono text-white/60">
-                  {node.surface === 'videocall' ? 'Camera verification requested' : 'Official inquiry'}
+                  {node.surface === 'videocall'
+                    ? t('camera_verification', lang)
+                    : t('official_inquiry', lang)}
                 </p>
               </div>
 
@@ -996,7 +980,7 @@ function DrillRunner({
                   className="w-full min-h-[52px] py-3.5 bg-[#12B76A] text-white font-bold text-lg rounded-full shadow-lg hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>📞</span>
-                  <span>Accept</span>
+                  <span>{t('accept', lang)}</span>
                 </button>
               </div>
             </div>
@@ -1022,6 +1006,7 @@ function DrillRunner({
                     detail={node.input.detail[lang] || node.input.detail.en}
                     practicePin={PRACTICE_PIN}
                     expectedCode={expectedCode}
+                    lang={lang}
                     onSubmit={(len, hesitationMs) =>
                       safeAct({ type: 'input_submit', len, hesitationMs })
                     }
@@ -1063,7 +1048,7 @@ function DrillRunner({
         {/* When UI is English and voice is Hindi, show small note under the phone */}
         {lang === 'en' && voiceChoice === 'hi' && (
           <p className="mt-2 text-xs font-mono text-[#111111]/70 text-center">
-            Caller speaks Hindi, as real scam calls do · captions in English
+            {t('caller_speaks_hindi_note', lang)}
           </p>
         )}
 

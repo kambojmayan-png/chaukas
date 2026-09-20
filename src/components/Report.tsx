@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { Scenario, RunResult, Lang, Outcome } from '@/engine/engine';
 import { knowledgeBehaviourGap } from '@/engine/engine';
+import { t } from '@/lib/i18n';
 
 interface ReportProps {
   scenarios: Scenario[];
@@ -55,19 +56,19 @@ export function Report({
       case 'scammed':
         return (
           <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-red-100 text-[#D92D20] border border-red-300">
-            {lang === 'hi' ? 'धोखा खा गए' : 'Scammed'}
+            {t('scammed', lang)}
           </span>
         );
       case 'escaped_late':
         return (
           <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-orange-100 text-[#FF5A1F] border border-orange-300">
-            {lang === 'hi' ? 'देर से संभले' : 'Escaped late'}
+            {t('escaped_late', lang)}
           </span>
         );
       case 'escaped':
         return (
           <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-green-100 text-[#12B76A] border border-green-300">
-            {lang === 'hi' ? 'बच निकले' : 'Escaped'}
+            {t('escaped', lang)}
           </span>
         );
     }
@@ -78,15 +79,13 @@ export function Report({
       {/* Header */}
       <div className="space-y-1 text-center">
         <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-sm">
-          {lang === 'hi' ? 'अंतिम रिपोर्ट' : 'FINAL REPORT'}
+          {t('final_report_tag', lang)}
         </div>
         <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#111111]">
-          {lang === 'hi' ? 'आपका 3-ड्रिल स्कोरकार्ड' : 'Your 3-Drill Scorecard'}
+          {t('scorecard_title', lang)}
         </h1>
         <p className="text-xs text-[#111111]/70 font-mono">
-          {lang === 'hi'
-            ? 'ज्ञान बनाम वास्तविक व्यवहार'
-            : 'Knowledge vs Actual Behaviour'}
+          {t('knowledge_vs_behaviour', lang)}
         </p>
       </div>
 
@@ -94,15 +93,11 @@ export function Report({
       {gapData.knewButFell > 0 && (
         <div className="border-2 border-[#D92D20] bg-red-50 p-4 rounded-md shadow-hard-sm space-y-3 text-left">
           <h2 className="text-xl md:text-2xl font-black text-[#D92D20] tracking-tight leading-tight">
-            {lang === 'hi'
-              ? 'आपको नियम पता था। फिर भी आपने ऐसा किया।'
-              : 'You knew the rule. You still did it.'}
+            {t('you_knew_the_rule', lang)}
           </h2>
           <div className="space-y-2">
             <p className="text-xs font-mono font-bold uppercase text-[#D92D20]">
-              {lang === 'hi'
-                ? 'नियम जो आपने जानते हुए भी तोड़े:'
-                : 'Rules you knew but broke under pressure:'}
+              {t('rules_you_knew_broke', lang)}
             </p>
             {fallenScenarios.map(s => (
               <div
@@ -124,7 +119,7 @@ export function Report({
         {/* Knowledge Bar */}
         <div className="space-y-1.5 text-left">
           <div className="flex items-center justify-between text-xs font-mono font-bold text-[#111111]">
-            <span>{lang === 'hi' ? 'ज्ञान (Knowledge)' : 'Knowledge'}</span>
+            <span>{t('knowledge', lang)}</span>
             <span>
               {knewCount}/{scenarios.length}
             </span>
@@ -145,7 +140,7 @@ export function Report({
         {/* Behaviour Bar */}
         <div className="space-y-1.5 text-left">
           <div className="flex items-center justify-between text-xs font-mono font-bold text-[#111111]">
-            <span>{lang === 'hi' ? 'व्यवहार (Behaviour)' : 'Behaviour'}</span>
+            <span>{t('behaviour', lang)}</span>
             <span>
               {behaviourSum}/{scenarios.length}
             </span>
@@ -167,9 +162,7 @@ export function Report({
       {/* Total Practice Money Lost */}
       <div className="bg-white border-2 border-[#111111] rounded-md p-4 text-center space-y-1 shadow-hard-sm">
         <div className="text-xs font-mono uppercase tracking-wider text-[#111111]/70">
-          {lang === 'hi'
-            ? 'कुल अभ्यास राशि का नुक़सान'
-            : 'Total Practice Money Lost'}
+          {t('total_practice_money_lost', lang)}
         </div>
         <div
           className={`text-3xl md:text-4xl font-extrabold tabular-nums tracking-tight ${
@@ -178,16 +171,14 @@ export function Report({
         >
           {isLoss
             ? `−₹${totalLost.toLocaleString('en-IN')}`
-            : lang === 'hi'
-            ? '₹0 का नुक़सान'
-            : '₹0 lost'}
+            : t('zero_lost', lang)}
         </div>
       </div>
 
       {/* One Chip per Drill */}
       <div className="space-y-2 text-left">
         <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#111111]/70">
-          {lang === 'hi' ? 'ड्रिल परिणाम' : 'Drill Results'}
+          {t('drill_results', lang)}
         </div>
         <div className="space-y-2">
           {scenarios.map((s, idx) => {
@@ -199,12 +190,12 @@ export function Report({
               >
                 <div className="space-y-0.5">
                   <div className="font-bold text-[#111111]">
-                    Drill {idx + 1}: {s.title[lang] || s.title.en}
+                    {t('drill_n_of_3', lang, { n: idx + 1, total: scenarios.length })}: {s.title[lang] || s.title.en}
                   </div>
                   <div className="text-[11px] text-[#111111]/70 font-mono">
                     {res?.lossInr
                       ? `−₹${res.lossInr.toLocaleString('en-IN')}`
-                      : '₹0 lost'}
+                      : t('zero_lost', lang)}
                   </div>
                 </div>
                 <div>{res ? getOutcomeBadge(res.outcome) : '—'}</div>
@@ -223,11 +214,7 @@ export function Report({
           className="w-full min-h-[48px] py-3.5 bg-[#12B76A] text-white font-bold text-sm md:text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 text-center"
         >
           <span>📲</span>
-          <span>
-            {lang === 'hi'
-              ? 'यह ड्रिल मम्मी-पापा को भेजें'
-              : 'Send this drill to Mummy-Papa'}
-          </span>
+          <span>{t('send_drill_to_mummy_papa', lang)}</span>
         </a>
 
         <Link
@@ -235,11 +222,7 @@ export function Report({
           className="w-full min-h-[44px] py-2.5 bg-white text-[#111111] font-bold text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center justify-center gap-2"
         >
           <span>🔍</span>
-          <span>
-            {lang === 'hi'
-              ? 'संदिग्ध संदेश की जाँच करें'
-              : 'Check a suspicious message'}
-          </span>
+          <span>{t('check_suspicious_message', lang)}</span>
         </Link>
 
         <Link
@@ -247,7 +230,7 @@ export function Report({
           className="w-full min-h-[44px] py-2.5 bg-[#F6F3EC] text-[#111111] font-bold text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-neutral-200 transition-all flex items-center justify-center gap-2"
         >
           <span>📊</span>
-          <span>{lang === 'hi' ? 'लाइव आंकड़े' : 'Live numbers'}</span>
+          <span>{t('live_numbers', lang)}</span>
         </Link>
 
         <button
@@ -256,7 +239,7 @@ export function Report({
           className="w-full min-h-[44px] py-2.5 bg-neutral-100 text-[#111111] font-bold text-sm border-2 border-[#111111]/30 rounded-md hover:bg-neutral-200 transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
           <span>↺</span>
-          <span>{lang === 'hi' ? 'शुरू से खेलें' : 'Start over'}</span>
+          <span>{t('start_over', lang)}</span>
         </button>
       </div>
     </div>

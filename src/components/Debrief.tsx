@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import type { Scenario, RunState, RunResult, Lang } from '@/engine/engine';
-import { getFlagLabel } from '@/lib/i18n';
+import { getFlagLabel, t } from '@/lib/i18n';
 import { GlassBox, GlassBoxPanel } from '@/components/GlassBox';
 
 interface DebriefProps {
@@ -45,8 +45,8 @@ export function Debrief({
   );
   const timeStr =
     elapsedSec < 60
-      ? `${elapsedSec} ${lang === 'hi' ? 'सेकंड' : 'seconds'}`
-      : `${Math.round(elapsedSec / 60)} ${lang === 'hi' ? 'मिनट' : 'minutes'}`;
+      ? `${elapsedSec} ${t('seconds', lang)}`
+      : `${Math.round(elapsedSec / 60)} ${t('minutes', lang)}`;
 
   const showKnewBox = knewAnswer?.knew === true && result.outcome === 'scammed';
 
@@ -57,8 +57,11 @@ export function Debrief({
         <div className="space-y-2 text-center">
           <div className="text-xs font-mono uppercase tracking-widest text-[#111111]/60">
             {isOnlyMode
-              ? 'Targeted Drill Debrief'
-              : `Drill ${scenarioIndex + 1} of ${totalScenarios} Debrief`}
+              ? t('targeted_debrief', lang)
+              : t('drill_debrief_n', lang, {
+                  n: scenarioIndex + 1,
+                  total: totalScenarios,
+                })}
           </div>
           <div
             className={`text-4xl md:text-5xl font-extrabold tabular-nums tracking-tight ${
@@ -67,9 +70,7 @@ export function Debrief({
           >
             {isLoss
               ? `−₹${result.lossInr.toLocaleString('en-IN')}`
-              : lang === 'hi'
-              ? '₹0 का नुक़सान'
-              : '₹0 lost'}
+              : t('zero_lost', lang)}
           </div>
           <p className="text-base font-semibold text-[#111111]">
             {result.headline[lang] || result.headline.en}
@@ -81,26 +82,13 @@ export function Debrief({
           <div className="border-2 border-[#D92D20] bg-red-50 p-4 rounded-md shadow-hard-sm space-y-1.5 text-left">
             <div className="flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-[#D92D20]">
               <span>⚠️</span>
-              <span>
-                {lang === 'hi'
-                  ? 'ज्ञान और व्यवहार में अंतर'
-                  : 'Knowledge–Behaviour Gap'}
-              </span>
+              <span>{t('knowledge_behaviour_gap_label', lang)}</span>
             </div>
             <p className="text-sm md:text-base font-bold text-[#D92D20] leading-snug">
-              {lang === 'hi' ? (
-                <>
-                  आपने इसका सही जवाब {timeStr} पहले दिया था: &ldquo;
-                  {scenario.precheck.q.hi || scenario.precheck.q.en}
-                  &rdquo; — और फिर भी ऐसा किया।
-                </>
-              ) : (
-                <>
-                  You answered this correctly {timeStr} ago: &ldquo;
-                  {scenario.precheck.q.en || scenario.precheck.q.hi}
-                  &rdquo; — and still did it.
-                </>
-              )}
+              {t('you_answered_correctly', lang, {
+                t: timeStr,
+                q: scenario.precheck.q[lang] || scenario.precheck.q.en,
+              })}
             </p>
           </div>
         )}
@@ -108,8 +96,11 @@ export function Debrief({
         {/* 3. Timeline: every message in state.path with red flag pills; input.detail highlighted */}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs font-mono font-bold uppercase tracking-wider text-[#111111]/70 border-b border-[#111111]/20 pb-1">
-            <span>{lang === 'hi' ? 'टाइमलाइन रीप्ले' : 'Timeline Replay'}</span>
-            <span>{state.path.length} steps</span>
+            <span>{t('timeline_replay', lang)}</span>
+            <span>
+              {state.path.length}{' '}
+              {state.path.length === 1 ? t('step', lang) : t('steps', lang)}
+            </span>
           </div>
 
           <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
@@ -158,10 +149,10 @@ export function Debrief({
                         <span>
                           ⚠️{' '}
                           {node.input.kind === 'pin'
-                            ? 'UPI PIN Screen'
-                            : 'OTP Verification Screen'}
+                            ? t('upi_pin_screen', lang)
+                            : t('otp_verification_screen', lang)}
                         </span>
-                        <span>Keypad</span>
+                        <span>{t('keypad_label', lang)}</span>
                       </div>
                       <p className="font-bold text-amber-950 text-xs md:text-sm">
                         {node.input.detail[lang] || node.input.detail.en}
@@ -189,16 +180,16 @@ export function Debrief({
         {/* 4. "Red flags you walked past: n of N" and keypad pause */}
         <div className="bg-neutral-100 border border-[#111111]/30 rounded-md p-3 text-xs font-mono space-y-1 text-left">
           <p className="font-bold text-[#111111]">
-            {lang === 'hi' ? 'लाल झंडे (Red Flags) अनदेखे किए:' : 'Red flags you walked past:'}{' '}
-            <span className="text-[#D92D20]">
-              {result.flagsWalkedPast.length} of {result.flagsTotal}
-            </span>
+            {t('red_flags_walked_past', lang, {
+              n: result.flagsWalkedPast.length,
+              total: result.flagsTotal,
+            })}
           </p>
           {result.hesitationMs != null && (
             <p className="text-[#111111]/80">
-              {lang === 'hi'
-                ? `आपने कीपैड पर ${(result.hesitationMs / 1000).toFixed(1)} सेकंड का समय लिया`
-                : `You paused ${(result.hesitationMs / 1000).toFixed(1)} s at the keypad`}
+              {t('you_paused_keypad', lang, {
+                x: (result.hesitationMs / 1000).toFixed(1),
+              })}
             </p>
           )}
         </div>
@@ -206,7 +197,7 @@ export function Debrief({
         {/* 5. The rule in a bordered box */}
         <div className="border-2 border-[#111111] bg-[#F6F3EC] p-4 rounded-md shadow-hard-sm space-y-1.5 text-left">
           <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F]">
-            {lang === 'hi' ? 'अहम नियम' : 'The Rule'}
+            {t('the_rule', lang)}
           </div>
           <p className="text-sm md:text-base font-semibold text-[#111111] leading-snug">
             {scenario.rule[lang] || scenario.rule.en}
@@ -216,36 +207,35 @@ export function Debrief({
         {/* 6. Collapsible "If this happens for real" */}
         <details className="border-2 border-[#111111] bg-white rounded-md p-3 text-left group">
           <summary className="font-bold text-xs md:text-sm cursor-pointer select-none flex items-center justify-between">
-            <span>
-              {lang === 'hi'
-                ? 'अगर यह असल में हो:'
-                : 'If this happens for real:'}
-            </span>
+            <span>{t('if_this_happens_for_real', lang)}:</span>
             <span className="text-xs font-mono text-[#111111]/60 group-open:rotate-180 transition-transform">
               ▼
             </span>
           </summary>
           <ul className="mt-2.5 space-y-1.5 text-xs text-[#111111]/90 border-t border-[#111111]/10 pt-2 list-disc pl-4 font-medium">
             <li>
-              <span className="font-bold text-[#D92D20]">Call 1930</span>{' '}
-              immediately (National Cyber Crime Helpline).
+              <span className="font-bold text-[#D92D20]">
+                {t('call_1930_immediately', lang)}
+              </span>{' '}
+              {t('call_1930_helpline_desc', lang)}
             </li>
             <li>
-              Report at{' '}
               <a
                 href="https://cybercrime.gov.in"
                 target="_blank"
                 rel="noreferrer"
                 className="underline font-bold hover:text-[#FF5A1F]"
               >
-                cybercrime.gov.in
+                {t('report_cybercrime', lang)}
               </a>
               .
             </li>
-            <li>Call your bank&apos;s official helpline number immediately.</li>
+            <li>{t('call_bank_official_desc', lang)}</li>
             <li>
-              Report the suspicious number or message on{' '}
-              <span className="font-bold">Sanchar Saathi (Chakshu)</span>.
+              <span className="font-bold">
+                {t('report_sanchar_saathi', lang)}
+              </span>
+              .
             </li>
           </ul>
         </details>
@@ -259,7 +249,7 @@ export function Debrief({
                 onClick={onRestart}
                 className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Re-drill this one</span>
+                <span>{t('redrill_this_one', lang)}</span>
                 <span>↺</span>
               </button>
 
@@ -268,14 +258,14 @@ export function Debrief({
                 className="w-full min-h-[44px] py-2.5 bg-white text-[#111111] font-bold text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center justify-center gap-2"
               >
                 <span>🔍</span>
-                <span>Check a suspicious message</span>
+                <span>{t('check_suspicious_message', lang)}</span>
               </Link>
 
               <Link
                 href="/drill"
                 className="w-full min-h-[44px] py-2.5 bg-neutral-100 text-[#111111] font-bold text-sm border-2 border-[#111111]/30 rounded-md hover:bg-neutral-200 transition-all flex items-center justify-center gap-1.5"
               >
-                <span>Play full 3-drill simulation →</span>
+                <span>{t('play_full_drill_cta', lang)}</span>
               </Link>
             </>
           ) : (
@@ -286,7 +276,7 @@ export function Debrief({
                   onClick={onShowReport}
                   className="w-full min-h-[48px] py-3.5 bg-[#12B76A] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>See my report</span>
+                  <span>{t('see_my_report', lang)}</span>
                   <span>→</span>
                 </button>
               ) : (
@@ -296,9 +286,10 @@ export function Debrief({
                   className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>
-                    {lang === 'hi'
-                      ? `अगली ड्रिल ${scenarioIndex + 2} पर जाएँ`
-                      : `Next drill (${scenarioIndex + 2} of ${totalScenarios})`}
+                    {t('next_drill_n', lang, {
+                      n: scenarioIndex + 2,
+                      total: totalScenarios,
+                    })}
                   </span>
                   <span>→</span>
                 </button>
@@ -309,7 +300,7 @@ export function Debrief({
                 onClick={onRestart}
                 className="w-full min-h-[44px] py-2.5 bg-white text-[#111111] font-bold text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
               >
-                Re-drill this one
+                {t('redrill_this_one', lang)}
               </button>
             </>
           )}

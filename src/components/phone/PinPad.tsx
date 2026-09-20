@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import type { Lang } from '@/engine/engine';
+import { t } from '@/lib/i18n';
 
 interface PinPadProps {
   kind: 'pin' | 'otp';
@@ -8,6 +10,7 @@ interface PinPadProps {
   detail: string;
   practicePin: string;
   expectedCode?: string;
+  lang?: Lang;
   onSubmit: (len: number, hesitationMs: number) => void;
   onCancel: () => void;
 }
@@ -18,6 +21,7 @@ export function PinPad({
   detail,
   practicePin,
   expectedCode,
+  lang = 'en',
   onSubmit,
   onCancel,
 }: PinPadProps) {
@@ -52,13 +56,12 @@ export function PinPad({
       setDigits('');
       if (kind === 'pin') {
         setError({
-          message: 'Incorrect PIN. Your practice PIN is 4827.',
-          subtext:
-            'If you just typed your real UPI PIN: we did not store or send it. Never type it outside your UPI app.',
+          message: t('incorrect_pin', lang),
+          subtext: t('incorrect_pin_subtext', lang),
         });
       } else {
         setError({
-          message: 'That is not the code in the SMS.',
+          message: t('incorrect_otp', lang),
         });
       }
 
@@ -115,7 +118,7 @@ export function PinPad({
           className="min-h-[48px] px-3 -ml-3 text-sm font-semibold text-[#111111] hover:underline flex items-center gap-1 cursor-pointer"
         >
           <span>←</span>
-          <span>Cancel / Go back</span>
+          <span>{t('cancel_go_back', lang)}</span>
         </button>
         <span className="text-xs font-mono text-[#111111]/60 uppercase font-semibold">
           {kind === 'pin' ? 'UPI AUTH' : 'SMS OTP'}
@@ -136,7 +139,7 @@ export function PinPad({
           <h2 className="text-lg font-bold text-[#111111]">{prompt}</h2>
           {kind === 'pin' && (
             <div className="inline-block bg-[#F6F3EC] border border-[#111111] text-xs px-2.5 py-1 rounded-md font-mono text-[#111111]">
-              Practice PIN: <strong>{practicePin}</strong>
+              {t('practice_pin', lang)}: <strong>{practicePin}</strong>
             </div>
           )}
         </div>
@@ -213,7 +216,7 @@ export function PinPad({
             type="button"
             onClick={handleSubmit}
             disabled={!isReady}
-            aria-label={kind === 'pin' ? 'Submit PIN' : 'Submit OTP'}
+            aria-label={kind === 'pin' ? t('submit_pin', lang) : t('submit_otp', lang)}
             className={`min-h-[52px] h-13 border-2 border-[#111111] rounded-md shadow-hard-sm text-2xl font-bold flex items-center justify-center transition-all ${
               isReady
                 ? 'bg-[#FF5A1F] text-white hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer'

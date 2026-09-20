@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import type { RunEvent, RunResult } from '@/engine/engine';
+import { useLang } from '@/lib/useLang';
+import { t } from '@/lib/i18n';
 
 export interface GlassBoxProps {
   events: RunEvent[];
@@ -16,6 +18,8 @@ export function GlassBoxPanel({
   events: RunEvent[];
   result?: RunResult | null;
 }) {
+  const [lang] = useLang();
+
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case 'safe':
@@ -33,18 +37,18 @@ export function GlassBoxPanel({
     <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 font-mono text-xs w-full">
       <div className="flex items-center justify-between border-b-2 border-[#111111] pb-2 mb-3">
         <span className="font-bold uppercase tracking-wider text-xs text-[#111111]">
-          What the engine is recording
+          {t('engine_recording_title', lang)}
         </span>
         <span className="text-[10px] bg-[#111111] text-white px-1.5 py-0.5 rounded font-bold">
           GLASS BOX
         </span>
       </div>
 
-      {/* Events log stream */}
+      {/* Events log stream - log lines remain in English per specification */}
       <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
         {events.length === 0 ? (
           <div className="text-xs text-[#111111]/50 italic">
-            Waiting for first action…
+            {t('waiting_first_action', lang)}
           </div>
         ) : (
           events.map((e, idx) => (
@@ -76,13 +80,14 @@ export function GlassBoxPanel({
 
       {/* Footnote */}
       <p className="mt-3 text-[11px] text-[#111111]/70 border-t border-[#111111]/10 pt-2 leading-tight">
-        PIN/OTP digits are never recorded — only that a PIN was entered.
+        {t('glassbox_footnote', lang)}
       </p>
     </div>
   );
 }
 
 export function GlassBox({ events, result, className = '' }: GlassBoxProps) {
+  const [lang] = useLang();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -99,9 +104,13 @@ export function GlassBox({ events, result, className = '' }: GlassBoxProps) {
           onClick={() => setMobileOpen(o => !o)}
           className="w-full min-h-[40px] py-2 px-3 text-xs font-mono font-bold bg-white text-[#111111] border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-between cursor-pointer"
         >
-          <span>{mobileOpen ? 'Hide engine log ▲' : 'Show engine log ▼'}</span>
+          <span>
+            {mobileOpen
+              ? t('hide_engine_log', lang)
+              : t('show_engine_log', lang)}
+          </span>
           <span className="text-[10px] text-[#111111]/60">
-            {events.length} {events.length === 1 ? 'event' : 'events'}
+            {events.length} {events.length === 1 ? t('event', lang) : t('events', lang)}
           </span>
         </button>
         {mobileOpen && (

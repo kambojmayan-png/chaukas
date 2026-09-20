@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
+import type { Lang } from '@/engine/engine';
+import { t } from '@/lib/i18n';
 
 interface PressureTimerProps {
   seconds: number;
+  lang?: Lang;
   onTimeout: () => void;
 }
 
-export function PressureTimer({ seconds, onTimeout }: PressureTimerProps) {
+export function PressureTimer({ seconds, lang = 'en', onTimeout }: PressureTimerProps) {
   const [timeLeft, setTimeLeft] = useState<number>(seconds);
   const onTimeoutRef = useRef(onTimeout);
 
@@ -43,7 +46,7 @@ export function PressureTimer({ seconds, onTimeout }: PressureTimerProps) {
     <div className="w-full bg-[#FF5A1F] text-white border-b-2 border-[#111111] px-3 py-1.5 flex items-center justify-between text-xs font-mono font-bold shadow-sm select-none">
       <div className="flex items-center space-x-1.5">
         <span className="animate-pulse">⏱</span>
-        <span className="uppercase tracking-wider">Hurry:</span>
+        <span className="uppercase tracking-wider">{t('hurry', lang)}</span>
         <span className="tabular-nums text-sm bg-[#111111] text-white px-1.5 py-0.5 rounded">
           {timeLeft}s
         </span>

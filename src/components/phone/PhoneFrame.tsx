@@ -1,18 +1,21 @@
 'use client';
 
 import React from 'react';
+import type { Lang } from '@/engine/engine';
+import { t } from '@/lib/i18n';
 
 interface PhoneFrameProps {
   from?: string;
   surface?: string;
+  lang?: Lang;
   children: React.ReactNode;
 }
 
-export function PhoneFrame({ from, surface, children }: PhoneFrameProps) {
+export function PhoneFrame({ from, surface, lang = 'en', children }: PhoneFrameProps) {
   // Format header title based on surface and from
   const isUpi = surface === 'upi';
   const headerTitle = isUpi
-    ? 'PayApp · UPI Payment'
+    ? t('payapp_upi', lang)
     : from || 'ChatApp';
 
   return (
@@ -22,7 +25,7 @@ export function PhoneFrame({ from, surface, children }: PhoneFrameProps) {
         {/* SIMULATION Watermark - fixed inside phone */}
         <div className="absolute top-5 right-6 z-50 pointer-events-none">
           <span className="bg-[#111111]/85 text-[#F6F3EC] text-[10px] font-mono font-bold tracking-widest px-2 py-0.5 rounded border border-white/20 uppercase shadow-sm">
-            SIMULATION
+            {t('simulation', lang)}
           </span>
         </div>
 
@@ -47,7 +50,7 @@ export function PhoneFrame({ from, surface, children }: PhoneFrameProps) {
                 {headerTitle}
               </div>
               <div className="text-[11px] text-[#111111]/70 truncate">
-                {isUpi ? 'State Bank of India (•••4210)' : 'Active now'}
+                {isUpi ? 'State Bank of India (•••4210)' : t('active_now', lang)}
               </div>
             </div>
           </header>

@@ -14,13 +14,13 @@
 body {
   background-color: #F6F3EC;
   color: #111111;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: var(--font-hindi), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   font-size: 18px;
   line-height: 1.5;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading, system-ui, sans-serif);
+  font-family: var(--font-heading), var(--font-hindi), system-ui, sans-serif;
 }
 
 .font-hindi {

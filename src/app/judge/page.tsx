@@ -1,7 +1,10 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-
-export const dynamic = 'force-static';
+import { useLang } from '@/lib/useLang';
+import { LangToggle } from '@/components/LangToggle';
+import { t } from '@/lib/i18n';
 
 interface LedgerRow {
   component: string;
@@ -10,6 +13,8 @@ interface LedgerRow {
   simplification: string;
 }
 
+// Reality Ledger table remains in English per specification:
+// "Only these may stay English: the brand CHAUKAS, URLs, "1930", GlassBox log lines, and the /judge Reality Ledger table."
 const REALITY_LEDGER: LedgerRow[] = [
   {
     component: 'Engine, linter, scoring, tests',
@@ -68,10 +73,12 @@ const REALITY_LEDGER: LedgerRow[] = [
 ];
 
 export default function JudgePage() {
+  const [lang] = useLang();
+
   return (
     <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-4 md:p-10 max-w-4xl mx-auto space-y-8">
       {/* Header */}
-      <header className="flex items-center justify-between border-b-2 border-[#111111] pb-4">
+      <header className="flex flex-wrap items-center justify-between border-b-2 border-[#111111] pb-4 gap-3">
         <div className="flex items-center space-x-2">
           <Link
             href="/"
@@ -84,14 +91,15 @@ export default function JudgePage() {
           </span>
         </div>
         <div className="flex items-center space-x-3 text-xs md:text-sm font-bold">
-          <Link href="/drill" className="hover:underline">
-            Drills
+          <LangToggle />
+          <Link href="/drill" className="hover:underline whitespace-nowrap">
+            {t('drills_nav', lang)}
           </Link>
-          <Link href="/check" className="hover:underline">
-            Check
+          <Link href="/check" className="hover:underline whitespace-nowrap">
+            {t('message_checker_nav', lang)}
           </Link>
-          <Link href="/insights" className="hover:underline">
-            Insights
+          <Link href="/insights" className="hover:underline whitespace-nowrap">
+            {t('live_insights_nav', lang)}
           </Link>
         </div>
       </header>
@@ -100,13 +108,13 @@ export default function JudgePage() {
       <section className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 space-y-6">
         <div className="space-y-1">
           <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-sm">
-            EVALUATION GUIDE
+            {t('evaluation_guide_tag', lang)}
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-[#111111]">
-            Two minutes? Do this:
+            {t('two_minutes_title', lang)}
           </h1>
           <p className="text-sm text-[#111111]/70">
-            A quick walkthrough to experience the behavioural gap, inspect real-time scoring, and verify deterministic rules.
+            {t('two_minutes_desc', lang)}
           </p>
         </div>
 
@@ -120,18 +128,18 @@ export default function JudgePage() {
                   1
                 </span>
                 <span className="font-bold text-sm text-[#111111]">
-                  Play Drill 1 & Comply
+                  {t('step1_title', lang)}
                 </span>
               </div>
               <p className="text-xs text-[#111111]/80 leading-relaxed">
-                Play Drill 1 (OLX QR) and go along with the buyer. Enter the practice PIN (4827) and watch ₹4,500 leave your practice wallet. Observe the debrief and Glass Box event stream.
+                {t('step1_desc', lang)}
               </p>
             </div>
             <Link
               href="/drill?only=olx-qr"
               className="inline-flex items-center justify-center min-h-[38px] px-3 py-1.5 bg-[#FF5A1F] text-white font-bold text-xs border border-[#111111] rounded shadow-hard-sm hover:opacity-95 transition-all"
             >
-              Play Drill 1 →
+              {t('step1_btn', lang)}
             </Link>
           </div>
 
@@ -143,18 +151,18 @@ export default function JudgePage() {
                   2
                 </span>
                 <span className="font-bold text-sm text-[#111111]">
-                  Inspect a Suspicious Message
+                  {t('step2_title', lang)}
                 </span>
               </div>
               <p className="text-xs text-[#111111]/80 leading-relaxed">
-                Paste a spam SMS from your own phone into /check, or try the 3 built-in examples. See deterministic red-flag tagging and targeted archetype advice with 100% client-side privacy.
+                {t('step2_desc', lang)}
               </p>
             </div>
             <Link
               href="/check"
               className="inline-flex items-center justify-center min-h-[38px] px-3 py-1.5 bg-white text-[#111111] font-bold text-xs border border-[#111111] rounded shadow-hard-sm hover:bg-[#F6F3EC] transition-all"
             >
-              Open /check →
+              {t('step2_btn', lang)}
             </Link>
           </div>
 
@@ -166,18 +174,18 @@ export default function JudgePage() {
                   3
                 </span>
                 <span className="font-bold text-sm text-[#111111]">
-                  Review Live Insights
+                  {t('step3_title', lang)}
                 </span>
               </div>
               <p className="text-xs text-[#111111]/80 leading-relaxed">
-                Open /insights to see real aggregated participant data: total runs, first-attempt fall rates per scenario, and the knowledge–behaviour gap metric.
+                {t('step3_desc', lang)}
               </p>
             </div>
             <Link
               href="/insights"
               className="inline-flex items-center justify-center min-h-[38px] px-3 py-1.5 bg-white text-[#111111] font-bold text-xs border border-[#111111] rounded shadow-hard-sm hover:bg-[#F6F3EC] transition-all"
             >
-              Open /insights →
+              {t('step3_btn', lang)}
             </Link>
           </div>
 
@@ -189,66 +197,66 @@ export default function JudgePage() {
                   4
                 </span>
                 <span className="font-bold text-sm text-[#111111]">
-                  Verify Test Suite
+                  {t('step4_title', lang)}
                 </span>
               </div>
               <p className="text-xs text-[#111111]/80 leading-relaxed">
-                Open the GitHub repo and run <code className="bg-white px-1 py-0.5 rounded border border-[#111111]/30 font-mono text-[11px]">npm test</code> to verify scenario graphs, automated bot runs, scoring logic, and /check rules fixtures.
+                {t('step4_desc', lang)}
               </p>
             </div>
             <a
               href="https://github.com/kambojmayan-png/chaukas"
               target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center min-h-[38px] px-3 py-1.5 bg-[#111111] text-[#F6F3EC] font-bold text-xs border border-[#111111] rounded shadow-hard-sm hover:opacity-90 transition-all"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center min-h-[38px] px-3 py-1.5 bg-[#111111] text-[#F6F3EC] font-bold text-xs border border-[#111111] rounded shadow-hard-sm hover:bg-[#222222] transition-all"
             >
-              View GitHub Repo ↗
+              {t('step4_btn', lang)}
             </a>
           </div>
         </div>
       </section>
 
       {/* Reality Ledger Section */}
-      <section className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 space-y-5">
+      <section className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 space-y-6">
         <div className="space-y-1">
           <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-sm">
-            DISCLOSURE & ARCHITECTURE
+            SECTION 12
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-[#111111]">
-            Reality Ledger
+          <h2 className="text-2xl font-extrabold tracking-tight text-[#111111]">
+            {t('reality_ledger_title', lang)}
           </h2>
-          <p className="text-xs md:text-sm text-[#111111]/70">
-            Full disclosure of components, production readiness, and intentional MVP shortcuts.
+          <p className="text-xs text-[#111111]/70 font-mono">
+            {t('reality_ledger_desc', lang)}
           </p>
         </div>
 
-        {/* HTML Table */}
+        {/* Reality Ledger Table */}
         <div className="overflow-x-auto border-2 border-[#111111] rounded-md">
-          <table className="w-full text-left text-xs md:text-sm border-collapse">
+          <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-[#111111] text-[#F6F3EC] font-mono text-xs uppercase tracking-wider">
-                <th className="p-3 border-r border-white/20">Component</th>
-                <th className="p-3 border-r border-white/20">Label</th>
-                <th className="p-3">Simplification → upgrade</th>
+              <tr className="bg-[#111111] text-[#F6F3EC] font-mono uppercase tracking-wider">
+                <th className="p-3 border-r border-[#111111]/40">Component</th>
+                <th className="p-3 border-r border-[#111111]/40 w-36">Status</th>
+                <th className="p-3">Simplification & Upgrade Path</th>
               </tr>
             </thead>
-            <tbody className="divide-y-2 divide-[#111111]">
+            <tbody className="divide-y-2 divide-[#111111]/15 font-mono">
               {REALITY_LEDGER.map((row, idx) => (
                 <tr
                   key={idx}
                   className={idx % 2 === 0 ? 'bg-white' : 'bg-[#F6F3EC]'}
                 >
-                  <td className="p-3 font-semibold text-[#111111] border-r-2 border-[#111111] align-top">
+                  <td className="p-3 font-bold text-[#111111] border-r border-[#111111]/15">
                     {row.component}
                   </td>
-                  <td className="p-3 border-r-2 border-[#111111] align-top whitespace-nowrap">
+                  <td className="p-3 border-r border-[#111111]/15">
                     <span
-                      className={`inline-block px-2 py-0.5 text-xs font-mono font-bold rounded-sm ${row.badgeClass}`}
+                      className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${row.badgeClass}`}
                     >
                       {row.label}
                     </span>
                   </td>
-                  <td className="p-3 text-[#111111]/80 leading-relaxed align-top font-mono text-xs">
+                  <td className="p-3 text-[#111111]/90 leading-relaxed">
                     {row.simplification}
                   </td>
                 </tr>
@@ -256,34 +264,36 @@ export default function JudgePage() {
             </tbody>
           </table>
         </div>
+      </section>
 
-        {/* GitHub Link Card */}
-        <div className="bg-[#F6F3EC] border-2 border-[#111111] rounded-md p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-hard-sm">
-          <div className="space-y-0.5 text-center sm:text-left">
-            <span className="text-xs font-mono font-bold uppercase text-[#FF5A1F]">
-              Open Source Repository
-            </span>
-            <p className="text-sm font-bold text-[#111111]">
-              github.com/kambojmayan-png/chaukas
+      {/* GitHub Repository Card */}
+      <section className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-lg font-bold text-[#111111]">
+              {t('repo_card_title', lang)}
+            </h3>
+            <p className="text-xs text-[#111111]/70 font-mono">
+              {t('repo_card_desc', lang)}
             </p>
           </div>
           <a
             href="https://github.com/kambojmayan-png/chaukas"
             target="_blank"
-            rel="noopener noreferrer"
-            className="min-h-[44px] px-6 py-2.5 bg-[#111111] text-[#F6F3EC] font-bold text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:opacity-90 active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-2"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center min-h-[44px] px-5 py-2 bg-[#FF5A1F] text-white font-bold text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 transition-all whitespace-nowrap"
           >
-            <span>GitHub Repo</span>
-            <span>↗</span>
+            <span>github.com/kambojmayan-png/chaukas</span>
+            <span className="ml-1.5">↗</span>
           </a>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="border-t-2 border-[#111111] pt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-[#111111]/70 font-mono gap-2">
-        <span>© 2026 Chaukas · Tech for a Better Tomorrow</span>
+        <span>© 2026 Chaukas · Judge Verification Kit</span>
         <Link href="/" className="hover:underline font-bold">
-          ← Back to Home
+          {t('back_to_home', lang)}
         </Link>
       </footer>
     </main>
