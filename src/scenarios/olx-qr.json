@@ -1,0 +1,60 @@
+{
+  "id": "olx-qr",
+  "title": { "en": "The buyer who never bargains", "hi": "बिना मोल-भाव वाला ख़रीदार" },
+  "archetype": "receive_money_pin",
+  "setup": { "en": "You listed your old study table online for ₹4,500. A buyer messages you within minutes.", "hi": "आपने अपनी पुरानी स्टडी टेबल ₹4,500 में ऑनलाइन बेचने के लिए डाली है। कुछ ही मिनट में एक ख़रीदार का मैसेज आता है।" },
+  "rule": { "en": "Your UPI PIN only ever SENDS money. To RECEIVE money you never need a PIN, a QR scan or an 'Approve' tap.", "hi": "UPI PIN सिर्फ़ पैसा भेजने के लिए होता है। पैसा लेने के लिए कभी PIN, QR स्कैन या 'Approve' की ज़रूरत नहीं पड़ती।" },
+  "precheck": { "q": { "en": "To RECEIVE money on UPI, do you have to enter your PIN?", "hi": "क्या UPI पर पैसा लेने के लिए PIN डालना पड़ता है?" }, "correct": "no" },
+  "sources": [ { "label": "PhonePe — fake UPI payment scams: PIN requests to 'receive' money are a red flag", "url": "https://business.phonepe.com/articles/fake-upi-payment-scams-how-to-identify-and-prevent-fraud" } ],
+  "start": "n1",
+  "nodes": {
+    "n1": { "id": "n1", "surface": "chat", "from": "Rahul Kumar · +91 98•••••021",
+      "messages": [
+        { "text": { "en": "Hello ji, is the table still available? I'm in the Army, posted in Jammu, so I can't come to see it.", "hi": "हैलो जी, टेबल अभी available है? मैं Army में हूँ, पोस्टिंग जम्मू में है, इसलिए देखने नहीं आ सकता।" }, "flags": ["authority"] },
+        { "text": { "en": "Price is fine, no bargaining. I'll pay the full ₹4,500 right now. My cousin will pick it up tomorrow.", "hi": "दाम ठीक है, कोई मोल-भाव नहीं। मैं अभी पूरे ₹4,500 भेज देता हूँ। कल मेरा कज़िन आकर ले जाएगा।" }, "flags": ["too_good"], "delayMs": 1400 }
+      ],
+      "choices": [
+        { "id": "a", "label": { "en": "Great! Please send the payment.", "hi": "बढ़िया! पेमेंट भेज दीजिए।" }, "next": "n2", "risk": "risky", "tag": "comply" },
+        { "id": "b", "label": { "en": "Pay when your cousin comes to pick it up.", "hi": "पेमेंट तभी कीजिए जब कज़िन लेने आएँ।" }, "next": "n1b", "risk": "safe", "tag": "refuse" },
+        { "id": "c", "label": { "en": "Block and report this number", "hi": "नंबर ब्लॉक करें और रिपोर्ट करें" }, "next": "end_escaped", "risk": "safe", "tag": "block_report" }
+      ] },
+    "n1b": { "id": "n1b", "surface": "chat", "from": "Rahul Kumar · +91 98•••••021",
+      "messages": [ { "text": { "en": "Sir I'm on duty, there's no network later. Let me pay now only, otherwise I'll have to buy from someone else.", "hi": "सर मैं ड्यूटी पर हूँ, बाद में नेटवर्क नहीं मिलेगा। अभी पेमेंट करने दीजिए, वरना मुझे किसी और से लेना पड़ेगा।" }, "flags": ["urgency"] } ],
+      "choices": [
+        { "id": "a", "label": { "en": "Okay fine, pay now.", "hi": "ठीक है, अभी कर दीजिए।" }, "next": "n2", "risk": "risky", "tag": "comply" },
+        { "id": "b", "label": { "en": "No problem. Payment at pickup only — cash or UPI.", "hi": "कोई बात नहीं। पेमेंट पिकअप पर ही — कैश या UPI।" }, "next": "end_escaped", "risk": "safe", "tag": "refuse" }
+      ] },
+    "n2": { "id": "n2", "surface": "chat", "from": "Rahul Kumar · +91 98•••••021",
+      "messages": [
+        { "text": { "en": "I've sent ₹1 to check your account. Now I'm sending you a QR code.", "hi": "मैंने आपका अकाउंट चेक करने के लिए ₹1 भेजा है। अब एक QR कोड भेज रहा हूँ।" } },
+        { "text": { "en": "Scan it and enter your PIN — ₹4,500 will be credited to you. Army payments only work through merchant QR.", "hi": "इसे स्कैन करके अपना PIN डालिए — ₹4,500 आपके अकाउंट में आ जाएँगे। Army का पेमेंट सिर्फ़ merchant QR से ही होता है।" }, "flags": ["pin_to_receive", "authority"], "delayMs": 1600 }
+      ],
+      "choices": [
+        { "id": "a", "label": { "en": "Scan the QR code", "hi": "QR कोड स्कैन करें" }, "next": "n3", "risk": "risky", "tag": "scan_qr" },
+        { "id": "b", "label": { "en": "Why would I need a PIN to receive money?", "hi": "पैसा लेने के लिए PIN क्यों डालना पड़ेगा?" }, "next": "n2b", "risk": "safe", "tag": "stall" },
+        { "id": "c", "label": { "en": "No. Send it to my UPI ID. I won't scan anything.", "hi": "नहीं। मेरी UPI ID पर भेजिए। कुछ स्कैन नहीं होगा।" }, "next": "end_escaped", "risk": "safe", "tag": "refuse" }
+      ] },
+    "n2b": { "id": "n2b", "surface": "chat", "from": "Rahul Kumar · +91 98•••••021", "timerSec": 20, "timeoutNext": "n2c",
+      "messages": [ { "text": { "en": "Sir this is how Army accounts work, everybody does it. Please hurry — the QR expires in 2 minutes!", "hi": "सर Army अकाउंट ऐसे ही काम करते हैं, सब यही करते हैं। जल्दी कीजिए — QR 2 मिनट में expire हो जाएगा!" }, "flags": ["urgency", "authority"] } ],
+      "choices": [
+        { "id": "a", "label": { "en": "Okay, scan it.", "hi": "ठीक है, स्कैन करते हैं।" }, "next": "n3", "risk": "risky", "tag": "scan_qr" },
+        { "id": "b", "label": { "en": "A PIN is only for paying. Block him.", "hi": "PIN सिर्फ़ भेजने के लिए होता है। ब्लॉक करें।" }, "next": "end_escaped", "risk": "safe", "tag": "block_report" }
+      ] },
+    "n2c": { "id": "n2c", "surface": "chat", "from": "Rahul Kumar · +91 98•••••021",
+      "messages": [ { "text": { "en": "Hello?? Are you there? Last chance, the QR is expiring.", "hi": "हैलो?? आप हैं? आख़िरी मौक़ा है, QR expire हो रहा है।" }, "flags": ["urgency"] } ],
+      "choices": [
+        { "id": "a", "label": { "en": "Okay, scan it.", "hi": "ठीक है, स्कैन करते हैं।" }, "next": "n3", "risk": "risky", "tag": "scan_qr" },
+        { "id": "b", "label": { "en": "Not doing this. Block and report.", "hi": "यह नहीं होगा। ब्लॉक करें और रिपोर्ट करें।" }, "next": "end_escaped", "risk": "safe", "tag": "block_report" }
+      ] },
+    "n3": { "id": "n3", "surface": "upi",
+      "input": { "kind": "pin", "prompt": { "en": "Enter UPI PIN", "hi": "UPI PIN डालें" }, "detail": { "en": "Paying ₹4,500 to RK ENTERPRISES (rk.ent@okbank)", "hi": "₹4,500 का भुगतान — RK ENTERPRISES (rk.ent@okbank) को" }, "flags": ["screen_says_pay"], "onSubmit": "end_scammed", "onCancel": "n4" } },
+    "n4": { "id": "n4", "surface": "chat", "from": "Rahul Kumar · +91 98•••••021",
+      "messages": [ { "text": { "en": "What happened? Enter the PIN, the payment is stuck on your side. It's your loss only.", "hi": "क्या हुआ? PIN डालिए, पेमेंट आपकी तरफ़ से अटका है। नुक़सान आपका ही होगा।" }, "flags": ["urgency"] } ],
+      "choices": [
+        { "id": "a", "label": { "en": "Go back and enter the PIN", "hi": "वापस जाकर PIN डालें" }, "next": "n3", "risk": "risky", "tag": "comply" },
+        { "id": "b", "label": { "en": "The screen said PAYING. Block and report.", "hi": "स्क्रीन पर 'भुगतान' लिखा था। ब्लॉक करें और रिपोर्ट करें।" }, "next": "end_escaped", "risk": "safe", "tag": "block_report" }
+      ] },
+    "end_scammed": { "id": "end_scammed", "surface": "system", "end": { "outcome": "scammed", "lossInr": 4500, "headline": { "en": "₹4,500 left your account. The screen said 'Paying' — and you entered your PIN.", "hi": "₹4,500 आपके अकाउंट से निकल गए। स्क्रीन पर 'भुगतान' लिखा था — और आपने PIN डाल दिया।" } } },
+    "end_escaped": { "id": "end_escaped", "surface": "system", "end": { "outcome": "escaped", "lossInr": 0, "headline": { "en": "You walked away without losing a rupee.", "hi": "आप बिना एक रुपया गँवाए निकल आए।" }, "lateHeadline": { "en": "You got out — but only after going along with him. One more tap and the money was gone.", "hi": "आप बच गए — लेकिन उसकी बात मानते-मानते। एक टैप और, और पैसा जा चुका होता।" } } }
+  }
+}
