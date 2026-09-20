@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, Noto_Sans_Devanagari } from "next/font/google";
+import { Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -7,15 +7,11 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-heading",
-  subsets: ["latin"],
-});
-
 const notoDevanagari = Noto_Sans_Devanagari({
   variable: "--font-hindi",
   subsets: ["devanagari"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -44,8 +40,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${spaceGrotesk.variable} ${notoDevanagari.variable} h-full antialiased`}
+      lang="hi"
+      className={`${notoDevanagari.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#F6F3EC] text-[#111111]">
         {children}

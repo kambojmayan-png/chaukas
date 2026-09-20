@@ -116,6 +116,34 @@ export function speak(text: string, lang: 'en' | 'hi') {
   }
 }
 
+export type AudioPlaybackState = 'idle' | 'playing' | 'paused' | 'ended' | 'blocked';
+type AudioStateListener = (state: AudioPlaybackState) => void;
+const audioStateListeners = new Set<AudioStateListener>();
+let currentAudioState: AudioPlaybackState = 'idle';
+
+export function getAudioState(): AudioPlaybackState {
+  return currentAudioState;
+}
+
+export function subscribeAudioState(listener: AudioStateListener): () => void {
+  audioStateListeners.add(listener);
+  listener(currentAudioState);
+  return () => {
+    audioStateListeners.delete(listener);
+  };
+}
+
+export function notifyAudioState(state: AudioPlaybackState) {
+  currentAudioState = state;
+  for (const listener of audioStateListeners) {
+    try {
+      listener(state);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 // Shared HTMLAudioElement for all pre-recorded clips
 let sharedAudio: HTMLAudioElement | null = null;
 let audioQueue: string[] = [];
@@ -127,16 +155,22 @@ function onClipEnded() {
     if (sharedAudio) {
       sharedAudio.src = nextSrc;
       sharedAudio.currentTime = 0;
-      sharedAudio.play().catch(() => {
-        onClipEnded();
-      });
+      const playPromise = sharedAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          notifyAudioState('blocked');
+          onClipEnded();
+        });
+      }
     }
   } else {
     isPlayingAudio = false;
+    notifyAudioState('ended');
   }
 }
 
 function onClipError() {
+  notifyAudioState('ended');
   onClipEnded();
 }
 
@@ -144,6 +178,8 @@ function getSharedAudio(): HTMLAudioElement | null {
   if (typeof window === 'undefined') return null;
   if (!sharedAudio) {
     sharedAudio = new Audio();
+    sharedAudio.addEventListener('playing', () => notifyAudioState('playing'));
+    sharedAudio.addEventListener('pause', () => notifyAudioState('paused'));
     sharedAudio.addEventListener('ended', onClipEnded);
     sharedAudio.addEventListener('error', onClipError);
   }
@@ -186,9 +222,13 @@ function enqueueAudioSrc(src: string) {
     isPlayingAudio = true;
     audio.src = src;
     audio.currentTime = 0;
-    audio.play().catch(() => {
-      onClipEnded();
-    });
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        notifyAudioState('blocked');
+        onClipEnded();
+      });
+    }
   }
 }
 
@@ -250,9 +290,13 @@ export function playClip(
       audio.addEventListener('ended', finishAudio, { once: true });
       audio.addEventListener('error', finishAudio, { once: true });
 
-      audio.play().catch(() => {
-        finishAudio();
-      });
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          notifyAudioState('blocked');
+          finishAudio();
+        });
+      }
       return;
     }
 
@@ -308,8 +352,17 @@ export function playClip(
         }
       };
 
-      u.onend = finishTTS;
-      u.onerror = finishTTS;
+      u.onstart = () => notifyAudioState('playing');
+      u.onpause = () => notifyAudioState('paused');
+      u.onresume = () => notifyAudioState('playing');
+      u.onend = () => {
+        notifyAudioState('ended');
+        finishTTS();
+      };
+      u.onerror = () => {
+        notifyAudioState('blocked');
+        finishTTS();
+      };
 
       // Fallback timeout in case speech synthesis hangs
       const maxMs = Math.max(fallbackText.length * 150, 10000);
@@ -317,6 +370,7 @@ export function playClip(
 
       window.speechSynthesis.speak(u);
     } catch {
+      notifyAudioState('blocked');
       resolve();
     }
   });
@@ -354,6 +408,23 @@ export function playLine({ scenarioId, nodeId, index, voiceLang, text, uiLang, u
 }
 
 /**
+ * Preload only the specified clips (e.g. next two clips)
+ */
+export function preloadClips(clipKeys: string[], voiceLang: VoiceChoice = 'hi') {
+  if (typeof window === 'undefined' || voiceLang === 'off') return;
+  const manifest = voiceManifest as Record<string, string>;
+  for (const key of clipKeys) {
+    const directKey = key.includes('/') ? key : `${voiceLang}/${key}`;
+    const url = manifest[directKey];
+    if (url) {
+      const a = new Audio();
+      a.preload = 'auto';
+      a.src = url;
+    }
+  }
+}
+
+/**
  * Preload scenario clips for chosen voice language on drill start
  */
 export function preloadScenarioClips(scenarioId: string, voiceLang: VoiceChoice) {
@@ -375,6 +446,7 @@ export function preloadScenarioClips(scenarioId: string, voiceLang: VoiceChoice)
 export function stopSpeaking() {
   audioQueue = [];
   isPlayingAudio = false;
+  notifyAudioState('idle');
   if (activeWaitTimer) {
     clearTimeout(activeWaitTimer);
     activeWaitTimer = null;

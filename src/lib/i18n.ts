@@ -616,6 +616,26 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
     en: 'Press the button. A voice will explain everything.',
     hi: 'बटन दबाइए। आवाज़ आपको सब समझाएगी।',
   },
+  home_sound_line: {
+    en: "Turn your phone's volume up. I will explain everything aloud.",
+    hi: "फ़ोन की आवाज़ बढ़ा लीजिए। मैं सब कुछ बोलकर समझाऊँगी।",
+  },
+  home_no_sound_ok: {
+    en: "No sound? That's fine. Everything is also written on the screen.",
+    hi: "आवाज़ न आए तो भी कोई बात नहीं। सब कुछ स्क्रीन पर लिखा भी रहेगा।",
+  },
+  home_dev_link: {
+    en: "For judges & developers →",
+    hi: "For judges & developers →",
+  },
+  sound_playing: {
+    en: "Sound is playing",
+    hi: "आवाज़ चल रही है",
+  },
+  sound_blocked: {
+    en: "Your phone is not allowing sound. Please read along.",
+    hi: "आपका फ़ोन आवाज़ नहीं चला पा रहा। कृपया पढ़ते हुए आगे बढ़ें।",
+  },
   practice_chip: {
     en: 'This is practice, not real',
     hi: 'यह अभ्यास है, असली नहीं',

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useLang } from '@/lib/useLang';
 import { LangToggle } from '@/components/LangToggle';
 import { t } from '@/lib/i18n';
+import { spaceGrotesk } from '@/lib/fonts';
 import type { InsightsData } from '@/lib/supabaseAdmin';
 
 interface ProofData {
@@ -42,7 +43,7 @@ export default function AboutPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#F6F3EC] text-[#111111] flex flex-col justify-between p-4 min-[400px]:p-6 md:p-12 max-w-4xl mx-auto">
+    <main className={`min-h-screen bg-[#F6F3EC] text-[#111111] flex flex-col justify-between p-4 min-[400px]:p-6 md:p-12 max-w-4xl mx-auto ${spaceGrotesk.variable}`}>
       {/* Top Notice: Detailed view for judges and developers */}
       <div className="w-full bg-[#E6F3EE] border-2 border-[#0F6B4F]/30 rounded-md p-2.5 text-center mb-4">
         <p className="text-xs sm:text-sm font-bold text-[#0F6B4F]">

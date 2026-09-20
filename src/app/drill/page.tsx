@@ -8,6 +8,7 @@ import { useReveal } from '@/lib/useReveal';
 import { useLang } from '@/lib/useLang';
 import { LangToggle } from '@/components/LangToggle';
 import { t } from '@/lib/i18n';
+import { spaceGrotesk } from '@/lib/fonts';
 import {
   speak,
   playLine,
@@ -375,7 +376,7 @@ export default function DrillPage() {
   const currentKnew = knewAnswers[scenario.id]?.knew ?? null;
 
   return (
-    <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-3 md:p-8 flex flex-col items-center">
+    <main className={`min-h-screen bg-[#F6F3EC] text-[#111111] p-3 md:p-8 flex flex-col items-center ${spaceGrotesk.variable}`}>
       {/* Top Header Bar: below 480px row 1 = back + wallet + mute; row 2 = Lang toggle; row 3 = Voice */}
       <div className="w-full max-w-[440px] flex flex-col gap-2 mb-3">
         {/* Row 1: Back link + Wallet + Mute */}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useLang } from '@/lib/useLang';
 import { LangToggle } from '@/components/LangToggle';
 import { t } from '@/lib/i18n';
+import { spaceGrotesk } from '@/lib/fonts';
 
 interface LedgerRow {
   component: string;
@@ -76,7 +77,7 @@ export default function JudgePage() {
   const [lang] = useLang();
 
   return (
-    <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-3 min-[400px]:p-4 md:p-10 max-w-4xl mx-auto space-y-6 md:space-y-8">
+    <main className={`min-h-screen bg-[#F6F3EC] text-[#111111] p-3 min-[400px]:p-4 md:p-10 max-w-4xl mx-auto space-y-6 md:space-y-8 ${spaceGrotesk.variable}`}>
       {/* Header */}
       <header className="flex flex-wrap items-center justify-between border-b-2 border-[#111111] pb-4 gap-3">
         <div className="flex items-center space-x-2 min-w-0">
