@@ -5,12 +5,12 @@
 <br>
 
 [![tests](https://github.com/kambojmayan-png/chaukas/actions/workflows/test.yml/badge.svg)](https://github.com/kambojmayan-png/chaukas/actions/workflows/test.yml)
-![license](https://img.shields.io/badge/code-Apache--2.0-blue)
-![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)
-![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
-![Playwright](https://img.shields.io/badge/layout%20tests-Playwright-2EAD33?logo=playwright&logoColor=white)
-![Hindi first](https://img.shields.io/badge/हिंदी-first-E8590C)
-![Voice guided](https://img.shields.io/badge/voice-guided-0F6B4F)
+[![license](https://img.shields.io/badge/code-Apache--2.0-blue)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)](package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](tsconfig.json)
+[![layout tests](https://img.shields.io/badge/layout%20tests-Playwright-2EAD33)](tests/layout.spec.ts)
+[![Hindi first](https://img.shields.io/badge/Hindi-first-E8590C)](https://chaukas.vercel.app)
+[![voice guided](https://img.shields.io/badge/voice-guided-0F6B4F)](docs/SARAL_UI_SPEC.md)
 
 ### [▶ Open the live app](https://chaukas.vercel.app) &nbsp;·&nbsp; [For judges](https://chaukas.vercel.app/judge?lang=en) &nbsp;·&nbsp; [Live numbers](https://chaukas.vercel.app/insights?lang=en) &nbsp;·&nbsp; [Check a message](https://chaukas.vercel.app/check) &nbsp;·&nbsp; [Detailed view](https://chaukas.vercel.app/drill?lang=en)
 

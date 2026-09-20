@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLang } from '@/lib/useLang';
 import { t } from '@/lib/i18n';
-import { AppShell, Card, Chip, Button, PageTitle } from '@/ui';
+import { AppShell, Card, Chip, Button } from '@/ui';
 import type { InsightsData } from '@/lib/supabaseAdmin';
 
 interface ProofData {

@@ -173,7 +173,7 @@ export function SaralFlow({
   }
 
   // Lesson cards state (Screen 9)
-  const [activeTrickIndex, setActiveTrickIndex] = useState<number | null>(null);
+  const [activeTrickIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -428,6 +428,8 @@ export function SaralFlow({
     setScreen('conversation');
   };
 
+  const dispatchActionRef = useRef<((action: Action, actionVisitKey?: string) => void) | null>(null);
+
   // SCREEN 7: Deterministic conversation audio player
   useEffect(() => {
     if (screen !== 'conversation' || !drillState || !currentScenario) return;
@@ -490,7 +492,7 @@ export function SaralFlow({
             clearTimerSec();
             timerSecRef.current = setTimeout(() => {
               if (playbackTokenRef.current === token) {
-                dispatchAction({ type: 'timeout' });
+                dispatchActionRef.current?.({ type: 'timeout' });
               }
             }, 30000);
           }
@@ -512,7 +514,7 @@ export function SaralFlow({
     return () => {
       active = false;
     };
-  }, [currentVisitKey, convPhase, msgIndex, lang, soundOn, screen, callPickedUp]);
+  }, [currentVisitKey, convPhase, msgIndex, lang, soundOn, screen, callPickedUp, currentScenario, drillState, sid]);
 
   const getMessageLabel = (msg: Message, surface: Surface | undefined, from: string | undefined, currentLang: Lang): string => {
     if (surface === 'call' || surface === 'videocall') {
@@ -613,6 +615,7 @@ export function SaralFlow({
       setPastMessages(prev => [...prev, ...formatted]);
     }
   };
+  dispatchActionRef.current = dispatchAction;
 
   // Expected code for keypad in Screen 7
   const currentExpectedCode = (): string => {

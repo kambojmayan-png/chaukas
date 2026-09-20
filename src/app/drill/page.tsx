@@ -1,16 +1,13 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import Link from 'next/link';
 import { SCENARIOS, PRACTICE_PIN } from '@/scenarios';
 import { useDrill } from '@/lib/useDrill';
 import { useReveal } from '@/lib/useReveal';
 import { useLang } from '@/lib/useLang';
-import { LangToggle } from '@/components/LangToggle';
 import { t } from '@/lib/i18n';
 import { TopBar, Card, Chip, Button } from '@/ui';
 import {
-  speak,
   playLine,
   stopSpeaking,
   playRingtone,
@@ -539,9 +536,6 @@ export default function DrillPage() {
         <DrillRunner
           key={`${scenario.id}-${runKey}`}
           scenario={scenario}
-          scenarioIndex={scenarioIndex}
-          totalScenarios={SCENARIOS.length}
-          isOnlyMode={onlyMode}
           lang={lang}
           voiceChoice={voiceChoice}
           muted={muted}
@@ -586,9 +580,6 @@ export default function DrillPage() {
 
 interface DrillRunnerProps {
   scenario: Scenario;
-  scenarioIndex: number;
-  totalScenarios: number;
-  isOnlyMode: boolean;
   lang: Lang;
   voiceChoice: VoiceChoice;
   muted: boolean;
@@ -600,9 +591,6 @@ interface DrillRunnerProps {
 
 function DrillRunner({
   scenario,
-  scenarioIndex,
-  totalScenarios,
-  isOnlyMode,
   lang,
   voiceChoice,
   muted,
