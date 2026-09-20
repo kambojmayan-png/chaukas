@@ -33,8 +33,15 @@ body {
   color: #1A1A1A;
   /* English/default font stack: system/Latin first, Devanagari fallback */
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif, var(--font-hindi);
-  font-size: 18px;
+  font-size: 1.125rem;
   line-height: 1.6;
+}
+
+/* High-contrast visible focus rings for accessibility and keyboard navigation */
+:focus-visible {
+  outline: 3px solid var(--guide-green);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -100,10 +107,11 @@ html[lang="hi"] h6 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

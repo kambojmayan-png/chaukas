@@ -424,7 +424,8 @@ export default function DrillPage() {
               type="button"
               onClick={() => handleVoiceChange('hi')}
               lang="hi"
-              className={`min-h-[44px] px-3.5 py-2 text-sm font-bold transition-colors cursor-pointer leading-normal ${
+              aria-pressed={voiceChoice === 'hi'}
+              className={`min-h-[48px] px-3.5 py-2 text-sm font-bold transition-colors cursor-pointer leading-normal ${
                 voiceChoice === 'hi'
                   ? 'bg-[#1A1A1A] text-white'
                   : 'bg-white text-[#1A1A1A] hover:bg-[#FBF7F0]'
@@ -436,7 +437,8 @@ export default function DrillPage() {
               type="button"
               onClick={() => handleVoiceChange('en')}
               lang="en"
-              className={`min-h-[44px] px-3.5 py-2 text-sm font-bold transition-colors cursor-pointer border-l border-r border-[#1A1A1A]/15 ${
+              aria-pressed={voiceChoice === 'en'}
+              className={`min-h-[48px] px-3.5 py-2 text-sm font-bold transition-colors cursor-pointer border-l border-r border-[#1A1A1A]/15 ${
                 voiceChoice === 'en'
                   ? 'bg-[#1A1A1A] text-white'
                   : 'bg-white text-[#1A1A1A] hover:bg-[#FBF7F0]'
@@ -447,7 +449,8 @@ export default function DrillPage() {
             <button
               type="button"
               onClick={() => handleVoiceChange('off')}
-              className={`min-h-[44px] px-3.5 py-2 text-sm font-bold transition-colors cursor-pointer ${
+              aria-pressed={voiceChoice === 'off'}
+              className={`min-h-[48px] px-3.5 py-2 text-sm font-bold transition-colors cursor-pointer ${
                 voiceChoice === 'off'
                   ? 'bg-[#1A1A1A] text-white'
                   : 'bg-white text-[#1A1A1A] hover:bg-[#FBF7F0]'

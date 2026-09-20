@@ -772,14 +772,14 @@ export function SaralFlow({
                 <button
                   type="button"
                   onClick={() => setShowLeaveConfirm(false)}
-                  className="min-h-[56px] py-2 px-4 bg-[#FBF7F0] text-[#1A1A1A] border-2 border-[#1A1A1A] rounded-[14px] text-lg font-bold hover:bg-neutral-100 cursor-pointer"
+                  className="min-h-[64px] py-2 px-4 bg-[#FBF7F0] text-[#1A1A1A] border-2 border-[#1A1A1A] rounded-[14px] text-lg font-bold hover:bg-neutral-100 cursor-pointer"
                 >
                   {t('no', lang)}
                 </button>
                 <button
                   type="button"
                   onClick={handleLeaveConfirm}
-                  className="min-h-[56px] py-2 px-4 bg-[#C92A2A] text-white border-2 border-[#1A1A1A] rounded-[14px] text-lg font-bold hover:opacity-95 cursor-pointer"
+                  className="min-h-[64px] py-2 px-4 bg-[#C92A2A] text-white border-2 border-[#1A1A1A] rounded-[14px] text-lg font-bold hover:opacity-95 cursor-pointer"
                 >
                   {t('yes', lang)}
                 </button>
@@ -848,7 +848,7 @@ export function SaralFlow({
                   setSoundOn(false);
                   setScreen('welcome');
                 }}
-                className="w-full min-h-[56px] py-3 px-4 bg-[#FBF7F0] text-[#1A1A1A] text-lg sm:text-xl font-bold rounded-[16px] border-2 border-[#1A1A1A] hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[64px] py-3 px-4 bg-[#FBF7F0] text-[#1A1A1A] text-lg sm:text-xl font-bold rounded-[16px] border-2 border-[#1A1A1A] hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer"
               >
                 {t('continue_without_sound', lang)}
               </button>
@@ -879,7 +879,7 @@ export function SaralFlow({
                 onClick={() => {
                   playSequence([{ key: 'narr__welcome', text: t('welcome_text', lang) }]);
                 }}
-                className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[64px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 {t('replay', lang)}
               </button>
@@ -929,7 +929,7 @@ export function SaralFlow({
                 onClick={() => {
                   playSequence([{ key: 'narr__howto', text: t('howto_text', lang) }]);
                 }}
-                className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[64px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 {t('replay', lang)}
               </button>
@@ -967,7 +967,7 @@ export function SaralFlow({
                 onClick={() => {
                   playSequence([{ key: 'narr__practice_pin', text: `${t('practice_pin_title', lang)}: ${PRACTICE_PIN}` }]);
                 }}
-                className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[64px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 {t('replay', lang)}
               </button>
@@ -1008,7 +1008,7 @@ export function SaralFlow({
                 <button
                   type="button"
                   onClick={handleSkipPrecheck}
-                  className="text-sm font-bold text-[#1A1A1A]/70 hover:underline cursor-pointer py-1"
+                  className="min-h-[48px] px-4 py-2 inline-flex items-center justify-center text-sm font-bold text-[#1A1A1A]/80 hover:underline cursor-pointer"
                 >
                   {t('skip_question', lang)}
                 </button>
@@ -1038,7 +1038,7 @@ export function SaralFlow({
                   const setupText = currentScenario.setup[lang] || currentScenario.setup.en;
                   playSequence([{ key: `${sid}__setup`, text: setupText }]);
                 }}
-                className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[64px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 {t('replay', lang)}
               </button>
@@ -1123,9 +1123,9 @@ export function SaralFlow({
               }
 
               return (
-                <div className="w-full space-y-5 my-auto">
+                <div className="w-full space-y-5 my-auto" role="status" aria-live="polite">
                   <div className={`w-full ${bgClass} rounded-[16px] p-6 sm:p-8 shadow-md space-y-3`}>
-                    <div className="text-6xl sm:text-7xl font-black">{icon}</div>
+                    <div className="text-6xl sm:text-7xl font-black" aria-hidden="true">{icon}</div>
                     <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
                       {titleText}
                     </h2>
@@ -1206,7 +1206,7 @@ export function SaralFlow({
                   });
                   playSequence(items);
                 }}
-                className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[64px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 {t('replay', lang)}
               </button>
@@ -1253,7 +1253,7 @@ export function SaralFlow({
               )}`;
 
               return (
-                <div className="w-full space-y-5 my-auto">
+                <div className="w-full space-y-5 my-auto" role="status" aria-live="polite">
                   <h1 className="text-3xl sm:text-4xl font-black text-[#1A1A1A] leading-snug">
                     {t('final_title', lang, { x: notScammed, y: totalDone })}
                   </h1>
@@ -1271,7 +1271,7 @@ export function SaralFlow({
 
                   <div className="bg-amber-50 border-2 border-[#E67700] rounded-[16px] p-4 text-left space-y-1.5 shadow-sm">
                     <div className="flex items-center gap-2 text-[#E67700] font-bold text-base">
-                      <span>🚨</span>
+                      <span aria-hidden="true">🚨</span>
                       <span>1930</span>
                     </div>
                     <p className="text-lg sm:text-xl font-bold text-[#1A1A1A] leading-relaxed">
@@ -1286,7 +1286,7 @@ export function SaralFlow({
                       rel="noreferrer"
                       className="w-full min-h-[64px] py-3.5 px-4 bg-[#2B8A3E] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-md hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
                     >
-                      <span>📲</span>
+                      <span aria-hidden="true">📲</span>
                       <span>{t('send_family', lang)}</span>
                     </a>
 
@@ -1304,20 +1304,20 @@ export function SaralFlow({
                     </button>
                   </div>
 
-                  <div className="pt-4 border-t border-[#1A1A1A]/10 flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm font-bold text-[#1A1A1A]/70">
-                    <Link href="/drill?lang=en" className="hover:underline">
+                  <div className="pt-4 border-t border-[#1A1A1A]/10 flex flex-wrap items-center justify-center gap-2 text-base font-bold text-[#1A1A1A]/80">
+                    <Link href="/drill?lang=en" className="min-h-[48px] inline-flex items-center px-2 hover:underline">
                       {t('detailed_view', lang)}
                     </Link>
-                    <span>·</span>
-                    <Link href="/check?lang=en" className="hover:underline">
+                    <span aria-hidden="true">·</span>
+                    <Link href="/check?lang=en" className="min-h-[48px] inline-flex items-center px-2 hover:underline">
                       {t('check_msg_link', lang)}
                     </Link>
-                    <span>·</span>
-                    <Link href="/about?lang=en" className="hover:underline">
+                    <span aria-hidden="true">·</span>
+                    <Link href="/about?lang=en" className="min-h-[48px] inline-flex items-center px-2 hover:underline">
                       {t('about_project', lang)}
                     </Link>
-                    <span>·</span>
-                    <Link href="/judge?lang=en" className="hover:underline">
+                    <span aria-hidden="true">·</span>
+                    <Link href="/judge?lang=en" className="min-h-[48px] inline-flex items-center px-2 hover:underline">
                       {t('for_judges', lang)}
                     </Link>
                   </div>

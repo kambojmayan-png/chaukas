@@ -103,7 +103,12 @@ export function SaralKeypad({
       </div>
 
       {/* PIN/OTP Dots */}
-      <div className="flex items-center justify-center gap-3 py-1">
+      <div
+        role="status"
+        aria-live="polite"
+        aria-label={`${digits.length} of ${targetLen} digits entered`}
+        className="flex items-center justify-center gap-3 py-1"
+      >
         {Array.from({ length: targetLen }).map((_, i) => {
           const filled = i < digits.length;
           return (
@@ -119,7 +124,7 @@ export function SaralKeypad({
 
       {/* Error Notice */}
       {errorMsg && (
-        <div className="bg-red-50 border-2 border-[#C92A2A] rounded-[12px] p-2.5">
+        <div role="alert" aria-live="assertive" className="bg-red-50 border-2 border-[#C92A2A] rounded-[12px] p-2.5">
           <p className="text-base font-bold text-[#C92A2A] leading-snug">
             {errorMsg}
           </p>
@@ -143,7 +148,7 @@ export function SaralKeypad({
         <button
           type="button"
           onClick={handleBackspace}
-          aria-label="Backspace"
+          aria-label={lang === 'hi' ? 'हटाएँ' : 'Backspace'}
           className="min-h-[64px] h-16 bg-[#FBF7F0] text-[#1A1A1A] border-2 border-[#1A1A1A] rounded-[14px] text-2xl font-bold flex items-center justify-center hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer"
         >
           ⌫
@@ -165,6 +170,7 @@ export function SaralKeypad({
             if (errorMsg) setErrorMsg(null);
             setDigits('');
           }}
+          aria-label={lang === 'hi' ? 'साफ़ करें' : 'Clear'}
           className="min-h-[64px] h-16 bg-[#FBF7F0] text-[#1A1A1A]/70 border-2 border-[#1A1A1A] rounded-[14px] text-base font-bold flex items-center justify-center hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer"
         >
           C

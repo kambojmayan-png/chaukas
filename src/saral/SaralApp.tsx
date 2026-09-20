@@ -159,7 +159,7 @@ export function SaralApp() {
 
           {/* 6. (returning visitors) Three practice rows */}
           {donePractices.length > 0 && (
-            <div className="w-full space-y-2.5 pt-2">
+            <div className="w-full space-y-3 pt-2">
               {SCENARIOS.map((s, idx) => {
                 const isDone = donePractices.includes(s.id);
                 return (
@@ -167,10 +167,10 @@ export function SaralApp() {
                     key={s.id}
                     type="button"
                     onClick={() => handleStartPracticeDirect(idx)}
-                    className="w-full min-h-[58px] py-3 px-4 bg-white border-2 border-[#1A1A1A] rounded-[14px] shadow-2xs hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer flex items-center justify-between text-left"
+                    className="w-full min-h-[64px] py-3.5 px-4 bg-white border-2 border-[#1A1A1A] rounded-[14px] shadow-2xs hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer flex items-center justify-between text-left"
                   >
                     <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                      <span className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xs font-bold shrink-0">
+                      <span className="w-8 h-8 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-sm font-bold shrink-0">
                         {idx + 1}
                       </span>
                       <span
@@ -183,7 +183,7 @@ export function SaralApp() {
                     </div>
                     <span
                       className={`text-lg font-black shrink-0 ${
-                        isDone ? 'text-[#0F6B4F]' : 'text-[#1A1A1A]/40'
+                        isDone ? 'text-[#0F6B4F]' : 'text-[#1A1A1A]/60'
                       }`}
                     >
                       {isDone ? '✓' : '→'}
@@ -200,7 +200,7 @@ export function SaralApp() {
           <Link
             href="/about?lang=en"
             lang="en"
-            className="min-h-[48px] inline-flex items-center justify-center text-sm font-medium text-[#1A1A1A]/60 hover:text-[#1A1A1A] hover:underline"
+            className="min-h-[48px] inline-flex items-center justify-center text-base font-semibold text-[#1A1A1A]/75 hover:text-[#1A1A1A] hover:underline"
           >
             {t('home_dev_link', 'en')}
           </Link>

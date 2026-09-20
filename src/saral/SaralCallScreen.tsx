@@ -16,7 +16,7 @@ export function SaralCallScreen({ callerName, lang, onPickUp }: SaralCallScreenP
   return (
     <div className="w-full flex-1 flex flex-col justify-between items-center py-6 px-4 bg-white border-2 border-[#1A1A1A] rounded-[16px] shadow-md my-auto max-w-md mx-auto text-center space-y-6">
       {/* Top Status */}
-      <div className="space-y-2 pt-2">
+      <div className="space-y-2 pt-2" role="status" aria-live="polite">
         <span className="inline-block text-lg sm:text-xl font-bold text-[#E8590C] animate-pulse">
           {t('incoming_call', lang)}
         </span>
@@ -26,7 +26,7 @@ export function SaralCallScreen({ callerName, lang, onPickUp }: SaralCallScreenP
       </div>
 
       {/* Large Round Avatar */}
-      <div className="my-auto py-4">
+      <div className="my-auto py-4" aria-hidden="true">
         <div className="relative flex items-center justify-center">
           <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-[#E6F3EE] border-4 border-[#0F6B4F] text-[#0F6B4F] flex items-center justify-center text-4xl sm:text-5xl font-black shadow-lg z-10">
             {initial}

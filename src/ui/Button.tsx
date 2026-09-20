@@ -36,7 +36,7 @@ export function Button({
       break;
   }
 
-  const baseClasses = `inline-flex items-center justify-center min-h-[48px] px-5 py-3 rounded-[16px] font-bold text-[18px] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer ${variantClasses} ${className}`;
+  const baseClasses = `inline-flex items-center justify-center min-h-[48px] px-5 py-3 rounded-[16px] font-bold text-[1.125rem] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer ${variantClasses} ${className}`;
 
   if (href && !disabled) {
     return (

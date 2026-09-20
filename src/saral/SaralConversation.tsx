@@ -90,7 +90,7 @@ export function SaralConversation({
                     </span>
                   </div>
                 </div>
-                <p className="text-xl sm:text-2xl font-bold text-[#1A1A1A] leading-[1.7]">
+                <p className="text-xl sm:text-2xl font-bold text-[#1A1A1A] leading-[1.7]" aria-live="polite">
                   "{currentMessage.text}"
                 </p>
               </div>
@@ -103,7 +103,7 @@ export function SaralConversation({
                   </span>
                   <span>{currentMessage.from}</span>
                 </div>
-                <p className="text-xl sm:text-2xl font-bold text-[#1A1A1A] leading-[1.7]">
+                <p className="text-xl sm:text-2xl font-bold text-[#1A1A1A] leading-[1.7]" aria-live="polite">
                   {currentMessage.text}
                 </p>
               </div>
@@ -115,7 +115,7 @@ export function SaralConversation({
                 <button
                   type="button"
                   onClick={onSkipMessage}
-                  className="px-4 py-2 bg-white text-[#1A1A1A] text-sm font-bold border-2 border-[#1A1A1A] rounded-full shadow-xs hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+                  className="min-h-[48px] px-4 py-2 bg-white text-[#1A1A1A] text-sm font-bold border-2 border-[#1A1A1A] rounded-full shadow-xs hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
                 >
                   <span>{t('next', lang)}</span>
                 </button>

@@ -75,7 +75,7 @@ export function Report({
   };
 
   return (
-    <div className="w-full max-w-[480px] bg-white border border-[#1A1A1A]/15 rounded-[16px] shadow-[0_2px_12px_rgba(26,26,26,0.06)] p-5 sm:p-6 my-auto space-y-5 sm:space-y-6">
+    <div role="region" aria-live="polite" className="w-full max-w-[480px] bg-white border border-[#1A1A1A]/15 rounded-[16px] shadow-[0_2px_12px_rgba(26,26,26,0.06)] p-5 sm:p-6 my-auto space-y-5 sm:space-y-6">
       {/* Header */}
       <div className="space-y-1 text-center">
         <div className="inline-block bg-[#1A1A1A] text-[#FBF7F0] text-xs font-bold px-3 py-1 rounded-full leading-normal">

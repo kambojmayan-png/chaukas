@@ -52,7 +52,7 @@ export function Debrief({
 
   return (
     <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-6 md:gap-8 w-full max-w-5xl my-auto">
-      <div className="w-full max-w-[440px] bg-white border border-[#1A1A1A]/15 rounded-[16px] shadow-[0_2px_12px_rgba(26,26,26,0.06)] p-5 sm:p-6 space-y-5 sm:space-y-6">
+      <div role="region" aria-live="polite" className="w-full max-w-[440px] bg-white border border-[#1A1A1A]/15 rounded-[16px] shadow-[0_2px_12px_rgba(26,26,26,0.06)] p-5 sm:p-6 space-y-5 sm:space-y-6">
         {/* 1. Headline and Amount */}
         <div className="space-y-2 text-center">
           <div className="text-sm font-semibold text-[#1A1A1A]/60">
@@ -81,7 +81,7 @@ export function Debrief({
         {showKnewBox && (
           <div className="border border-[#C92A2A]/30 bg-[#FDF2F2] p-4 rounded-[14px] shadow-[0_2px_8px_rgba(201,42,42,0.06)] space-y-1.5 text-left">
             <div className="flex items-center gap-1.5 text-sm font-bold text-[#C92A2A]">
-              <span>⚠️</span>
+              <span aria-hidden="true">⚠️</span>
               <span>{t('knowledge_behaviour_gap_label', lang)}</span>
             </div>
             <p className="text-base font-bold text-[#C92A2A] leading-snug">

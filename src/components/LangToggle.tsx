@@ -20,8 +20,9 @@ export function LangToggle({ className = '' }: LangToggleProps) {
           type="button"
           onClick={() => setLang('en')}
           lang="en"
-          aria-label="English"
-          className={`min-h-[36px] px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${
+          aria-label="Switch to English"
+          aria-pressed={lang === 'en'}
+          className={`min-h-[48px] min-w-[48px] px-3.5 py-2 text-sm font-bold transition-colors cursor-pointer ${
             lang === 'en'
               ? 'bg-[#111111] text-white'
               : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
@@ -33,8 +34,9 @@ export function LangToggle({ className = '' }: LangToggleProps) {
           type="button"
           onClick={() => setLang('hi')}
           lang="hi"
-          aria-label="हिंदी"
-          className={`min-h-[36px] px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer leading-normal ${
+          aria-label="हिंदी में बदलें"
+          aria-pressed={lang === 'hi'}
+          className={`min-h-[48px] min-w-[48px] px-3.5 py-2 text-sm font-bold transition-colors cursor-pointer leading-normal ${
             lang === 'hi'
               ? 'bg-[#111111] text-white'
               : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'

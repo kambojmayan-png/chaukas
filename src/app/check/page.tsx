@@ -359,6 +359,9 @@ export default function CheckPage() {
         {/* Result: ONE BIG CARD */}
         {result && (
           <Card
+            role="region"
+            aria-live="polite"
+            aria-label={t('verdict', lang)}
             className={`space-y-6 border-2 shadow-md animate-in fade-in duration-300 ${
               result.verdict === 'likely_scam'
                 ? 'border-[#C92A2A] bg-[#FFF5F5]/40'
