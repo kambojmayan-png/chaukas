@@ -5,7 +5,17 @@ import Link from 'next/link';
 import { SCENARIOS, PRACTICE_PIN } from '@/scenarios';
 import { useDrill } from '@/lib/useDrill';
 import { useReveal } from '@/lib/useReveal';
-import { speak, stopSpeaking, playRingtone, stopRing } from '@/lib/speak';
+import {
+  speak,
+  playLine,
+  stopSpeaking,
+  playRingtone,
+  stopRing,
+  unlockAudio,
+  preloadScenarioClips,
+  type VoiceChoice,
+} from '@/lib/speak';
+import voiceDurations from '@/lib/voiceDurations.json';
 import { sendRun } from '@/lib/telemetry';
 import { step, result as computeResult } from '@/engine/engine';
 import { PhoneFrame } from '@/components/phone/PhoneFrame';
@@ -51,10 +61,25 @@ function incrementAttempt(scenarioId: string): number {
   }
 }
 
+function getSavedVoiceChoice(): VoiceChoice | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const val = sessionStorage.getItem('chaukas_voice_choice');
+    if (val === 'hi' || val === 'en' || val === 'off') {
+      return val;
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
 export default function DrillPage() {
   const [scenarioIndex, setScenarioIndex] = useState<number>(0);
   const [onlyMode, setOnlyMode] = useState<boolean>(false);
   const [lang, setLang] = useState<Lang>('en');
+  const [voiceChoice, setVoiceChoice] = useState<VoiceChoice>('en');
+  const [userOverrodeVoice, setUserOverrodeVoice] = useState<boolean>(false);
   const [muted, setMuted] = useState<boolean>(false);
   const [started, setStarted] = useState<boolean>(false);
   const [runKey, setRunKey] = useState<number>(0);
@@ -62,6 +87,15 @@ export default function DrillPage() {
   const [source, setSource] = useState<string>('direct');
 
   const scenario = SCENARIOS[scenarioIndex];
+
+  // Initialize saved voice choice on mount
+  useEffect(() => {
+    const saved = getSavedVoiceChoice();
+    if (saved) {
+      setVoiceChoice(saved);
+      setUserOverrodeVoice(true);
+    }
+  }, []);
 
   // Detect ?src=family and ?only=<scenarioId>
   useEffect(() => {
@@ -89,14 +123,36 @@ export default function DrillPage() {
     );
   }
 
+  const handleLangChange = (newLang: Lang) => {
+    setLang(newLang);
+    if (!userOverrodeVoice) {
+      setVoiceChoice(newLang);
+    }
+  };
+
+  const handleVoiceChange = (choice: VoiceChoice) => {
+    stopSpeaking();
+    setVoiceChoice(choice);
+    setUserOverrodeVoice(true);
+    try {
+      sessionStorage.setItem('chaukas_voice_choice', choice);
+    } catch {
+      /* ignore */
+    }
+  };
+
   const handleStartDrill = () => {
+    unlockAudio();
+    preloadScenarioClips(scenario.id, voiceChoice);
     setStarted(true);
   };
 
   const handleRestart = () => {
+    unlockAudio();
     stopSpeaking();
     stopRing();
     incrementAttempt(scenario.id);
+    preloadScenarioClips(scenario.id, voiceChoice);
     setRunKey(k => k + 1);
     setStarted(true);
   };
@@ -126,64 +182,106 @@ export default function DrillPage() {
 
   return (
     <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-4 md:p-8 flex flex-col items-center">
-      {/* Top Header Bar with Breadcrumb, Mute Toggle, and Language Toggle */}
-      <div className="w-full max-w-[420px] flex items-center justify-between mb-4">
-        <Link
-          href="/"
-          onClick={() => {
-            stopSpeaking();
-            stopRing();
-          }}
-          className="text-sm font-bold text-[#111111] hover:underline flex items-center gap-1 min-h-[44px]"
-        >
-          <span>←</span>
-          <span>Home</span>
-        </Link>
-
-        <div className="flex items-center space-x-2">
-          {/* Mute Toggle */}
-          <button
-            type="button"
+      {/* Top Header Bar with Breadcrumb, Mute Toggle, Language Toggle, and Caller Voice */}
+      <div className="w-full max-w-[420px] flex flex-col gap-2 mb-4">
+        <div className="flex items-center justify-between">
+          <Link
+            href="/"
             onClick={() => {
-              setMuted(m => {
-                const next = !m;
-                if (next) {
-                  stopSpeaking();
-                  stopRing();
-                }
-                return next;
-              });
+              stopSpeaking();
+              stopRing();
             }}
-            aria-label={muted ? 'Unmute sound' : 'Mute sound'}
-            className="min-h-[38px] px-2.5 py-1 text-xs font-mono font-bold border-2 border-[#111111] rounded-md bg-white shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center gap-1 cursor-pointer"
+            className="text-sm font-bold text-[#111111] hover:underline flex items-center gap-1 min-h-[40px]"
           >
-            <span>{muted ? '🔇' : '🔊'}</span>
-            <span>{muted ? 'Muted' : 'Sound'}</span>
-          </button>
+            <span>←</span>
+            <span>Home</span>
+          </Link>
 
-          {/* Language Toggle */}
-          <div className="flex items-center border-2 border-[#111111] rounded-md overflow-hidden bg-white shadow-hard-sm">
+          <div className="flex items-center space-x-2">
+            {/* Mute Toggle */}
             <button
               type="button"
-              onClick={() => setLang('en')}
-              className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${
-                lang === 'en'
-                  ? 'bg-[#111111] text-white'
-                  : 'text-[#111111] hover:bg-[#F6F3EC]'
-              }`}
+              onClick={() => {
+                setMuted(m => {
+                  const next = !m;
+                  if (next) {
+                    stopSpeaking();
+                    stopRing();
+                  }
+                  return next;
+                });
+              }}
+              aria-label={muted ? 'Unmute sound' : 'Mute sound'}
+              className="min-h-[36px] px-2.5 py-1 text-xs font-mono font-bold border-2 border-[#111111] rounded-md bg-white shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center gap-1 cursor-pointer"
             >
-              EN
+              <span>{muted ? '🔇' : '🔊'}</span>
+              <span>{muted ? 'Muted' : 'Sound'}</span>
             </button>
+
+            {/* Language Toggle (UI & Captions) */}
+            <div className="flex items-center border-2 border-[#111111] rounded-md overflow-hidden bg-white shadow-hard-sm">
+              <button
+                type="button"
+                onClick={() => handleLangChange('en')}
+                className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${
+                  lang === 'en'
+                    ? 'bg-[#111111] text-white'
+                    : 'text-[#111111] hover:bg-[#F6F3EC]'
+                }`}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLangChange('hi')}
+                className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${
+                  lang === 'hi'
+                    ? 'bg-[#111111] text-white'
+                    : 'text-[#111111] hover:bg-[#F6F3EC]'
+                }`}
+              >
+                हिंदी
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Caller Voice Control */}
+        <div className="flex items-center justify-between bg-white border-2 border-[#111111] rounded-md px-3 py-1.5 shadow-hard-sm">
+          <span className="text-xs font-mono font-bold text-[#111111]">Caller voice:</span>
+          <div className="flex items-center border-2 border-[#111111] rounded overflow-hidden">
             <button
               type="button"
-              onClick={() => setLang('hi')}
+              onClick={() => handleVoiceChange('hi')}
               className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${
-                lang === 'hi'
+                voiceChoice === 'hi'
                   ? 'bg-[#111111] text-white'
-                  : 'text-[#111111] hover:bg-[#F6F3EC]'
+                  : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
               }`}
             >
               हिंदी
+            </button>
+            <button
+              type="button"
+              onClick={() => handleVoiceChange('en')}
+              className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer border-l-2 border-r-2 border-[#111111] ${
+                voiceChoice === 'en'
+                  ? 'bg-[#111111] text-white'
+                  : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
+              }`}
+            >
+              English
+            </button>
+            <button
+              type="button"
+              onClick={() => handleVoiceChange('off')}
+              className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${
+                voiceChoice === 'off'
+                  ? 'bg-[#111111] text-white'
+                  : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
+              }`}
+            >
+              Off
             </button>
           </div>
         </div>
@@ -282,6 +380,7 @@ export default function DrillPage() {
           totalScenarios={SCENARIOS.length}
           isOnlyMode={onlyMode}
           lang={lang}
+          voiceChoice={voiceChoice}
           muted={muted}
           knewRule={knewRule}
           attempt={currentAttempt}
@@ -300,6 +399,7 @@ interface DrillRunnerProps {
   totalScenarios: number;
   isOnlyMode: boolean;
   lang: Lang;
+  voiceChoice: VoiceChoice;
   muted: boolean;
   knewRule: boolean | null;
   attempt: number;
@@ -314,6 +414,7 @@ function DrillRunner({
   totalScenarios,
   isOnlyMode,
   lang,
+  voiceChoice,
   muted,
   knewRule,
   attempt,
@@ -323,6 +424,11 @@ function DrillRunner({
 }: DrillRunnerProps) {
   const { node, state, act, result } = useDrill(scenario);
   const telemetrySentRef = useRef<boolean>(false);
+
+  // Preload scenario clips on mount / change
+  useEffect(() => {
+    preloadScenarioClips(scenario.id, voiceChoice);
+  }, [scenario.id, voiceChoice]);
 
   // Safe action wrapper: stops speech & ring BEFORE dispatching,
   // and dispatches telemetry beacon at the exact moment a step finishes the run (StrictMode-safe)
@@ -417,6 +523,7 @@ function DrillRunner({
   }, [isCallNode, callAccepted]);
 
   const handleAcceptCall = () => {
+    unlockAudio();
     if (stopRingRef.current) {
       stopRingRef.current();
       stopRingRef.current = null;
@@ -474,37 +581,53 @@ function DrillRunner({
   }, [result]);
 
   // Pacing so captions don't run ahead of voice:
-  // When message i-1 has speak: true and sound is on, delay before message i is clamp(prevText.length * 60, 1500, 8000)
-  // When muted, keep delayMs ?? 900
+  // When a clip exists for message i-1 and sound is on, delay before message i = voiceDurations[key] * 1000 + 300 ms.
+  // Otherwise keep the current rule: clamp(prevText.length * 60, 1500, 8000) when speak: true and sound is on, else delayMs ?? 900.
   const delays = useMemo(() => {
     if (!shouldReveal) return [];
     const msgs = node.messages ?? [];
     return msgs.map((m, i) => {
-      if (i > 0 && msgs[i - 1]?.speak && !muted) {
+      if (i > 0 && msgs[i - 1]?.speak && !muted && voiceChoice !== 'off') {
+        const prevKey = `${voiceChoice}/${scenario.id}__${node.id}__${i - 1}`;
+        const durationSec = (voiceDurations as Record<string, number>)[prevKey];
+        if (typeof durationSec === 'number') {
+          return durationSec * 1000 + 300;
+        }
         const prevText =
           msgs[i - 1].text[lang] || msgs[i - 1].text.en || '';
         return Math.min(Math.max(prevText.length * 60, 1500), 8000);
       }
       return m.delayMs ?? 900;
     });
-  }, [node.messages, shouldReveal, muted, lang]);
+  }, [node.messages, node.id, scenario.id, shouldReveal, muted, voiceChoice, lang]);
 
   const { shown, typing, done } = useReveal(visitKey, delays);
 
-  // TTS speak when messages with speak: true are revealed
+  // Play line (pre-recorded clip or TTS fallback) when messages with speak: true are revealed
   const lastSpokenRef = useRef<string | null>(null);
   useEffect(() => {
     if (shown > 0 && node.messages && node.messages[shown - 1]?.speak) {
-      const msgText = node.messages[shown - 1].text[lang] || node.messages[shown - 1].text.en;
-      const key = `${node.id}-${shown}-${msgText}`;
+      const msgIndex = shown - 1;
+      const msg = node.messages[msgIndex];
+      const voiceText =
+        voiceChoice === 'hi'
+          ? (msg.text.hi || msg.text.en)
+          : (msg.text.en || msg.text.hi || '');
+      const key = `${node.id}-${shown}-${voiceChoice}`;
       if (lastSpokenRef.current !== key) {
         lastSpokenRef.current = key;
-        if (!muted) {
-          speak(msgText, lang);
+        if (!muted && voiceChoice !== 'off') {
+          playLine({
+            scenarioId: scenario.id,
+            nodeId: node.id,
+            index: msgIndex,
+            voiceLang: voiceChoice,
+            text: voiceText,
+          });
         }
       }
     }
-  }, [shown, node.id, node.messages, lang, muted]);
+  }, [shown, node.id, node.messages, muted, voiceChoice, scenario.id]);
 
   // Messages from earlier nodes stay in scrollback, fully shown
   const scrollbackMessages = useMemo(() => {

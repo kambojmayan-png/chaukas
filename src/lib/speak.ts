@@ -1,5 +1,9 @@
 'use client';
 
+import voiceManifest from './voiceManifest.json';
+
+export type VoiceChoice = 'hi' | 'en' | 'off';
+
 let cachedVoices: SpeechSynthesisVoice[] = [];
 
 function loadVoices() {
@@ -112,10 +116,135 @@ export function speak(text: string, lang: 'en' | 'hi') {
   }
 }
 
+// Shared HTMLAudioElement for all pre-recorded clips
+let sharedAudio: HTMLAudioElement | null = null;
+let audioQueue: string[] = [];
+let isPlayingAudio = false;
+
+function onClipEnded() {
+  if (audioQueue.length > 0) {
+    const nextSrc = audioQueue.shift()!;
+    if (sharedAudio) {
+      sharedAudio.src = nextSrc;
+      sharedAudio.currentTime = 0;
+      sharedAudio.play().catch(() => {
+        onClipEnded();
+      });
+    }
+  } else {
+    isPlayingAudio = false;
+  }
+}
+
+function onClipError() {
+  onClipEnded();
+}
+
+function getSharedAudio(): HTMLAudioElement | null {
+  if (typeof window === 'undefined') return null;
+  if (!sharedAudio) {
+    sharedAudio = new Audio();
+    sharedAudio.addEventListener('ended', onClipEnded);
+    sharedAudio.addEventListener('error', onClipError);
+  }
+  return sharedAudio;
+}
+
 /**
- * Stops all currently speaking and queued speech.
+ * Unlock shared HTMLAudioElement inside first user tap (Start drill / Accept call)
+ * with play() then pause(), enabling playback on iOS Safari.
+ */
+export function unlockAudio() {
+  try {
+    const audio = getSharedAudio();
+    if (!audio) return;
+    if (!audio.src) {
+      // 1-sample silent WAV so play() doesn't throw unsupported source error
+      audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+    }
+    const p = audio.play();
+    if (p !== undefined) {
+      p.then(() => {
+        audio.pause();
+      }).catch(() => {});
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+function playClip(src: string) {
+  const audio = getSharedAudio();
+  if (!audio) return;
+
+  if (isPlayingAudio) {
+    audioQueue.push(src);
+  } else {
+    isPlayingAudio = true;
+    audio.src = src;
+    audio.currentTime = 0;
+    audio.play().catch(() => {
+      onClipEnded();
+    });
+  }
+}
+
+export interface PlayLineOptions {
+  scenarioId: string;
+  nodeId: string;
+  index: number;
+  voiceLang: VoiceChoice;
+  text: string;
+}
+
+/**
+ * Plays a pre-recorded clip if present in manifest, else falls back to TTS speak().
+ * If voiceLang === 'off', stays silent.
+ */
+export function playLine({ scenarioId, nodeId, index, voiceLang, text }: PlayLineOptions) {
+  if (voiceLang === 'off') return;
+
+  const key = `${voiceLang}/${scenarioId}__${nodeId}__${index}`;
+  const clipUrl = (voiceManifest as Record<string, string>)[key];
+
+  if (clipUrl) {
+    playClip(clipUrl);
+  } else {
+    // Fall back to existing TTS speak(text, voiceLang) (no Hindi TTS voice -> stay silent)
+    speak(text, voiceLang);
+  }
+}
+
+/**
+ * Preload scenario clips for chosen voice language on drill start
+ */
+export function preloadScenarioClips(scenarioId: string, voiceLang: VoiceChoice) {
+  if (typeof window === 'undefined' || voiceLang === 'off') return;
+  const prefix = `${voiceLang}/${scenarioId}__`;
+  for (const [k, url] of Object.entries(voiceManifest as Record<string, string>)) {
+    if (k.startsWith(prefix)) {
+      const a = new Audio();
+      a.preload = 'auto';
+      a.src = url;
+    }
+  }
+}
+
+/**
+ * Stops all currently speaking and queued speech and pre-recorded clips.
+ * Called on every action, node change, mute, tab hidden and result screen.
  */
 export function stopSpeaking() {
+  audioQueue = [];
+  isPlayingAudio = false;
+  if (sharedAudio) {
+    try {
+      sharedAudio.pause();
+      sharedAudio.removeAttribute('src');
+    } catch {
+      /* ignore */
+    }
+  }
   try {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
