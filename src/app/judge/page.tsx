@@ -33,7 +33,7 @@ const REALITY_LEDGER: LedgerRow[] = [
     component: 'Voice',
     label: 'MVP shortcut',
     badgeClass: 'bg-[#FF5A1F] text-white',
-    simplification: 'Browser TTS, quality varies → recorded voice actors per language',
+    simplification: 'Pre-generated synthetic Hindi clips (non-commercial voices) with browser TTS fallback → replace with voice actors',
   },
   {
     component: 'Telemetry + /insights',
@@ -49,9 +49,9 @@ const REALITY_LEDGER: LedgerRow[] = [
   },
   {
     component: 'LLM explanation',
-    label: 'Optional / may be absent',
+    label: 'Not built',
     badgeClass: 'bg-neutral-200 text-[#111111]',
-    simplification: 'Labelled in UI when off',
+    simplification: '/check is rules-only in this version',
   },
   {
     component: '"Videocall"',

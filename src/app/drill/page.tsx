@@ -25,7 +25,16 @@ import { PinPad } from '@/components/phone/PinPad';
 import { PressureTimer } from '@/components/phone/PressureTimer';
 import { SystemDialog } from '@/components/phone/SystemDialog';
 import { GlassBox, GlassBoxPanel } from '@/components/GlassBox';
-import type { Lang, Scenario, Message, Surface, Action } from '@/engine/engine';
+import { Debrief } from '@/components/Debrief';
+import { Report } from '@/components/Report';
+import type { Lang, Scenario, Message, Surface, Action, RunResult } from '@/engine/engine';
+
+const INITIAL_WALLET = 60000;
+
+interface PrecheckAnswer {
+  knew: boolean | null;
+  answeredAt: number;
+}
 
 function getSessionId(): string {
   if (typeof window === 'undefined') return '';
@@ -75,46 +84,158 @@ function getSavedVoiceChoice(): VoiceChoice | null {
   return null;
 }
 
+function getSavedWallet(): number {
+  if (typeof window === 'undefined') return INITIAL_WALLET;
+  try {
+    const val = sessionStorage.getItem('chaukas_wallet_balance');
+    return val ? parseInt(val, 10) : INITIAL_WALLET;
+  } catch {
+    return INITIAL_WALLET;
+  }
+}
+
+function getSavedPrecheck(): Record<string, PrecheckAnswer> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const val = sessionStorage.getItem('chaukas_precheck_answers');
+    return val ? JSON.parse(val) : {};
+  } catch {
+    return {};
+  }
+}
+
+/** Hook to smoothly animate wallet balance countdowns (<= 1.2s, tabular-nums) */
+function useAnimatedWallet(targetBalance: number) {
+  const [displayBalance, setDisplayBalance] = useState(targetBalance);
+  const prevRef = useRef(targetBalance);
+  const startTimeRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (prevRef.current === targetBalance) return;
+    const startVal = prevRef.current;
+    const diff = targetBalance - startVal;
+    const duration = 1000; // 1s <= 1.2s
+    let animId: number;
+
+    const stepFn = (time: number) => {
+      if (!startTimeRef.current) startTimeRef.current = time;
+      const elapsed = time - startTimeRef.current;
+      const progress = Math.min(1, elapsed / duration);
+      // easeOutQuad
+      const ease = 1 - (1 - progress) * (1 - progress);
+      const current = Math.round(startVal + diff * ease);
+      setDisplayBalance(current);
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(stepFn);
+      } else {
+        startTimeRef.current = null;
+        prevRef.current = targetBalance;
+      }
+    };
+
+    animId = requestAnimationFrame(stepFn);
+    return () => {
+      cancelAnimationFrame(animId);
+      startTimeRef.current = null;
+    };
+  }, [targetBalance]);
+
+  return displayBalance;
+}
+
+type DrillScreen = 'precheck' | 'intro' | 'runner' | 'debrief' | 'report';
+
 export default function DrillPage() {
   const [scenarioIndex, setScenarioIndex] = useState<number>(0);
   const [onlyMode, setOnlyMode] = useState<boolean>(false);
+  const [targetScenarioId, setTargetScenarioId] = useState<string | null>(null);
   const [lang, setLang] = useState<Lang>('en');
   const [voiceChoice, setVoiceChoice] = useState<VoiceChoice>('hi');
   const [userOverrodeVoice, setUserOverrodeVoice] = useState<boolean>(false);
   const [muted, setMuted] = useState<boolean>(false);
-  const [started, setStarted] = useState<boolean>(false);
   const [runKey, setRunKey] = useState<number>(0);
-  const [knewRule, setKnewRule] = useState<boolean | null>(null);
   const [source, setSource] = useState<string>('direct');
 
-  const scenario = SCENARIOS[scenarioIndex];
+  // Wallet and Pre-check states
+  const [walletBalance, setWalletBalance] = useState<number>(INITIAL_WALLET);
+  const [knewAnswers, setKnewAnswers] = useState<Record<string, PrecheckAnswer>>({});
+  const [precheckIndex, setPrecheckIndex] = useState<number>(0);
+  const [screen, setScreen] = useState<DrillScreen>('intro');
+  const [results, setResults] = useState<Record<string, RunResult>>({});
+  const [currentResult, setCurrentResult] = useState<RunResult | null>(null);
+  const [currentState, setCurrentState] = useState<any>(null);
 
-  // Initialize saved voice choice on mount
-  useEffect(() => {
-    const saved = getSavedVoiceChoice();
-    if (saved) {
-      setVoiceChoice(saved);
-      setUserOverrodeVoice(true);
-    }
-  }, []);
+  const animatedBalance = useAnimatedWallet(walletBalance);
 
-  // Detect ?src=family and ?only=<scenarioId>
+  // Initialize from sessionStorage and URL query parameters
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
+
+      // Support ?lang=hi
+      if (params.get('lang') === 'hi') {
+        setLang('hi');
+      }
+
       if (params.get('src') === 'family') {
         setSource('family_link');
       }
+
       const only = params.get('only');
+      let isOnly = false;
       if (only) {
         const idx = SCENARIOS.findIndex(s => s.id === only);
         if (idx !== -1) {
           setScenarioIndex(idx);
           setOnlyMode(true);
+          setTargetScenarioId(only);
+          isOnly = true;
         }
+      }
+
+      // Load saved voice
+      const savedVoice = getSavedVoiceChoice();
+      if (savedVoice) {
+        setVoiceChoice(savedVoice);
+        setUserOverrodeVoice(true);
+      }
+
+      // Load saved wallet
+      const savedWallet = getSavedWallet();
+      setWalletBalance(savedWallet);
+
+      // Load saved precheck answers
+      const savedPrecheck = getSavedPrecheck();
+      setKnewAnswers(savedPrecheck);
+
+      // Determine initial screen:
+      // If precheck has not been answered/skipped for target scenario(s), show precheck upfront
+      const targetScenarios = isOnly
+        ? SCENARIOS.filter(s => s.id === only)
+        : SCENARIOS;
+
+      const hasAllAnswers = targetScenarios.every(
+        s => savedPrecheck[s.id] !== undefined
+      );
+
+      if (!hasAllAnswers) {
+        setScreen('precheck');
+      } else {
+        setScreen('intro');
       }
     }
   }, []);
+
+  const scenario = SCENARIOS[scenarioIndex];
+
+  // Active list of scenarios for pre-check
+  const precheckScenarios = useMemo(() => {
+    if (onlyMode && targetScenarioId) {
+      return SCENARIOS.filter(s => s.id === targetScenarioId);
+    }
+    return SCENARIOS;
+  }, [onlyMode, targetScenarioId]);
 
   if (!scenario) {
     return (
@@ -139,10 +260,58 @@ export default function DrillPage() {
     }
   };
 
+  // Pre-check answering logic
+  const handlePrecheckAnswer = (answer: 'yes' | 'no') => {
+    const currentScen = precheckScenarios[precheckIndex];
+    if (!currentScen) return;
+
+    const isCorrect = answer === currentScen.precheck.correct;
+    const updated: Record<string, PrecheckAnswer> = {
+      ...knewAnswers,
+      [currentScen.id]: {
+        knew: isCorrect,
+        answeredAt: Date.now(),
+      },
+    };
+
+    setKnewAnswers(updated);
+    try {
+      sessionStorage.setItem('chaukas_precheck_answers', JSON.stringify(updated));
+    } catch {
+      /* ignore */
+    }
+
+    if (precheckIndex < precheckScenarios.length - 1) {
+      setPrecheckIndex(i => i + 1);
+    } else {
+      // Done with pre-check questions -> show Drill Intro Card
+      setScreen('intro');
+    }
+  };
+
+  const handleSkipPrecheck = () => {
+    const updated = { ...knewAnswers };
+    const now = Date.now();
+    precheckScenarios.forEach(s => {
+      if (updated[s.id] === undefined) {
+        updated[s.id] = { knew: null, answeredAt: now };
+      }
+    });
+
+    setKnewAnswers(updated);
+    try {
+      sessionStorage.setItem('chaukas_precheck_answers', JSON.stringify(updated));
+    } catch {
+      /* ignore */
+    }
+
+    setScreen('intro');
+  };
+
   const handleStartDrill = () => {
     unlockAudio();
     preloadScenarioClips(scenario.id, voiceChoice);
-    setStarted(true);
+    setScreen('runner');
   };
 
   const handleRestart = () => {
@@ -152,35 +321,71 @@ export default function DrillPage() {
     incrementAttempt(scenario.id);
     preloadScenarioClips(scenario.id, voiceChoice);
     setRunKey(k => k + 1);
-    setStarted(true);
+    setCurrentResult(null);
+    setCurrentState(null);
+    setScreen('runner');
   };
 
   const handleNextDrill = () => {
     stopSpeaking();
     stopRing();
-    setKnewRule(null);
-    if (onlyMode) {
-      setStarted(false);
-      setRunKey(k => k + 1);
-      return;
-    }
     if (scenarioIndex < SCENARIOS.length - 1) {
       setScenarioIndex(i => i + 1);
-      setStarted(false); // Shows interstitial for next drill
+      setCurrentResult(null);
+      setCurrentState(null);
       setRunKey(k => k + 1);
+      setScreen('intro');
     } else {
-      // Finished all 3 drills, reset to first
-      setScenarioIndex(0);
-      setStarted(false);
-      setRunKey(k => k + 1);
+      // Last drill -> show final report
+      setScreen('report');
     }
   };
 
+  const handleStartOver = () => {
+    stopSpeaking();
+    stopRing();
+    setScenarioIndex(0);
+    setWalletBalance(INITIAL_WALLET);
+    setResults({});
+    setCurrentResult(null);
+    setCurrentState(null);
+    setRunKey(k => k + 1);
+    try {
+      sessionStorage.setItem('chaukas_wallet_balance', String(INITIAL_WALLET));
+    } catch {
+      /* ignore */
+    }
+    setScreen('intro');
+  };
+
+  // Called when runner completes a drill
+  const handleDrillFinish = (res: RunResult, finalSt: any) => {
+    setCurrentResult(res);
+    setCurrentState(finalSt);
+    setResults(prev => ({ ...prev, [scenario.id]: res }));
+
+    // On a scammed result animate wallet balance down by lossInr
+    if (res.outcome === 'scammed' && res.lossInr > 0) {
+      setWalletBalance(prev => {
+        const next = Math.max(0, prev - res.lossInr);
+        try {
+          sessionStorage.setItem('chaukas_wallet_balance', String(next));
+        } catch {
+          /* ignore */
+        }
+        return next;
+      });
+    }
+
+    setScreen('debrief');
+  };
+
   const currentAttempt = getAttempt(scenario.id);
+  const currentKnew = knewAnswers[scenario.id]?.knew ?? null;
 
   return (
     <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-4 md:p-8 flex flex-col items-center">
-      {/* Top Header Bar with Breadcrumb, Mute Toggle, Language Toggle, and Caller Voice */}
+      {/* Top Header Bar with Breadcrumb, Wallet, Mute Toggle, Language Toggle, and Caller Voice */}
       <div className="w-full max-w-[420px] flex flex-col gap-2 mb-4">
         <div className="flex items-center justify-between">
           <Link
@@ -194,6 +399,14 @@ export default function DrillPage() {
             <span>←</span>
             <span>Home</span>
           </Link>
+
+          {/* Wallet Balance in Header */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border-2 border-[#111111] rounded-md shadow-hard-sm font-mono font-bold text-xs">
+            <span className="text-[#111111]/70">Wallet:</span>
+            <span className="tabular-nums text-[#111111]">
+              ₹{animatedBalance.toLocaleString('en-IN')}
+            </span>
+          </div>
 
           <div className="flex items-center space-x-2">
             {/* Mute Toggle */}
@@ -213,7 +426,6 @@ export default function DrillPage() {
               className="min-h-[36px] px-2.5 py-1 text-xs font-mono font-bold border-2 border-[#111111] rounded-md bg-white shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center gap-1 cursor-pointer"
             >
               <span>{muted ? '🔇' : '🔊'}</span>
-              <span>{muted ? 'Muted' : 'Sound'}</span>
             </button>
 
             {/* Language Toggle (UI & Captions) */}
@@ -285,8 +497,58 @@ export default function DrillPage() {
         </div>
       </div>
 
-      {!started ? (
-        /* Scenario Setup / Interstitial Card ("Drill X of 3") */
+      {/* SCREEN 1: PRE-CHECK UPFRONT */}
+      {screen === 'precheck' && (
+        <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 my-auto space-y-6 text-center">
+          <div className="flex items-center justify-between border-b border-[#111111]/20 pb-2">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F]">
+              {lang === 'hi' ? 'त्वरित जाँच' : 'Pre-Check'}
+            </span>
+            <span className="text-xs font-mono font-bold text-[#111111]/70">
+              {precheckIndex + 1} of {precheckScenarios.length}
+            </span>
+          </div>
+
+          <div className="py-2">
+            <p className="text-base md:text-lg font-bold text-[#111111] leading-snug">
+              {precheckScenarios[precheckIndex]?.precheck.q[lang] ||
+                precheckScenarios[precheckIndex]?.precheck.q.en}
+            </p>
+          </div>
+
+          {/* Two equal NEUTRAL buttons Yes / No (same style, no green/red, no hover colours) */}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => handlePrecheckAnswer('yes')}
+              className="py-3 px-6 bg-white text-[#111111] border-2 border-[#111111] rounded shadow-hard-sm font-bold text-base hover:bg-neutral-100 active:bg-neutral-200 transition-colors cursor-pointer text-center"
+            >
+              {lang === 'hi' ? 'हाँ (Yes)' : 'Yes'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handlePrecheckAnswer('no')}
+              className="py-3 px-6 bg-white text-[#111111] border-2 border-[#111111] rounded shadow-hard-sm font-bold text-base hover:bg-neutral-100 active:bg-neutral-200 transition-colors cursor-pointer text-center"
+            >
+              {lang === 'hi' ? 'नहीं (No)' : 'No'}
+            </button>
+          </div>
+
+          {/* Small text link "skip questions" */}
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={handleSkipPrecheck}
+              className="text-xs font-mono text-[#111111]/70 hover:text-[#111111] underline cursor-pointer"
+            >
+              {lang === 'hi' ? 'सवालों को छोड़ें' : 'skip questions'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* SCREEN 2: DRILL INTRO CARD */}
+      {screen === 'intro' && (
         <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 my-auto space-y-5">
           <div className="flex items-center justify-between">
             <div className="inline-block bg-[#FF5A1F] text-white text-xs font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded">
@@ -305,72 +567,26 @@ export default function DrillPage() {
             {scenario.setup[lang] || scenario.setup.en}
           </div>
 
-          {/* Pre-Check Question Card */}
-          <div className="bg-[#F6F3EC] border-2 border-[#111111] p-4 rounded-md shadow-hard-sm space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F]">
-                Quick Pre-Check
-              </span>
-              <span className="text-[10px] font-mono text-[#111111]/60">1 of 1</span>
-            </div>
-            <p className="text-sm md:text-base font-semibold text-[#111111] leading-snug">
-              {scenario.precheck.q[lang] || scenario.precheck.q.en}
+          <div className="text-xs text-[#111111]/90 font-mono space-y-1 bg-neutral-100 p-3.5 rounded border border-[#111111]/30">
+            <p className="font-bold text-[#111111] leading-relaxed">
+              Practice money ₹60,000 · Practice PIN 4827 · never type a real PIN anywhere but your UPI app
             </p>
-            <div className="grid grid-cols-3 gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setKnewRule(scenario.precheck.correct === 'yes');
-                  handleStartDrill();
-                }}
-                className="py-2.5 px-3 bg-white text-[#111111] border-2 border-[#111111] rounded shadow-hard-sm font-bold text-sm hover:bg-[#12B76A] hover:text-white transition-all cursor-pointer text-center"
-              >
-                Yes
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setKnewRule(scenario.precheck.correct === 'no');
-                  handleStartDrill();
-                }}
-                className="py-2.5 px-3 bg-white text-[#111111] border-2 border-[#111111] rounded shadow-hard-sm font-bold text-sm hover:bg-[#D92D20] hover:text-white transition-all cursor-pointer text-center"
-              >
-                No
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setKnewRule(null);
-                  handleStartDrill();
-                }}
-                className="py-2.5 px-3 bg-neutral-100 text-[#111111]/70 border-2 border-[#111111]/30 rounded font-medium text-sm hover:bg-neutral-200 transition-all cursor-pointer text-center"
-              >
-                Skip
-              </button>
-            </div>
           </div>
 
-          <div className="text-xs text-[#111111]/70 font-mono space-y-1 bg-neutral-100 p-3 rounded border border-neutral-300">
-            <p className="font-bold text-[#111111]">Safety Reminders:</p>
-            <p>• Practice money: ₹60,000</p>
-            <p>• Practice PIN: {PRACTICE_PIN}</p>
-            <p>• Never enter your real credentials.</p>
-          </div>
-
+          {/* ONE Start button (precheck removed; never sets knew_rule to null) */}
           <button
             type="button"
-            onClick={() => {
-              setKnewRule(null);
-              handleStartDrill();
-            }}
+            onClick={handleStartDrill}
             className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-lg border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>{onlyMode ? 'Start Drill' : `Start Drill ${scenarioIndex + 1}`}</span>
             <span>→</span>
           </button>
         </div>
-      ) : (
-        /* Active Drill Runner */
+      )}
+
+      {/* SCREEN 3: ACTIVE DRILL RUNNER */}
+      {screen === 'runner' && (
         <DrillRunner
           key={`${scenario.id}-${runKey}`}
           scenario={scenario}
@@ -380,11 +596,39 @@ export default function DrillPage() {
           lang={lang}
           voiceChoice={voiceChoice}
           muted={muted}
-          knewRule={knewRule}
+          knewRule={currentKnew}
           attempt={currentAttempt}
           source={source}
-          onRestart={handleRestart}
+          onFinish={handleDrillFinish}
+        />
+      )}
+
+      {/* SCREEN 4: DEBRIEF (replaces outcome screen after each drill) */}
+      {screen === 'debrief' && currentResult && currentState && (
+        <Debrief
+          scenario={scenario}
+          state={currentState}
+          result={currentResult}
+          lang={lang}
+          knewAnswer={knewAnswers[scenario.id]}
+          isLastDrill={scenarioIndex === SCENARIOS.length - 1}
+          isOnlyMode={onlyMode}
+          scenarioIndex={scenarioIndex}
+          totalScenarios={SCENARIOS.length}
           onNextDrill={handleNextDrill}
+          onRestart={handleRestart}
+          onShowReport={() => setScreen('report')}
+        />
+      )}
+
+      {/* SCREEN 5: FINAL REPORT (after drill 3, not in ?only mode) */}
+      {screen === 'report' && (
+        <Report
+          scenarios={SCENARIOS}
+          knewAnswers={knewAnswers}
+          results={results}
+          lang={lang}
+          onStartOver={handleStartOver}
         />
       )}
     </main>
@@ -402,8 +646,7 @@ interface DrillRunnerProps {
   knewRule: boolean | null;
   attempt: number;
   source: string;
-  onRestart: () => void;
-  onNextDrill: () => void;
+  onFinish: (result: RunResult, state: any) => void;
 }
 
 function DrillRunner({
@@ -417,8 +660,7 @@ function DrillRunner({
   knewRule,
   attempt,
   source,
-  onRestart,
-  onNextDrill,
+  onFinish,
 }: DrillRunnerProps) {
   const { node, state, act, result } = useDrill(scenario);
   const telemetrySentRef = useRef<boolean>(false);
@@ -427,6 +669,13 @@ function DrillRunner({
   useEffect(() => {
     preloadScenarioClips(scenario.id, voiceChoice);
   }, [scenario.id, voiceChoice]);
+
+  // When run completes, forward to parent onFinish
+  useEffect(() => {
+    if (result && state.done) {
+      onFinish(result, state);
+    }
+  }, [result, state, onFinish]);
 
   // Safe action wrapper: stops speech & ring BEFORE dispatching,
   // and dispatches telemetry beacon at the exact moment a step finishes the run (StrictMode-safe)
@@ -452,7 +701,7 @@ function DrillRunner({
               risky_actions: res.riskyActions,
               flags_walked_past: res.flagsWalkedPast.length,
               flags_total: res.flagsTotal,
-              duration_ms: Math.max(5000, res.durationMs),
+              duration_ms: Math.max(2000, res.durationMs),
               hesitation_ms: res.hesitationMs,
               attempt,
               source,
@@ -674,119 +923,6 @@ function DrillRunner({
     }
     return undefined;
   }, [node, scenario.nodes, state.path]);
-
-  // Outcome Screen when drill finishes
-  if (result) {
-    const isLoss = result.lossInr > 0;
-    const isLastDrill = scenarioIndex === totalScenarios - 1;
-
-    return (
-      <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 w-full max-w-5xl my-auto">
-        <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 space-y-6">
-          <div className="space-y-2 text-center">
-            <div className="text-xs font-mono uppercase tracking-widest text-[#111111]/60">
-              {isOnlyMode ? 'Practice Drill Outcome' : `Drill ${scenarioIndex + 1} Outcome`}
-            </div>
-            <div
-              className={`text-4xl md:text-5xl font-extrabold tabular-nums tracking-tight ${
-                isLoss ? 'text-[#D92D20]' : 'text-[#12B76A]'
-              }`}
-            >
-              {isLoss
-                ? `−₹${result.lossInr.toLocaleString('en-IN')}`
-                : '₹0 lost'}
-            </div>
-            <p className="text-base font-semibold text-[#111111]">
-              {result.headline[lang] || result.headline.en}
-            </p>
-          </div>
-
-          {/* Rule Box */}
-          <div className="border-2 border-[#111111] bg-[#F6F3EC] p-4 rounded-md shadow-hard-sm space-y-1.5">
-            <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F]">
-              The Rule
-            </div>
-            <p className="text-sm md:text-base font-semibold text-[#111111] leading-snug">
-              {scenario.rule[lang] || scenario.rule.en}
-            </p>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="space-y-3 pt-2">
-            {isOnlyMode ? (
-              <>
-                <button
-                  type="button"
-                  onClick={onRestart}
-                  className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <span>Replay this drill</span>
-                  <span>↺</span>
-                </button>
-
-                <Link
-                  href="/check"
-                  className="w-full min-h-[48px] py-3 bg-white text-[#111111] font-bold text-base border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2"
-                >
-                  <span>🔍</span>
-                  <span>Check another message</span>
-                </Link>
-
-                <Link
-                  href="/drill"
-                  className="w-full min-h-[44px] py-2.5 bg-neutral-100 text-[#111111] font-bold text-sm border-2 border-[#111111]/30 rounded-md hover:bg-neutral-200 transition-all flex items-center justify-center gap-1.5"
-                >
-                  <span>Play full 3-drill simulation →</span>
-                </Link>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={onNextDrill}
-                  className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <span>
-                    {isLastDrill
-                      ? 'All 3 Completed · Start Over'
-                      : `Continue to Drill ${scenarioIndex + 2} of ${totalScenarios}`}
-                  </span>
-                  <span>→</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={onRestart}
-                  className="w-full min-h-[48px] py-3 bg-white text-[#111111] font-bold text-base border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
-                >
-                  Replay this drill
-                </button>
-
-                <Link
-                  href="/check"
-                  className="w-full min-h-[44px] py-2.5 bg-white text-[#111111] font-bold text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center justify-center gap-1.5"
-                >
-                  <span>🔍</span>
-                  <span>Check a suspicious message</span>
-                </Link>
-              </>
-            )}
-
-            <Link
-              href="/insights"
-              className="w-full min-h-[44px] py-2.5 bg-neutral-100 text-[#111111] font-bold text-sm border-2 border-[#111111]/30 rounded-md hover:bg-neutral-200 transition-all flex items-center justify-center gap-1.5"
-            >
-              <span>📊</span>
-              <span>View Live Insights</span>
-            </Link>
-          </div>
-        </div>
-
-        {/* GlassBox on Outcome screen */}
-        <GlassBox events={state.events} result={result} />
-      </div>
-    );
-  }
 
   // Drill in progress inside PhoneFrame
   return (

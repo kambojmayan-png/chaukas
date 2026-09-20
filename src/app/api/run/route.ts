@@ -38,7 +38,7 @@ const runSchema = z.object({
   risky_actions: z.number().int().min(0).default(0),
   flags_walked_past: z.number().int().min(0).default(0),
   flags_total: z.number().int().min(0).default(0),
-  duration_ms: z.number().int().min(5000).max(1800000),
+  duration_ms: z.number().int().min(2000).max(1800000),
   hesitation_ms: z.number().int().min(0).nullable().optional(),
   attempt: z.number().int().min(1).default(1),
   age_band: z.enum(['<18', '18-30', '31-50', '51+']).nullable().optional(),

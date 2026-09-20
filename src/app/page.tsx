@@ -72,7 +72,7 @@ export default function Home() {
           <Link href="/insights" className="hover:underline font-bold">
             Live Insights
           </Link>
-          <span>100% Client-Side Simulation</span>
+          <span>No login · no real credentials · anonymous stats only</span>
         </div>
       </footer>
     </main>
