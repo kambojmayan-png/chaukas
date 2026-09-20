@@ -60,9 +60,12 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t-2 border-[#111111] pt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-[#111111]/70 font-mono gap-2">
+      <footer className="border-t-2 border-[#111111] pt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-[#111111]/70 font-mono gap-3">
         <span>© 2026 Chaukas · Tech for a Better Tomorrow</span>
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <Link href="/judge" className="hover:underline font-bold text-[#FF5A1F]">
+            Judging this? Start here →
+          </Link>
           <Link href="/check" className="hover:underline font-bold">
             Message Checker
           </Link>

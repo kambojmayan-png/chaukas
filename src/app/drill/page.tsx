@@ -24,6 +24,7 @@ import { ChoiceBar } from '@/components/phone/ChoiceBar';
 import { PinPad } from '@/components/phone/PinPad';
 import { PressureTimer } from '@/components/phone/PressureTimer';
 import { SystemDialog } from '@/components/phone/SystemDialog';
+import { GlassBox, GlassBoxPanel } from '@/components/GlassBox';
 import type { Lang, Scenario, Message, Surface, Action } from '@/engine/engine';
 
 function getSessionId(): string {
@@ -680,249 +681,266 @@ function DrillRunner({
     const isLastDrill = scenarioIndex === totalScenarios - 1;
 
     return (
-      <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 my-auto space-y-6">
-        <div className="space-y-2 text-center">
-          <div className="text-xs font-mono uppercase tracking-widest text-[#111111]/60">
-            {isOnlyMode ? 'Practice Drill Outcome' : `Drill ${scenarioIndex + 1} Outcome`}
+      <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 w-full max-w-5xl my-auto">
+        <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 space-y-6">
+          <div className="space-y-2 text-center">
+            <div className="text-xs font-mono uppercase tracking-widest text-[#111111]/60">
+              {isOnlyMode ? 'Practice Drill Outcome' : `Drill ${scenarioIndex + 1} Outcome`}
+            </div>
+            <div
+              className={`text-4xl md:text-5xl font-extrabold tabular-nums tracking-tight ${
+                isLoss ? 'text-[#D92D20]' : 'text-[#12B76A]'
+              }`}
+            >
+              {isLoss
+                ? `−₹${result.lossInr.toLocaleString('en-IN')}`
+                : '₹0 lost'}
+            </div>
+            <p className="text-base font-semibold text-[#111111]">
+              {result.headline[lang] || result.headline.en}
+            </p>
           </div>
-          <div
-            className={`text-4xl md:text-5xl font-extrabold tabular-nums tracking-tight ${
-              isLoss ? 'text-[#D92D20]' : 'text-[#12B76A]'
-            }`}
-          >
-            {isLoss
-              ? `−₹${result.lossInr.toLocaleString('en-IN')}`
-              : '₹0 lost'}
+
+          {/* Rule Box */}
+          <div className="border-2 border-[#111111] bg-[#F6F3EC] p-4 rounded-md shadow-hard-sm space-y-1.5">
+            <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F]">
+              The Rule
+            </div>
+            <p className="text-sm md:text-base font-semibold text-[#111111] leading-snug">
+              {scenario.rule[lang] || scenario.rule.en}
+            </p>
           </div>
-          <p className="text-base font-semibold text-[#111111]">
-            {result.headline[lang] || result.headline.en}
-          </p>
+
+          {/* Action Buttons */}
+          <div className="space-y-3 pt-2">
+            {isOnlyMode ? (
+              <>
+                <button
+                  type="button"
+                  onClick={onRestart}
+                  className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Replay this drill</span>
+                  <span>↺</span>
+                </button>
+
+                <Link
+                  href="/check"
+                  className="w-full min-h-[48px] py-3 bg-white text-[#111111] font-bold text-base border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2"
+                >
+                  <span>🔍</span>
+                  <span>Check another message</span>
+                </Link>
+
+                <Link
+                  href="/drill"
+                  className="w-full min-h-[44px] py-2.5 bg-neutral-100 text-[#111111] font-bold text-sm border-2 border-[#111111]/30 rounded-md hover:bg-neutral-200 transition-all flex items-center justify-center gap-1.5"
+                >
+                  <span>Play full 3-drill simulation →</span>
+                </Link>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={onNextDrill}
+                  className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>
+                    {isLastDrill
+                      ? 'All 3 Completed · Start Over'
+                      : `Continue to Drill ${scenarioIndex + 2} of ${totalScenarios}`}
+                  </span>
+                  <span>→</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onRestart}
+                  className="w-full min-h-[48px] py-3 bg-white text-[#111111] font-bold text-base border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                >
+                  Replay this drill
+                </button>
+
+                <Link
+                  href="/check"
+                  className="w-full min-h-[44px] py-2.5 bg-white text-[#111111] font-bold text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center justify-center gap-1.5"
+                >
+                  <span>🔍</span>
+                  <span>Check a suspicious message</span>
+                </Link>
+              </>
+            )}
+
+            <Link
+              href="/insights"
+              className="w-full min-h-[44px] py-2.5 bg-neutral-100 text-[#111111] font-bold text-sm border-2 border-[#111111]/30 rounded-md hover:bg-neutral-200 transition-all flex items-center justify-center gap-1.5"
+            >
+              <span>📊</span>
+              <span>View Live Insights</span>
+            </Link>
+          </div>
         </div>
 
-        {/* Rule Box */}
-        <div className="border-2 border-[#111111] bg-[#F6F3EC] p-4 rounded-md shadow-hard-sm space-y-1.5">
-          <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F]">
-            The Rule
-          </div>
-          <p className="text-sm md:text-base font-semibold text-[#111111] leading-snug">
-            {scenario.rule[lang] || scenario.rule.en}
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="space-y-3 pt-2">
-          {isOnlyMode ? (
-            <>
-              <button
-                type="button"
-                onClick={onRestart}
-                className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>Replay this drill</span>
-                <span>↺</span>
-              </button>
-
-              <Link
-                href="/check"
-                className="w-full min-h-[48px] py-3 bg-white text-[#111111] font-bold text-base border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2"
-              >
-                <span>🔍</span>
-                <span>Check another message</span>
-              </Link>
-
-              <Link
-                href="/drill"
-                className="w-full min-h-[44px] py-2.5 bg-neutral-100 text-[#111111] font-bold text-sm border-2 border-[#111111]/30 rounded-md hover:bg-neutral-200 transition-all flex items-center justify-center gap-1.5"
-              >
-                <span>Play full 3-drill simulation →</span>
-              </Link>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={onNextDrill}
-                className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>
-                  {isLastDrill
-                    ? 'All 3 Completed · Start Over'
-                    : `Continue to Drill ${scenarioIndex + 2} of ${totalScenarios}`}
-                </span>
-                <span>→</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={onRestart}
-                className="w-full min-h-[48px] py-3 bg-white text-[#111111] font-bold text-base border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
-              >
-                Replay this drill
-              </button>
-
-              <Link
-                href="/check"
-                className="w-full min-h-[44px] py-2.5 bg-white text-[#111111] font-bold text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center justify-center gap-1.5"
-              >
-                <span>🔍</span>
-                <span>Check a suspicious message</span>
-              </Link>
-            </>
-          )}
-
-          <Link
-            href="/insights"
-            className="w-full min-h-[44px] py-2.5 bg-neutral-100 text-[#111111] font-bold text-sm border-2 border-[#111111]/30 rounded-md hover:bg-neutral-200 transition-all flex items-center justify-center gap-1.5"
-          >
-            <span>📊</span>
-            <span>View Live Insights</span>
-          </Link>
-        </div>
+        {/* GlassBox on Outcome screen */}
+        <GlassBox events={state.events} result={result} />
       </div>
     );
   }
 
   // Drill in progress inside PhoneFrame
   return (
-    <div className="w-full max-w-[380px] flex flex-col items-center">
-      {/* Pressure Timer Countdown: starts only when done is true */}
-      {node.timerSec && done && (
-        <div className="w-full mb-2">
-          <PressureTimer
-            seconds={node.timerSec}
-            onTimeout={() => safeAct({ type: 'timeout' })}
-          />
-        </div>
-      )}
+    <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 w-full max-w-5xl">
+      <div className="w-full max-w-[380px] flex flex-col items-center">
+        {/* Pressure Timer Countdown: starts only when done is true */}
+        {node.timerSec && done && (
+          <div className="w-full mb-2">
+            <PressureTimer
+              seconds={node.timerSec}
+              onTimeout={() => safeAct({ type: 'timeout' })}
+            />
+          </div>
+        )}
 
-      <PhoneFrame from={node.from} surface={node.surface}>
-        {/* Top SMS Notification Banner for any revealed message with via: 'sms' */}
-        {smsBannerMessages.length > 0 && (
-          <div className="absolute top-2 left-2 right-2 z-40 space-y-1.5 pointer-events-auto">
-            {smsBannerMessages.map((sms, i) => (
-              <div
-                key={i}
-                className="bg-white border-2 border-[#111111] shadow-hard rounded-md p-3 text-left transition-all"
-              >
-                <div className="flex items-center justify-between text-xs font-mono font-bold text-[#FF5A1F] border-b border-[#111111]/10 pb-1 mb-1">
-                  <span className="flex items-center gap-1">
-                    <span>💬</span>
-                    <span>SMS · BANK ALERT</span>
-                  </span>
-                  <span className="text-[10px] text-[#111111]/60">NOW</span>
+        <PhoneFrame from={node.from} surface={node.surface}>
+          {/* Top SMS Notification Banner for any revealed message with via: 'sms' */}
+          {smsBannerMessages.length > 0 && (
+            <div className="absolute top-2 left-2 right-2 z-40 space-y-1.5 pointer-events-auto">
+              {smsBannerMessages.map((sms, i) => (
+                <div
+                  key={i}
+                  className="bg-white border-2 border-[#111111] shadow-hard rounded-md p-3 text-left transition-all"
+                >
+                  <div className="flex items-center justify-between text-xs font-mono font-bold text-[#FF5A1F] border-b border-[#111111]/10 pb-1 mb-1">
+                    <span className="flex items-center gap-1">
+                      <span>💬</span>
+                      <span>SMS · BANK ALERT</span>
+                    </span>
+                    <span className="text-[10px] text-[#111111]/60">NOW</span>
+                  </div>
+                  <p className="text-xs md:text-sm font-semibold text-[#111111] leading-tight select-all">
+                    {sms.text[lang] || sms.text.en}
+                  </p>
                 </div>
-                <p className="text-xs md:text-sm font-semibold text-[#111111] leading-tight select-all">
-                  {sms.text[lang] || sms.text.en}
+              ))}
+            </div>
+          )}
+
+          {/* Incoming Call Screen (Non-call to Call transition) */}
+          {isCallNode && !callAccepted ? (
+            <div className="flex-1 flex flex-col justify-between p-6 bg-[#0E0E10] text-[#F6F3EC] select-none text-center">
+              <div className="pt-8 space-y-2">
+                <span className="text-xs font-mono text-[#FF5A1F] uppercase tracking-widest block animate-pulse">
+                  {node.surface === 'videocall' ? 'Incoming Video Call…' : 'Incoming Call…'}
+                </span>
+                <h2 className="text-2xl font-bold tracking-tight text-white">
+                  {node.from || 'Unknown Caller'}
+                </h2>
+                <p className="text-xs font-mono text-white/60">
+                  {node.surface === 'videocall' ? 'Camera verification requested' : 'Official inquiry'}
                 </p>
               </div>
-            ))}
-          </div>
-        )}
 
-        {/* Incoming Call Screen (Non-call to Call transition) */}
-        {isCallNode && !callAccepted ? (
-          <div className="flex-1 flex flex-col justify-between p-6 bg-[#0E0E10] text-[#F6F3EC] select-none text-center">
-            <div className="pt-8 space-y-2">
-              <span className="text-xs font-mono text-[#FF5A1F] uppercase tracking-widest block animate-pulse">
-                {node.surface === 'videocall' ? 'Incoming Video Call…' : 'Incoming Call…'}
-              </span>
-              <h2 className="text-2xl font-bold tracking-tight text-white">
-                {node.from || 'Unknown Caller'}
-              </h2>
-              <p className="text-xs font-mono text-white/60">
-                {node.surface === 'videocall' ? 'Camera verification requested' : 'Official inquiry'}
-              </p>
-            </div>
-
-            {/* Pulsing Avatar */}
-            <div className="flex flex-col items-center justify-center my-auto">
-              <div className="relative flex items-center justify-center">
-                <div className="w-24 h-24 rounded-full bg-slate-800 border-2 border-white/40 flex items-center justify-center text-4xl shadow-xl z-10">
-                  {node.surface === 'videocall' ? '👮‍♂️' : '📞'}
+              {/* Pulsing Avatar */}
+              <div className="flex flex-col items-center justify-center my-auto">
+                <div className="relative flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full bg-slate-800 border-2 border-white/40 flex items-center justify-center text-4xl shadow-xl z-10">
+                    {node.surface === 'videocall' ? '👮‍♂️' : '📞'}
+                  </div>
+                  <div className="absolute w-32 h-32 rounded-full border border-green-500/40 animate-ping opacity-40 pointer-events-none" />
+                  <div className="absolute w-40 h-40 rounded-full border border-green-500/20 animate-pulse pointer-events-none" />
                 </div>
-                <div className="absolute w-32 h-32 rounded-full border border-green-500/40 animate-ping opacity-40 pointer-events-none" />
-                <div className="absolute w-40 h-40 rounded-full border border-green-500/20 animate-pulse pointer-events-none" />
+              </div>
+
+              {/* Accept Call Button (Not a scored action) */}
+              <div className="pb-6">
+                <button
+                  type="button"
+                  onClick={handleAcceptCall}
+                  className="w-full min-h-[52px] py-3.5 bg-[#12B76A] text-white font-bold text-lg rounded-full shadow-lg hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>📞</span>
+                  <span>Accept</span>
+                </button>
               </div>
             </div>
-
-            {/* Accept Call Button (Not a scored action) */}
-            <div className="pb-6">
-              <button
-                type="button"
-                onClick={handleAcceptCall}
-                className="w-full min-h-[52px] py-3.5 bg-[#12B76A] text-white font-bold text-lg rounded-full shadow-lg hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>📞</span>
-                <span>Accept</span>
-              </button>
-            </div>
-          </div>
-        ) : node.surface === 'system' && !node.end ? (
-          /* System Permission Modal (e.g. bijli-remote n3 screen-share) */
-          <SystemDialog
-            title={node.from}
-            messages={node.messages}
-            choices={node.choices}
-            lang={lang}
-            done={done}
-            onChoose={choiceId => safeAct({ type: 'choose', choiceId })}
-          />
-        ) : (
-          /* Standard Surfaces: Chat, SMS, Call, VideoCall, UPI */
-          <>
-            {/* If node has input: show MessageList while !done, then show PinPad when done */}
-            {node.input ? (
-              done ? (
-                <PinPad
-                  kind={node.input.kind}
-                  prompt={node.input.prompt[lang] || node.input.prompt.en}
-                  detail={node.input.detail[lang] || node.input.detail.en}
-                  practicePin={PRACTICE_PIN}
-                  expectedCode={expectedCode}
-                  onSubmit={(len, hesitationMs) =>
-                    safeAct({ type: 'input_submit', len, hesitationMs })
-                  }
-                  onCancel={() => safeAct({ type: 'input_cancel' })}
-                />
-              ) : (
-                <MessageList
-                  messages={allMessages}
-                  typing={typing}
-                  lang={lang}
-                  skin={node.surface}
-                  from={node.from}
-                  callSeconds={callSeconds}
-                />
-              )
-            ) : (
-              <>
-                <MessageList
-                  messages={allMessages}
-                  typing={typing}
-                  lang={lang}
-                  skin={node.surface}
-                  from={node.from}
-                  callSeconds={callSeconds}
-                />
-                {done && node.choices && (
-                  <ChoiceBar
-                    choices={node.choices}
-                    lang={lang}
-                    onChoose={choiceId => safeAct({ type: 'choose', choiceId })}
+          ) : node.surface === 'system' && !node.end ? (
+            /* System Permission Modal (e.g. bijli-remote n3 screen-share) */
+            <SystemDialog
+              title={node.from}
+              messages={node.messages}
+              choices={node.choices}
+              lang={lang}
+              done={done}
+              onChoose={choiceId => safeAct({ type: 'choose', choiceId })}
+            />
+          ) : (
+            /* Standard Surfaces: Chat, SMS, Call, VideoCall, UPI */
+            <>
+              {/* If node has input: show MessageList while !done, then show PinPad when done */}
+              {node.input ? (
+                done ? (
+                  <PinPad
+                    kind={node.input.kind}
+                    prompt={node.input.prompt[lang] || node.input.prompt.en}
+                    detail={node.input.detail[lang] || node.input.detail.en}
+                    practicePin={PRACTICE_PIN}
+                    expectedCode={expectedCode}
+                    onSubmit={(len, hesitationMs) =>
+                      safeAct({ type: 'input_submit', len, hesitationMs })
+                    }
+                    onCancel={() => safeAct({ type: 'input_cancel' })}
                   />
-                )}
-              </>
-            )}
-          </>
-        )}
-      </PhoneFrame>
+                ) : (
+                  <MessageList
+                    messages={allMessages}
+                    typing={typing}
+                    lang={lang}
+                    skin={node.surface}
+                    from={node.from}
+                    callSeconds={callSeconds}
+                  />
+                )
+              ) : (
+                <>
+                  <MessageList
+                    messages={allMessages}
+                    typing={typing}
+                    lang={lang}
+                    skin={node.surface}
+                    from={node.from}
+                    callSeconds={callSeconds}
+                  />
+                  {done && node.choices && (
+                    <ChoiceBar
+                      choices={node.choices}
+                      lang={lang}
+                      onChoose={choiceId => safeAct({ type: 'choose', choiceId })}
+                    />
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </PhoneFrame>
 
-      {/* When UI is English and voice is Hindi, show small note under the phone */}
-      {lang === 'en' && voiceChoice === 'hi' && (
-        <p className="mt-2 text-xs font-mono text-[#111111]/70 text-center">
-          Caller speaks Hindi, as real scam calls do · captions in English
-        </p>
-      )}
+        {/* When UI is English and voice is Hindi, show small note under the phone */}
+        {lang === 'en' && voiceChoice === 'hi' && (
+          <p className="mt-2 text-xs font-mono text-[#111111]/70 text-center">
+            Caller speaks Hindi, as real scam calls do · captions in English
+          </p>
+        )}
+
+        {/* On screens < 1024px: "Show engine log" toggle under the phone */}
+        <div className="lg:hidden w-full">
+          <GlassBox events={state.events} result={result} />
+        </div>
+      </div>
+
+      {/* On screens >= 1024px: show panel to the right of the phone */}
+      <div className="hidden lg:block w-96 shrink-0">
+        <GlassBoxPanel events={state.events} result={result} />
+      </div>
     </div>
   );
 }
