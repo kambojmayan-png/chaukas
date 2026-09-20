@@ -54,7 +54,7 @@ export function GlassBoxPanel({
           events.map((e, idx) => (
             <div
               key={idx}
-              className="text-xs leading-relaxed text-[#111111] flex items-center gap-1.5 flex-wrap"
+              className="text-xs leading-relaxed text-[#111111] flex items-center gap-1.5 flex-wrap keep-mono font-mono"
             >
               <span>t={(e.t / 1000).toFixed(1)}s</span>
               <span className="text-[#111111]/40">·</span>
@@ -72,7 +72,7 @@ export function GlassBoxPanel({
           <div className="text-[11px] font-bold uppercase tracking-wider text-[#111111]/70 mb-1.5">
             RunResult
           </div>
-          <pre className="bg-[#111111] text-[#F6F3EC] p-3 rounded text-[11px] max-w-full overflow-x-auto leading-tight">
+          <pre className="bg-[#111111] text-[#F6F3EC] p-3 rounded text-[11px] max-w-full overflow-x-auto leading-tight keep-mono font-mono">
             {JSON.stringify(result, null, 2)}
           </pre>
         </div>

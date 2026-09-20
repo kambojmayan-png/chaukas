@@ -10,7 +10,7 @@
   "nodes": {
     "n1": { "id": "n1", "surface": "chat", "from": "Rahul Kumar · +91 98•••••021",
       "messages": [
-        { "text": { "en": "Hello ji, is the table still available? I'm in the Army, posted in Jammu, so I can't come to see it.", "hi": "हैलो जी, टेबल अभी available है? मैं Army में हूँ, पोस्टिंग जम्मू में है, इसलिए देखने नहीं आ सकता।" }, "flags": ["authority"] },
+        { "text": { "en": "Hello ji, is the table still available? I'm in the Army, posted in Jammu, so I can't come to see it.", "hi": "हैलो जी, टेबल अभी मिल जाएगी? मैं आर्मी में हूँ, पोस्टिंग जम्मू में है, इसलिए देखने नहीं आ सकता।" }, "flags": ["authority"] },
         { "text": { "en": "Price is fine, no bargaining. I'll pay the full ₹4,500 right now. My cousin will pick it up tomorrow.", "hi": "दाम ठीक है, कोई मोल-भाव नहीं। मैं अभी पूरे ₹4,500 भेज देता हूँ। कल मेरा कज़िन आकर ले जाएगा।" }, "flags": ["too_good"], "delayMs": 1400 }
       ],
       "choices": [
@@ -27,7 +27,7 @@
     "n2": { "id": "n2", "surface": "chat", "from": "Rahul Kumar · +91 98•••••021",
       "messages": [
         { "text": { "en": "I've sent ₹1 to check your account. Now I'm sending you a QR code.", "hi": "मैंने आपका अकाउंट चेक करने के लिए ₹1 भेजा है। अब एक QR कोड भेज रहा हूँ।" } },
-        { "text": { "en": "Scan it and enter your PIN — ₹4,500 will be credited to you. Army payments only work through merchant QR.", "hi": "इसे स्कैन करके अपना PIN डालिए — ₹4,500 आपके अकाउंट में आ जाएँगे। Army का पेमेंट सिर्फ़ merchant QR से ही होता है।" }, "flags": ["pin_to_receive", "authority"], "delayMs": 1600 }
+        { "text": { "en": "Scan it and enter your PIN — ₹4,500 will be credited to you. Army payments only work through merchant QR.", "hi": "इसे स्कैन करके अपना PIN डालिए — ₹4,500 आपके अकाउंट में आ जाएँगे। आर्मी का पेमेंट सिर्फ़ मर्चेंट QR से ही होता है।" }, "flags": ["pin_to_receive", "authority"], "delayMs": 1600 }
       ],
       "choices": [
         { "id": "a", "label": { "en": "Scan the QR code", "hi": "QR कोड स्कैन करें" }, "next": "n3", "risk": "risky", "tag": "scan_qr" },
@@ -35,13 +35,13 @@
         { "id": "c", "label": { "en": "No. Send it to my UPI ID. I won't scan anything.", "hi": "नहीं। मेरी UPI ID पर भेजिए। कुछ स्कैन नहीं होगा।" }, "next": "end_escaped", "risk": "safe", "tag": "refuse" }
       ] },
     "n2b": { "id": "n2b", "surface": "chat", "from": "Rahul Kumar · +91 98•••••021", "timerSec": 20, "timeoutNext": "n2c",
-      "messages": [ { "text": { "en": "Sir this is how Army accounts work, everybody does it. Please hurry — the QR expires in 2 minutes!", "hi": "सर Army अकाउंट ऐसे ही काम करते हैं, सब यही करते हैं। जल्दी कीजिए — QR 2 मिनट में expire हो जाएगा!" }, "flags": ["urgency", "authority"] } ],
+      "messages": [ { "text": { "en": "Sir this is how Army accounts work, everybody does it. Please hurry — the QR expires in 2 minutes!", "hi": "सर आर्मी अकाउंट ऐसे ही काम करते हैं, सब यही करते हैं। जल्दी कीजिए — QR 2 मिनट में एक्सपायर हो जाएगा!" }, "flags": ["urgency", "authority"] } ],
       "choices": [
         { "id": "a", "label": { "en": "Okay, scan it.", "hi": "ठीक है, स्कैन करते हैं।" }, "next": "n3", "risk": "risky", "tag": "scan_qr" },
         { "id": "b", "label": { "en": "A PIN is only for paying. Block him.", "hi": "PIN सिर्फ़ भेजने के लिए होता है। ब्लॉक करें।" }, "next": "end_escaped", "risk": "safe", "tag": "block_report" }
       ] },
     "n2c": { "id": "n2c", "surface": "chat", "from": "Rahul Kumar · +91 98•••••021",
-      "messages": [ { "text": { "en": "Hello?? Are you there? Last chance, the QR is expiring.", "hi": "हैलो?? आप हैं? आख़िरी मौक़ा है, QR expire हो रहा है।" }, "flags": ["urgency"] } ],
+      "messages": [ { "text": { "en": "Hello?? Are you there? Last chance, the QR is expiring.", "hi": "हैलो?? आप हैं? आख़िरी मौक़ा है, QR एक्सपायर हो रहा है।" }, "flags": ["urgency"] } ],
       "choices": [
         { "id": "a", "label": { "en": "Okay, scan it.", "hi": "ठीक है, स्कैन करते हैं।" }, "next": "n3", "risk": "risky", "tag": "scan_qr" },
         { "id": "b", "label": { "en": "Not doing this. Block and report.", "hi": "यह नहीं होगा। ब्लॉक करें और रिपोर्ट करें।" }, "next": "end_escaped", "risk": "safe", "tag": "block_report" }

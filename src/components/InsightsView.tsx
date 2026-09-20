@@ -11,21 +11,6 @@ interface InsightsViewProps {
   data: InsightsData;
 }
 
-const SCENARIO_LABELS: Record<string, { en: string; hi: string }> = {
-  'olx-qr': {
-    en: 'Drill 1 · QR / UPI Receive (Buyer who never bargains)',
-    hi: 'ड्रिल 1 · QR / UPI से पैसा लेना (बिना मोल-भाव वाला ख़रीदार)',
-  },
-  'bijli-remote': {
-    en: 'Drill 2 · Electricity KYC Remote App & OTP',
-    hi: 'ड्रिल 2 · बिजली बिल KYC, स्क्रीन-शेयरिंग ऐप और OTP',
-  },
-  'digital-arrest': {
-    en: 'Drill 3 · Digital Arrest Video Call',
-    hi: 'ड्रिल 3 · डिजिटल अरेस्ट वीडियो कॉल',
-  },
-};
-
 export function InsightsView({ data }: InsightsViewProps) {
   const [lang] = useLang();
 
@@ -64,7 +49,7 @@ export function InsightsView({ data }: InsightsViewProps) {
         {noData ? (
           /* Empty state: No data yet. Only when first_runs is 0 or data unavailable. */
           <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-5 min-[400px]:p-8 md:p-12 text-center space-y-4 max-w-xl mx-auto">
-            <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-3 py-1 rounded-sm">
+            <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-3 py-1 rounded-sm leading-normal">
               {t('insights_tag', lang)}
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-[#111111]">
@@ -96,14 +81,20 @@ export function InsightsView({ data }: InsightsViewProps) {
                 {t('total_runs_recorded', lang)}
               </span>
               <span className="text-lg md:text-xl font-mono font-extrabold text-[#111111] tabular-nums">
-                {data.totals!.total_runs} runs ({data.totals!.first_runs} {lang === 'hi' ? 'पहली कोशिश' : 'first attempts'}
-                {data.totals!.redrills > 0 ? `, ${data.totals!.redrills} ${lang === 'hi' ? 'दोबारा ड्रिल' : 're-drills'}` : ''})
+                {t('runs_stat_label', lang, {
+                  runs: data.totals!.total_runs,
+                  first_runs: data.totals!.first_runs,
+                  redrill_part:
+                    data.totals!.redrills > 0
+                      ? t('redrill_part', lang, { n: data.totals!.redrills })
+                      : '',
+                })}
               </span>
             </div>
 
             {/* Big Headline Card: Knowledge-Behaviour Gap */}
             <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 sm:p-6 md:p-8 space-y-3 text-center md:text-left">
-              <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-sm">
+              <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm leading-normal">
                 {t('the_gap_tag', lang)}
               </div>
 
@@ -118,9 +109,10 @@ export function InsightsView({ data }: InsightsViewProps) {
                   </h1>
 
                   <p className="text-xs md:text-sm font-mono text-[#111111]/70">
-                    {data.totals!.knew_but_fell} of {data.totals!.knew_rule_first} {lang === 'hi'
-                      ? 'खिलाड़ियों ने प्री-चेक में नियम सही बताया, फिर भी सिमुलेटर में दबाव में आकर पैसे भेज दिए।'
-                      : 'participants correctly identified the scam rule in the pre-check, yet still complied when pressured in the simulator.'}
+                    {t('knew_but_fell_desc', lang, {
+                      fell: data.totals!.knew_but_fell,
+                      total: data.totals!.knew_rule_first,
+                    })}
                   </p>
                 </>
               ) : (
@@ -158,7 +150,7 @@ export function InsightsView({ data }: InsightsViewProps) {
                     s.redrill_fall_rate !== null
                       ? Math.round(s.redrill_fall_rate * 100)
                       : null;
-                  const label = SCENARIO_LABELS[s.scenario_id]?.[lang] || SCENARIO_LABELS[s.scenario_id]?.en || s.scenario_id;
+                  const label = t('drill_label_' + s.scenario_id.replace(/-/g, '_'), lang);
 
                   return (
                     <div key={s.scenario_id} className="space-y-2">
@@ -187,11 +179,14 @@ export function InsightsView({ data }: InsightsViewProps) {
                       {/* Subtext info */}
                       <div className="flex flex-wrap items-center justify-between text-[11px] font-mono text-[#111111]/70 gap-1">
                         <span>
-                          {s.first_scammed} of {s.first_runs} {lang === 'hi' ? 'पहली कोशिश में फँस गए' : 'fell on first attempt'}
+                          {t('fell_on_first_attempt', lang, {
+                            fell: s.first_scammed,
+                            total: s.first_runs,
+                          })}
                         </span>
                         {s.knew_rule_first > 0 && s.gap_pct !== null && (
                           <span>
-                            {lang === 'hi' ? 'जानते हुए भी फँसे:' : 'Knew-but-fell:'} <strong>{s.gap_pct}%</strong> ({s.knew_but_fell}/{s.knew_rule_first})
+                            {t('knew_but_fell_stat', lang)} <strong>{s.gap_pct}%</strong> ({s.knew_but_fell}/{s.knew_rule_first})
                           </span>
                         )}
                       </div>
@@ -223,14 +218,14 @@ export function InsightsView({ data }: InsightsViewProps) {
                       {Math.round(data.totals!.fall_rate * 100)}%
                     </div>
                     <p className="text-[11px] font-mono text-[#111111]/60">
-                      n = {data.totals!.first_runs} {lang === 'hi' ? 'पहली कोशिशें' : 'first runs'}
+                      {t('first_runs_count', lang, { n: data.totals!.first_runs })}
                     </p>
                   </div>
 
                   {/* Re-drills */}
                   <div className="bg-[#F6F3EC] border-2 border-[#111111] p-4 rounded-md space-y-1">
                     <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#111111]/70">
-                      {lang === 'hi' ? 'दोबारा ड्रिल में फँसने की दर' : 'Re-drill Fall Rate'}
+                      {t('redrill_fall_rate_title', lang)}
                     </span>
                     <div className="text-3xl md:text-4xl font-extrabold text-[#12B76A] tabular-nums">
                       {data.totals!.redrill_fall_rate !== null
@@ -238,7 +233,7 @@ export function InsightsView({ data }: InsightsViewProps) {
                         : 'N/A'}
                     </div>
                     <p className="text-[11px] font-mono text-[#111111]/60">
-                      n = {data.totals!.redrills} {lang === 'hi' ? 'दोबारा अभ्यास' : 're-drills'}
+                      {t('redrills_count', lang, { n: data.totals!.redrills })}
                     </p>
                   </div>
                 </div>

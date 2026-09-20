@@ -436,7 +436,8 @@ export default function DrillPage() {
               <button
                 type="button"
                 onClick={() => handleVoiceChange('hi')}
-                className={`px-2 py-0.5 text-xs font-bold transition-colors cursor-pointer ${
+                lang="hi"
+                className={`px-2 py-1 text-xs font-bold transition-colors cursor-pointer leading-normal ${
                   voiceChoice === 'hi'
                     ? 'bg-[#111111] text-white'
                     : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
@@ -447,7 +448,7 @@ export default function DrillPage() {
               <button
                 type="button"
                 onClick={() => handleVoiceChange('en')}
-                className={`px-2 py-0.5 text-xs font-bold transition-colors cursor-pointer border-l-2 border-r-2 border-[#111111] ${
+                className={`px-2 py-1 text-xs font-bold transition-colors cursor-pointer border-l-2 border-r-2 border-[#111111] ${
                   voiceChoice === 'en'
                     ? 'bg-[#111111] text-white'
                     : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
@@ -458,7 +459,7 @@ export default function DrillPage() {
               <button
                 type="button"
                 onClick={() => handleVoiceChange('off')}
-                className={`px-2 py-0.5 text-xs font-bold transition-colors cursor-pointer ${
+                className={`px-2 py-1 text-xs font-bold transition-colors cursor-pointer ${
                   voiceChoice === 'off'
                     ? 'bg-[#111111] text-white'
                     : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
@@ -475,11 +476,11 @@ export default function DrillPage() {
       {screen === 'precheck' && (
         <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 min-[400px]:p-5 md:p-6 my-auto space-y-4 sm:space-y-5 text-center">
           <div className="flex items-center justify-between border-b border-[#111111]/20 pb-2">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F]">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F] leading-normal">
               {t('precheck_title', lang)}
             </span>
             <span className="text-xs font-mono font-bold text-[#111111]/70">
-              {precheckIndex + 1} of {precheckScenarios.length}
+              {t('precheck_n_of_total', lang, { n: precheckIndex + 1, total: precheckScenarios.length })}
             </span>
           </div>
 
@@ -525,7 +526,7 @@ export default function DrillPage() {
       {screen === 'intro' && (
         <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 min-[400px]:p-5 md:p-6 my-auto space-y-4 sm:space-y-5">
           <div className="flex items-center justify-between">
-            <div className="inline-block bg-[#FF5A1F] text-white text-xs font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded">
+            <div className="inline-block bg-[#FF5A1F] text-white text-xs font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded leading-normal">
               {onlyMode
                 ? t('targeted_practice', lang)
                 : t('drill_n_of_3', lang, {
@@ -942,7 +943,7 @@ function DrillRunner({
                     : t('incoming_call', lang)}
                 </span>
                 <h2 className="text-xl min-[480px]:text-2xl font-bold tracking-tight text-white">
-                  {node.from || 'Unknown Caller'}
+                  {node.from || t('unknown_caller', lang)}
                 </h2>
                 <p className="text-xs font-mono text-white/60">
                   {node.surface === 'videocall'

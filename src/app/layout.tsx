@@ -19,8 +19,22 @@ const notoDevanagari = Noto_Sans_Devanagari({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://chaukas.vercel.app'),
   title: "CHAUKAS (चौकस) — India's Scam Fire-Drill",
   description: "Get scammed here. Never out there. A 3-minute behavioural fire drill for UPI and impersonation scams.",
+  openGraph: {
+    title: "CHAUKAS (चौकस) — India's Scam Fire-Drill",
+    description: "Get scammed here. Never out there. A 3-minute behavioural fire drill for UPI and impersonation scams.",
+    url: 'https://chaukas.vercel.app',
+    siteName: 'CHAUKAS',
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "CHAUKAS (चौकस) — India's Scam Fire-Drill",
+    description: "Get scammed here. Never out there. A 3-minute behavioural fire drill for UPI and impersonation scams.",
+  },
 };
 
 export default function RootLayout({

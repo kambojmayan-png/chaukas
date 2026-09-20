@@ -132,7 +132,7 @@ export function Debrief({
                           {msg.flags.map(flag => (
                             <span
                               key={flag}
-                              className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-red-100 text-[#D92D20] border border-red-300"
+                              className="inline-flex items-center px-1.5 py-1 rounded text-[10px] font-mono font-bold bg-red-100 text-[#D92D20] border border-red-300 leading-normal"
                             >
                               🚩 {getFlagLabel(flag, lang)}
                             </span>
@@ -162,7 +162,7 @@ export function Debrief({
                           {node.input.flags.map(flag => (
                             <span
                               key={flag}
-                              className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-red-100 text-[#D92D20] border border-red-300"
+                              className="inline-flex items-center px-1.5 py-1 rounded text-[10px] font-mono font-bold bg-red-100 text-[#D92D20] border border-red-300 leading-normal"
                             >
                               🚩 {getFlagLabel(flag, lang)}
                             </span>

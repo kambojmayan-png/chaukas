@@ -107,7 +107,7 @@ export default function JudgePage() {
       {/* Guide Section */}
       <section className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 sm:p-6 space-y-5 sm:space-y-6">
         <div className="space-y-1">
-          <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-sm">
+          <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm leading-normal">
             {t('evaluation_guide_tag', lang)}
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-[#111111]">
@@ -291,7 +291,7 @@ export default function JudgePage() {
 
       {/* Footer */}
       <footer className="border-t-2 border-[#111111] pt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-[#111111]/70 font-mono gap-2">
-        <span>© 2026 Chaukas · Judge Verification Kit</span>
+        <span>{t('judge_footer', lang)}</span>
         <Link href="/" className="hover:underline font-bold">
           {t('back_to_home', lang)}
         </Link>

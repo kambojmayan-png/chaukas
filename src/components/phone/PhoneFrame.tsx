@@ -53,7 +53,7 @@ export function PhoneFrame({ from, surface, lang = 'en', children }: PhoneFrameP
                   {headerTitle}
                 </div>
                 <div className="hidden min-[480px]:block text-[11px] text-[#111111]/70 truncate">
-                  {isUpi ? 'State Bank of India (•••4210)' : t('active_now', lang)}
+                  {isUpi ? t('sbi_account_subtext', lang) : t('active_now', lang)}
                 </div>
               </div>
             </div>

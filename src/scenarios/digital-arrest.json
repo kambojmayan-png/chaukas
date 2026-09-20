@@ -12,7 +12,7 @@
   "start": "n1",
   "nodes": {
     "n1": { "id": "n1", "surface": "call", "from": "Unknown · +91 70•••••118",
-      "messages": [ { "text": { "en": "This is an automated call from the courier office. A parcel booked with your Aadhaar has been seized by Mumbai Customs for illegal items. Press 1 to speak to the officer.", "hi": "यह कूरियर ऑफ़िस से एक automated कॉल है। आपके आधार से बुक हुआ एक पार्सल ग़ैर-क़ानूनी सामान के कारण मुंबई कस्टम्स ने ज़ब्त किया है। अधिकारी से बात करने के लिए 1 दबाएँ।" }, "flags": ["fear", "authority"], "speak": true } ],
+      "messages": [ { "text": { "en": "This is an automated call from the courier office. A parcel booked with your Aadhaar has been seized by Mumbai Customs for illegal items. Press 1 to speak to the officer.", "hi": "यह कूरियर ऑफ़िस से एक ऑटोमेटेड कॉल है। आपके आधार से बुक हुआ एक पार्सल ग़ैर-क़ानूनी सामान के कारण मुंबई कस्टम्स ने ज़ब्त किया है। अधिकारी से बात करने के लिए 1 दबाएँ।" }, "flags": ["fear", "authority"], "speak": true } ],
       "choices": [
         { "id": "a", "label": { "en": "Press 1", "hi": "1 दबाएँ" }, "next": "n2", "risk": "risky", "tag": "comply" },
         { "id": "b", "label": { "en": "Hang up", "hi": "फ़ोन काट दें" }, "next": "end_escaped", "risk": "safe", "tag": "hangup" },
@@ -21,7 +21,7 @@
     "n2": { "id": "n2", "surface": "videocall", "from": "Insp. Vikram Rathore · Mumbai Cyber Crime",
       "messages": [
         { "text": { "en": "The parcel had 5 passports and 200 grams of MDMA. A money-laundering case is registered against your Aadhaar.", "hi": "पार्सल में 5 पासपोर्ट और 200 ग्राम MDMA मिला है। आपके आधार पर मनी-लॉन्ड्रिंग का केस दर्ज हुआ है।" }, "flags": ["fear", "authority"], "speak": true },
-        { "text": { "en": "From this moment you are under DIGITAL ARREST. Keep your camera on. Do not call anyone — this is a national security matter.", "hi": "इसी क्षण से आप DIGITAL ARREST में हैं। कैमरा चालू रखिए। किसी को फ़ोन मत कीजिए — यह राष्ट्रीय सुरक्षा का मामला है।" }, "flags": ["secrecy", "fear"], "speak": true, "delayMs": 1800 }
+        { "text": { "en": "From this moment you are under DIGITAL ARREST. Keep your camera on. Do not call anyone — this is a national security matter.", "hi": "इसी क्षण से आप डिजिटल अरेस्ट में हैं। कैमरा चालू रखिए। किसी को फ़ोन मत कीजिए — यह राष्ट्रीय सुरक्षा का मामला है।" }, "flags": ["secrecy", "fear"], "speak": true, "delayMs": 1800 }
       ],
       "choices": [
         { "id": "a", "label": { "en": "Sir, I've done nothing! Please help me.", "hi": "सर, मैंने कुछ नहीं किया! मेरी मदद कीजिए।" }, "next": "n3", "risk": "risky", "tag": "comply" },
@@ -41,7 +41,7 @@
         { "id": "b", "label": { "en": "Cut the call. Tell family and dial 1930.", "hi": "कॉल काटें। परिवार को बताएँ और 1930 डायल करें।" }, "next": "end_escaped", "risk": "safe", "tag": "call_1930" }
       ] },
     "n3": { "id": "n3", "surface": "videocall", "from": "Insp. Vikram Rathore · Mumbai Cyber Crime",
-      "messages": [ { "text": { "en": "To verify your funds are clean, transfer your balance to the RBI secure verification account. It will be returned 30 minutes after verification.", "hi": "आपका पैसा साफ़ है या नहीं, यह जाँचने के लिए अपना बैलेंस RBI के 'secure verification account' में ट्रांसफ़र कीजिए। जाँच के 30 मिनट बाद पूरा पैसा वापस आ जाएगा।" }, "flags": ["pay_to_verify", "authority"], "speak": true } ],
+      "messages": [ { "text": { "en": "To verify your funds are clean, transfer your balance to the RBI secure verification account. It will be returned 30 minutes after verification.", "hi": "आपका पैसा साफ़ है या नहीं, यह जाँचने के लिए अपना बैलेंस RBI के 'सिक्योर वेरिफ़िकेशन अकाउंट' में ट्रांसफ़र कीजिए। जाँच के 30 मिनट बाद पूरा पैसा वापस आ जाएगा।" }, "flags": ["pay_to_verify", "authority"], "speak": true } ],
       "choices": [
         { "id": "a", "label": { "en": "Transfer the money", "hi": "पैसा ट्रांसफ़र करें" }, "next": "n4", "risk": "risky", "tag": "comply" },
         { "id": "b", "label": { "en": "RBI never holds a citizen's money. Cut the call, dial 1930.", "hi": "RBI किसी नागरिक का पैसा अपने पास नहीं रखता। कॉल काटें, 1930 डायल करें।" }, "next": "end_escaped", "risk": "safe", "tag": "call_1930" }
@@ -54,7 +54,7 @@
         { "id": "a", "label": { "en": "Go back and pay", "hi": "वापस जाकर भुगतान करें" }, "next": "n4", "risk": "risky", "tag": "comply" },
         { "id": "b", "label": { "en": "Cut the call. Dial 1930.", "hi": "कॉल काटें। 1930 डायल करें।" }, "next": "end_escaped", "risk": "safe", "tag": "call_1930" }
       ] },
-    "end_scammed": { "id": "end_scammed", "surface": "system", "end": { "outcome": "scammed", "lossInr": 25000, "headline": { "en": "₹25,000 sent to a 'verification account'. There is no such thing as digital arrest in Indian law.", "hi": "₹25,000 एक 'verification account' में चले गए। भारत के क़ानून में 'डिजिटल अरेस्ट' जैसी कोई चीज़ है ही नहीं।" } } },
+    "end_scammed": { "id": "end_scammed", "surface": "system", "end": { "outcome": "scammed", "lossInr": 25000, "headline": { "en": "₹25,000 sent to a 'verification account'. There is no such thing as digital arrest in Indian law.", "hi": "₹25,000 एक 'वेरिफ़िकेशन अकाउंट' में चले गए। भारत के क़ानून में 'डिजिटल अरेस्ट' जैसी कोई चीज़ है ही नहीं।" } } },
     "end_escaped": { "id": "end_escaped", "surface": "system", "end": { "outcome": "escaped", "lossInr": 0, "headline": { "en": "You cut the call. That is the entire defence.", "hi": "आपने कॉल काट दी। बचाव बस इतना ही है।" }, "lateHeadline": { "en": "You got out — after staying on the call far too long. Real victims are held on camera for hours.", "hi": "आप बच गए — पर कॉल पर बहुत देर रुकने के बाद। असली पीड़ितों को घंटों कैमरे के सामने बिठाए रखा जाता है।" } } }
   }
 }

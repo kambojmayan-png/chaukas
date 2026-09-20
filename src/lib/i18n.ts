@@ -98,14 +98,38 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   system_permission: { en: 'System Permission', hi: 'सिस्टम अनुमति' },
   seconds: { en: 'seconds', hi: 'सेकंड' },
   minutes: { en: 'minutes', hi: 'मिनट' },
-  steps: { en: 'steps', hi: 'कदम' },
-  step: { en: 'step', hi: 'कदम' },
+  steps: { en: 'steps', hi: 'क़दम' },
+  step: { en: 'step', hi: 'क़दम' },
   practice_money: { en: 'Practice money', hi: 'प्रैक्टिस के पैसे' },
   practice_pin: { en: 'Practice PIN', hi: 'प्रैक्टिस PIN' },
 
   // Landing Page (/)
-  hero_tag: { en: 'BEHAVIOURAL SIMULATION', hi: 'व्यवहार सिमुलेशन' },
+  hero_tag: { en: 'BEHAVIOURAL SIMULATION', hi: 'व्यवहार की ड्रिल' },
   hero_title: { en: 'Get scammed here. Never out there.', hi: 'यहाँ फँसिए, ताकि बाहर कभी न फँसें।' },
+  landing_stat_line: {
+    en: '₹981 crore lost to UPI fraud in FY 2024-25, across 12.64 lakh incidents.',
+    hi: 'FY 2024-25 में UPI धोखाधड़ी में ₹981 करोड़ गए, 12.64 लाख मामलों में।'
+  },
+  landing_stat_source: {
+    en: 'Ministry of Finance, Lok Sabha reply, Dec 2025',
+    hi: 'वित्त मंत्रालय, लोकसभा उत्तर, दिसंबर 2025'
+  },
+  landing_root_cause: {
+    en: "Most victims send the money themselves. Warnings don't fix that. Practice does.",
+    hi: 'ज़्यादातर लोग पैसा ख़ुद भेज देते हैं। चेतावनी से यह नहीं रुकता। अभ्यास से रुकता है।'
+  },
+  proof_drills_played: {
+    en: '{runs} drills played',
+    hi: '{runs} ड्रिल खेली गईं'
+  },
+  proof_gap_line: {
+    en: '{runs} drills played · {gap}% who knew the rule still fell for it (n={n})',
+    hi: '{runs} ड्रिल खेली गईं · नियम जानने वाले {gap}% लोग फिर भी फँस गए (n={n})'
+  },
+  judging_nav_link: {
+    en: 'Judging this? →',
+    hi: 'मूल्यांकन कर रहे हैं? →'
+  },
   start_3min_drill: { en: 'Start the 3-minute drill', hi: '3 मिनट की ड्रिल शुरू करें' },
   check_a_message: { en: 'Check a message →', hi: 'मैसेज जाँचें →' },
   hero_disclaimer: {
@@ -114,7 +138,7 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   },
   landing_footer: {
     en: 'No login · no real credentials · anonymous stats only',
-    hi: 'कोई लॉगिन नहीं · कोई असली जानकारी नहीं · केवल अनाम आंकड़े'
+    hi: 'कोई लॉगिन नहीं · कोई असली जानकारी नहीं · सिर्फ़ बिना नाम के आँकड़े'
   },
   judging_link: { en: 'Judging this? Start here →', hi: 'जज कर रहे हैं? यहाँ से शुरू करें →' },
   message_checker_nav: { en: 'Message Checker', hi: 'मैसेज चेकर' },
@@ -125,8 +149,8 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
 
   // Drill Intro & Keypad
   drill_n_of_3: { en: 'Drill {n} of 3', hi: 'ड्रिल {n} / 3' },
-  targeted_practice: { en: 'Targeted Practice', hi: 'लक्षित प्रैक्टिस' },
-  precheck_title: { en: 'Pre-Check', hi: 'त्वरित जाँच' },
+  targeted_practice: { en: 'Targeted Practice', hi: 'चुनी हुई ड्रिल' },
+  precheck_title: { en: 'Pre-Check', hi: 'पहले 3 छोटे सवाल' },
   start_drill: { en: 'Start drill', hi: 'ड्रिल शुरू करें' },
   start_drill_n: { en: 'Start Drill {n}', hi: 'ड्रिल {n} शुरू करें' },
   never_type_real_pin: {
@@ -156,8 +180,8 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   incoming_call: { en: 'Incoming Call…', hi: 'इनकमिंग कॉल…' },
   incoming_videocall: { en: 'Incoming Video Call…', hi: 'इनकमिंग वीडियो कॉल…' },
   official_inquiry: { en: 'Official inquiry', hi: 'सरकारी पूछताछ' },
-  camera_verification: { en: 'Camera verification requested', hi: 'कैमरा वेरिफिकेशन का अनुरोध' },
-  scenario_not_found: { en: 'Scenario not found.', hi: 'परिदृश्य नहीं मिला।' },
+  camera_verification: { en: 'Camera verification requested', hi: 'कैमरा वेरिफ़िकेशन का अनुरोध' },
+  scenario_not_found: { en: 'Scenario not found.', hi: 'ड्रिल नहीं मिली।' },
 
   // Debrief
   red_flag: { en: 'red flag', hi: 'ख़तरे का संकेत' },
@@ -188,7 +212,7 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   },
   call_bank_official: {
     en: "Call your bank's official number",
-    hi: 'अपने बैंक के official नंबर पर कॉल करें'
+    hi: 'अपने बैंक के आधिकारिक नंबर पर कॉल करें'
   },
   call_bank_official_desc: {
     en: "Call your bank's official helpline number immediately.",
@@ -208,13 +232,13 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   see_my_report: { en: 'See my report', hi: 'मेरी रिपोर्ट देखें' },
   timeline_replay: { en: 'Timeline Replay', hi: 'टाइमलाइन रीप्ले' },
   upi_pin_screen: { en: 'UPI PIN Screen', hi: 'UPI PIN स्क्रीन' },
-  otp_verification_screen: { en: 'OTP Verification Screen', hi: 'OTP वेरिफिकेशन स्क्रीन' },
+  otp_verification_screen: { en: 'OTP Verification Screen', hi: 'OTP वेरिफ़िकेशन स्क्रीन' },
   keypad_label: { en: 'Keypad', hi: 'कीपैड' },
   knowledge_behaviour_gap_label: {
     en: 'Knowledge–Behaviour Gap',
     hi: 'जानकारी और व्यवहार का अंतर'
   },
-  targeted_debrief: { en: 'Targeted Drill Debrief', hi: 'लक्षित ड्रिल का विश्लेषण' },
+  targeted_debrief: { en: 'Targeted Drill Debrief', hi: 'इस ड्रिल का विश्लेषण' },
   drill_debrief_n: { en: 'Drill {n} of {total} Debrief', hi: 'ड्रिल {n} / {total} का विश्लेषण' },
   play_full_drill_cta: { en: 'Play full 3-drill simulation →', hi: 'पूरी 3-ड्रिल सिमुलेशन खेलें →' },
 
@@ -255,6 +279,18 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   drill_results: { en: 'Drill Results', hi: 'ड्रिल के नतीजे' },
 
   // /check
+  example_electricity_sms: {
+    en: '⚡ Electricity Disconnection SMS',
+    hi: '⚡ बिजली कटने का SMS',
+  },
+  example_sbi_kyc_sms: {
+    en: '🏦 SBI KYC Link SMS',
+    hi: '🏦 SBI KYC लिंक SMS',
+  },
+  example_bank_otp_sms: {
+    en: '🛡️ Genuine Bank OTP SMS',
+    hi: '🛡️ असली बैंक OTP SMS',
+  },
   paste_message_placeholder: {
     en: 'Paste an SMS or WhatsApp message',
     hi: 'SMS या WhatsApp मैसेज यहाँ पेस्ट करें'
@@ -279,7 +315,7 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   check_page_title: { en: 'Check a suspicious message', hi: 'कोई संदिग्ध मैसेज जाँचें' },
   check_page_desc: {
     en: 'Paste an SMS, WhatsApp message, or email to detect social engineering pressure tactics.',
-    hi: 'सोशल इंजीनियरिंग के दबाव को पकड़ने के लिए SMS, WhatsApp मैसेज यहाँ पेस्ट करें।'
+    hi: 'कोई SMS या WhatsApp मैसेज पेस्ट करें और देखें उसमें दबाव बनाने की कौन-सी चालें हैं।'
   },
   verdict: { en: 'Verdict', hi: 'जाँच का नतीजा' },
   analysis_red_flags: { en: 'Analysis & Red Flags', hi: 'विश्लेषण और ख़तरे के संकेत' },
@@ -301,7 +337,7 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   },
   advice_utility_kyc_remote: {
     en: "Check only in the official app or office. Never install an app or share an OTP for a 'bill update' or KYC.",
-    hi: "जानकारी सिर्फ़ official ऐप या दफ़्तर से लें। 'बिल अपडेट' या KYC के नाम पर कभी ऐप इंस्टॉल न करें, न OTP बताएँ।"
+    hi: "जानकारी सिर्फ़ आधिकारिक ऐप या दफ़्तर से लें। 'बिल अपडेट' या KYC के नाम पर कभी ऐप इंस्टॉल न करें, न OTP बताएँ।"
   },
   advice_receive_money_pin: {
     en: "You never need a PIN, a QR scan or an 'Approve' tap to RECEIVE money.",
@@ -309,10 +345,22 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   },
   advice_other: {
     en: 'Do not reply, click or pay. Verify through an official channel you look up yourself.',
-    hi: 'जवाब न दें, लिंक न खोलें, पैसे न भेजें। ख़ुद official तरीक़े से पता करें।'
+    hi: 'जवाब न दें, लिंक न खोलें, पैसे न भेजें। ख़ुद आधिकारिक तरीक़े से पता करें।'
   },
 
   // /insights
+  drill_label_olx_qr: {
+    en: 'Drill 1 · QR / UPI Receive (Buyer who never bargains)',
+    hi: 'ड्रिल 1 · QR / UPI से पैसा लेना (बिना मोल-भाव वाला ख़रीदार)',
+  },
+  drill_label_bijli_remote: {
+    en: 'Drill 2 · Electricity KYC Remote App & OTP',
+    hi: 'ड्रिल 2 · बिजली बिल KYC, स्क्रीन-शेयरिंग ऐप और OTP',
+  },
+  drill_label_digital_arrest: {
+    en: 'Drill 3 · Digital Arrest Video Call',
+    hi: 'ड्रिल 3 · डिजिटल अरेस्ट वीडियो कॉल',
+  },
   of_people_who_knew: {
     en: 'of people who knew the rule still fell for it',
     hi: 'नियम जानने वालों में से इतने लोग फिर भी फँस गए'
@@ -335,7 +383,7 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   the_gap_tag: { en: 'THE KNOWLEDGE–BEHAVIOUR GAP', hi: 'जानकारी और व्यवहार का अंतर' },
   nobody_answered_note: {
     en: 'n = 0: nobody who answered the pre-check correctly has played yet',
-    hi: 'n = 0: प्री-चेक का सही उत्तर देने वाले किसी व्यक्ति ने अभी तक नहीं खेला है'
+    hi: 'n = 0: शुरुआती सवालों का सही जवाब देने वाले किसी व्यक्ति ने अभी तक ड्रिल नहीं खेली'
   },
   fall_rate_by_archetype: {
     en: 'First-Attempt Fall Rate by Scam Archetype',
@@ -343,7 +391,7 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   },
   fall_rate_desc: {
     en: 'Percentage of first-time players who authorized payments or permissions',
-    hi: 'पहली बार खेलने वालों का प्रतिशत जिन्होंने भुगतान या अनुमति स्वीकृत की'
+    hi: 'पहली बार खेलने वालों में से कितनों ने पैसे भेज दिए या अनुमति दे दी'
   },
   first_try: { en: 'First try', hi: 'पहली कोशिश' },
   redrill: { en: 'Re-drill', hi: 'दोबारा ड्रिल' },
@@ -353,7 +401,7 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   },
   learning_effect_desc: {
     en: 'Comparing initial fall rate with repeated practice runs',
-    hi: 'प्रारंभिक दर की तुलना दोहराए गए अभ्यास से'
+    hi: 'पहली कोशिश और दोबारा अभ्यास की तुलना'
   },
   insights_footer: { en: '© 2026 Chaukas · Anonymous Telemetry', hi: '© 2026 Chaukas · Anonymous Telemetry' },
 
@@ -376,10 +424,10 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
     hi: 'अपने फ़ोन से कोई स्पैम SMS /check में पेस्ट करें या 3 उदाहरण देखें। 100% प्राइवेसी के साथ ख़तरे के संकेत और सलाह देखें।'
   },
   step2_btn: { en: 'Open /check →', hi: '/check खोलें →' },
-  step3_title: { en: 'Inspect Live Metrics', hi: 'लाइव आंकड़े देखें' },
+  step3_title: { en: 'Inspect Live Metrics', hi: 'लाइव आँकड़े देखें' },
   step3_desc: {
     en: 'Open /insights to view the live Knowledge–Behaviour Gap metric, per-drill fall rates, and learning effect measured from real players.',
-    hi: 'लाइव आंकड़े देखने के लिए /insights खोलें — जानकारी और व्यवहार का अंतर और सीखने का असर देखें।'
+    hi: 'लाइव आँकड़े देखने के लिए /insights खोलें — जानकारी और व्यवहार का अंतर और सीखने का असर देखें।'
   },
   step3_btn: { en: 'Open /insights →', hi: '/insights खोलें →' },
   step4_title: { en: 'Inspect Tests & Architecture', hi: 'टेस्ट और आर्किटेक्चर देखें' },
@@ -388,11 +436,11 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
     hi: 'GitHub रिपॉजिटरी खोलें, src/engine/engine.ts में इंजन देखें और टेस्ट सूट चलाएँ।'
   },
   step4_btn: { en: 'View Repository →', hi: 'रिपॉजिटरी देखें →' },
-  drills_nav: { en: 'Drills', hi: 'ड्रिल्स' },
+  drills_nav: { en: 'Drills', hi: 'ड्रिल' },
   reality_ledger_title: { en: 'Reality Ledger', hi: 'Reality Ledger' },
   reality_ledger_desc: {
     en: 'Honest accounting of what is production-grade vs hackathon MVP shortcuts',
-    hi: 'Honest accounting of what is production-grade vs hackathon MVP shortcuts'
+    hi: 'क्या पूरी तरह बना है और क्या हैकाथॉन का शॉर्टकट है, इसका ईमानदार हिसाब'
   },
   repo_card_title: { en: 'GitHub Repository & Automated Tests', hi: 'GitHub रिपॉजिटरी और ऑटोमेटेड टेस्ट' },
   repo_card_desc: {
@@ -400,9 +448,121 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
     hi: 'इंजन, CI पाइपलाइन और व्यवहार परीक्षण सूट की जाँच करें।'
   },
 
+  // Insights view strings
+  runs_stat_label: {
+    en: '{runs} runs ({first_runs} first attempts{redrill_part})',
+    hi: '{runs} ड्रिल ({first_runs} पहली कोशिश{redrill_part})',
+  },
+  redrill_part: {
+    en: ', {n} re-drills',
+    hi: ', {n} दोबारा ड्रिल',
+  },
+  knew_but_fell_desc: {
+    en: '{fell} of {total} participants correctly identified the scam rule in the pre-check, yet still complied when pressured in the simulator.',
+    hi: '{fell} में से {total} खिलाड़ियों ने प्री-चेक में नियम सही बताया, फिर भी सिमुलेटर में दबाव में आकर पैसे भेज दिए।',
+  },
+  fell_on_first_attempt: {
+    en: '{fell} of {total} fell on first attempt',
+    hi: '{total} में से {fell} पहली कोशिश में फँस गए',
+  },
+  knew_but_fell_stat: {
+    en: 'Knew-but-fell:',
+    hi: 'जानते हुए भी फँसे:',
+  },
+  first_runs_count: {
+    en: 'n = {n} first runs',
+    hi: 'n = {n} पहली कोशिशें',
+  },
+  redrill_fall_rate_title: {
+    en: 'Re-drill Fall Rate',
+    hi: 'दोबारा ड्रिल में फँसने की दर',
+  },
+  redrills_count: {
+    en: 'n = {n} re-drills',
+    hi: 'n = {n} दोबारा अभ्यास',
+  },
+
+  // PhoneFrame & MessageList & PinPad strings
+  sbi_account_subtext: {
+    en: 'State Bank of India (•••4210)',
+    hi: 'भारतीय स्टेट बैंक (•••4210)',
+  },
+  delivered: {
+    en: '7:40 PM · Delivered',
+    hi: '7:40 PM · डिलीवर हुआ',
+  },
+  officer_on_call: {
+    en: 'Officer on Call',
+    hi: 'कॉल पर अधिकारी',
+  },
+  connected: {
+    en: 'Connected',
+    hi: 'कनेक्टेड',
+  },
+  audio_call: {
+    en: 'Audio Call',
+    hi: 'ऑडियो कॉल',
+  },
+  live_transcript_captions: {
+    en: 'Live Transcript Captions',
+    hi: 'लाइव बातचीत के सबटाइटल्स',
+  },
+  speaking: {
+    en: 'Speaking…',
+    hi: 'बोल रहे हैं…',
+  },
+  cyber_crime_officer: {
+    en: 'Cyber Crime Officer',
+    hi: 'साइबर क्राइम अधिकारी',
+  },
+  govt_cyber_police: {
+    en: 'Govt. of India · Cyber Police',
+    hi: 'भारत सरकार · साइबर पुलिस',
+  },
+  you: {
+    en: 'You',
+    hi: 'आप',
+  },
+  cam_on: {
+    en: 'Cam ON',
+    hi: 'कैमरा चालू',
+  },
+  video_call_captions: {
+    en: 'Video Call Captions',
+    hi: 'वीडियो कॉल सबटाइटल्स',
+  },
+  officer_speaking: {
+    en: 'Officer speaking…',
+    hi: 'अधिकारी बोल रहे हैं…',
+  },
+  unknown_caller: {
+    en: 'Unknown Caller',
+    hi: 'अज्ञात कॉलर',
+  },
+  upi_auth_badge: {
+    en: 'UPI AUTH',
+    hi: 'UPI AUTH',
+  },
+  sms_otp_badge: {
+    en: 'SMS OTP',
+    hi: 'SMS OTP',
+  },
+  backspace: {
+    en: 'Backspace',
+    hi: 'हटाएँ',
+  },
+  judge_footer: {
+    en: '© 2026 Chaukas · Judge Verification Kit',
+    hi: '© 2026 Chaukas · जज सत्यापन किट',
+  },
+  precheck_n_of_total: {
+    en: '{n} of {total}',
+    hi: '{n} / {total}',
+  },
+
   // GlassBox
   engine_recording_title: { en: 'What the engine is recording', hi: 'इंजन क्या रिकॉर्ड कर रहा है' },
-  waiting_first_action: { en: 'Waiting for first action…', hi: 'पहली कार्रवाई की प्रतीक्षा…' },
+  waiting_first_action: { en: 'Waiting for first action…', hi: 'पहले क़दम का इंतज़ार…' },
   show_engine_log: { en: 'Show engine log ▼', hi: 'इंजन लॉग देखें ▼' },
   hide_engine_log: { en: 'Hide engine log ▲', hi: 'इंजन लॉग छुपाएँ ▲' },
   glassbox_footnote: {

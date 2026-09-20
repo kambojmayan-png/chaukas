@@ -1,5 +1,7 @@
 # Chaukas (चौकस) — India's scam fire-drill
 
+![tests](https://github.com/kambojmayan-png/chaukas/actions/workflows/test.yml/badge.svg)
+
 **Get scammed here. Never out there.**
 
 Live: **https://chaukas.vercel.app** · Judging? Start at **[/judge](https://chaukas.vercel.app/judge)** · Live numbers: **[/insights](https://chaukas.vercel.app/insights)**

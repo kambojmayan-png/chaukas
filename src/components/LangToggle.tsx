@@ -13,7 +13,7 @@ export function LangToggle({ className = '' }: LangToggleProps) {
   return (
     <div role="group" aria-label="Language / भाषा" className={`flex items-center gap-1.5 min-w-0 ${className}`}>
       <span className="hidden min-[360px]:inline text-xs font-mono font-bold text-[#111111]/80 select-none whitespace-nowrap">
-        Language / भाषा:
+        Language / <span lang="hi">भाषा</span>:
       </span>
       <div className="flex items-center border-2 border-[#111111] rounded-md overflow-hidden bg-white shadow-hard-sm">
         <button
@@ -31,8 +31,9 @@ export function LangToggle({ className = '' }: LangToggleProps) {
         <button
           type="button"
           onClick={() => setLang('hi')}
+          lang="hi"
           aria-label="हिंदी"
-          className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${
+          className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer leading-normal ${
             lang === 'hi'
               ? 'bg-[#111111] text-white'
               : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'

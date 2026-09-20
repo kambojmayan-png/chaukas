@@ -55,19 +55,19 @@ export function Report({
     switch (outcome) {
       case 'scammed':
         return (
-          <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-red-100 text-[#D92D20] border border-red-300">
+          <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-red-100 text-[#D92D20] border border-red-300 leading-normal">
             {t('scammed', lang)}
           </span>
         );
       case 'escaped_late':
         return (
-          <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-orange-100 text-[#FF5A1F] border border-orange-300">
+          <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-orange-100 text-[#FF5A1F] border border-orange-300 leading-normal">
             {t('escaped_late', lang)}
           </span>
         );
       case 'escaped':
         return (
-          <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-green-100 text-[#12B76A] border border-green-300">
+          <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-green-100 text-[#12B76A] border border-green-300 leading-normal">
             {t('escaped', lang)}
           </span>
         );
@@ -78,7 +78,7 @@ export function Report({
     <div className="w-full max-w-[480px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 sm:p-6 my-auto space-y-5 sm:space-y-6">
       {/* Header */}
       <div className="space-y-1 text-center">
-        <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-sm">
+        <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm leading-normal">
           {t('final_report_tag', lang)}
         </div>
         <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#111111]">

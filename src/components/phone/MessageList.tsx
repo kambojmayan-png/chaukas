@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import type { Message, Lang, Surface } from '@/engine/engine';
+import { t } from '@/lib/i18n';
 
 interface MessageListProps {
   messages: Message[];
@@ -62,7 +63,7 @@ export function MessageList({
                 {item.text[lang] || item.text.en}
               </p>
               <div className="text-[10px] font-mono text-[#111111]/60 text-right">
-                7:40 PM · Delivered
+                {t('delivered', lang)}
               </div>
             </div>
           ))}
@@ -83,10 +84,10 @@ export function MessageList({
           {/* Top: Caller Info & Timer */}
           <div className="text-center space-y-1 pt-2">
             <h2 className="text-xl font-bold tracking-tight text-white">
-              {from || 'Officer on Call'}
+              {from || t('officer_on_call', lang)}
             </h2>
             <div className="text-sm font-mono text-[#12B76A] font-semibold">
-              ● Connected · {formatTime(callSeconds)}
+              ● {t('connected', lang)} · {formatTime(callSeconds)}
             </div>
           </div>
 
@@ -100,7 +101,7 @@ export function MessageList({
               <div className="absolute w-40 h-40 rounded-full border border-white/10 animate-pulse pointer-events-none" />
             </div>
             <span className="text-xs font-mono text-white/60 mt-4 tracking-wider uppercase">
-              Audio Call
+              {t('audio_call', lang)}
             </span>
           </div>
 
@@ -110,7 +111,7 @@ export function MessageList({
             className="w-full max-h-40 overflow-y-auto space-y-2 bg-black/80 border border-white/20 rounded-md p-3"
           >
             <div className="text-[10px] font-mono uppercase tracking-widest text-[#FF5A1F] text-center">
-              Live Transcript Captions
+              {t('live_transcript_captions', lang)}
             </div>
             {surfaceMessages.map((item, idx) => (
               <p
@@ -122,7 +123,7 @@ export function MessageList({
             ))}
             {typing && (
               <p className="text-xs font-mono text-white/70 text-center animate-pulse">
-                Speaking…
+                {t('speaking', lang)}
               </p>
             )}
           </div>
@@ -155,10 +156,10 @@ export function MessageList({
               </div>
               <div className="text-center px-2">
                 <p className="text-xs font-bold text-white tracking-wide">
-                  {from || 'Cyber Crime Officer'}
+                  {from || t('cyber_crime_officer', lang)}
                 </p>
                 <p className="text-[10px] font-mono text-yellow-400">
-                  Govt. of India · Cyber Police
+                  {t('govt_cyber_police', lang)}
                 </p>
               </div>
             </div>
@@ -167,9 +168,9 @@ export function MessageList({
             <div className="absolute bottom-2 right-2 w-16 h-20 bg-neutral-800 border border-white/40 rounded shadow-md flex flex-col items-center justify-center p-1 z-20">
               <span className="text-lg">👤</span>
               <span className="text-[8px] font-mono text-white/90 mt-0.5 text-center leading-none">
-                You
+                {t('you', lang)}
               </span>
-              <span className="text-[7px] font-mono text-green-400">Cam ON</span>
+              <span className="text-[7px] font-mono text-green-400">{t('cam_on', lang)}</span>
             </div>
           </div>
 
@@ -179,7 +180,7 @@ export function MessageList({
             className="w-full max-h-36 overflow-y-auto space-y-1.5 bg-black/85 border border-white/20 rounded-md p-2.5 shrink-0"
           >
             <div className="text-[10px] font-mono uppercase tracking-widest text-[#FF5A1F] text-center">
-              Video Call Captions
+              {t('video_call_captions', lang)}
             </div>
             {surfaceMessages.map((item, idx) => (
               <p
@@ -191,7 +192,7 @@ export function MessageList({
             ))}
             {typing && (
               <p className="text-xs font-mono text-white/70 text-center animate-pulse">
-                Officer speaking…
+                {t('officer_speaking', lang)}
               </p>
             )}
           </div>

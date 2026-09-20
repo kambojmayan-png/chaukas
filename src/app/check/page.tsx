@@ -29,15 +29,15 @@ function getAdvice(result: CheckResult, lang: Lang): string | null {
 
 const EXAMPLES = [
   {
-    label: { en: '⚡ Electricity Disconnection SMS', hi: '⚡ बिजली कटने का SMS' },
+    labelKey: 'example_electricity_sms',
     text: 'Dear Consumer, your electricity power will be disconnected tonight at 9.30 pm because your previous month bill was not updated. Please immediately contact our electricity officer 8240471159. Thank you.',
   },
   {
-    label: { en: '🏦 SBI KYC Link SMS', hi: '🏦 SBI KYC लिंक SMS' },
+    labelKey: 'example_sbi_kyc_sms',
     text: 'Dear customer your SBI account will be blocked today. Update your KYC immediately: http://sbi-kyc-update.top/login',
   },
   {
-    label: { en: '🛡️ Genuine Bank OTP SMS', hi: '🛡️ असली बैंक OTP SMS' },
+    labelKey: 'example_bank_otp_sms',
     text: '482913 is your OTP for txn of INR 1,250.00 at AMAZON. Do not share it with anyone. -HDFC Bank',
   },
 ];
@@ -115,7 +115,7 @@ export default function CheckPage() {
           className="bg-[#FF5A1F]/20 text-[#111111] border-b-2 border-[#FF5A1F] px-1 py-0.5 rounded-xs font-semibold inline"
         >
           {highlighted}
-          <span className="ml-1.5 text-[10px] font-mono font-bold uppercase bg-[#FF5A1F] text-white px-1.5 py-0.5 rounded tracking-wider inline-block align-middle">
+          <span className="ml-1.5 text-[10px] font-mono font-bold uppercase bg-[#FF5A1F] text-white px-1.5 py-1 rounded tracking-wider inline-block align-middle leading-normal">
             {span.flags.map(f => getFlagLabel(f, lang)).join(', ')}
           </span>
         </mark>
@@ -160,7 +160,7 @@ export default function CheckPage() {
       <div className="my-auto py-4 space-y-6">
         {/* Title */}
         <div className="space-y-1">
-          <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-sm">
+          <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm leading-normal">
             {t('message_inspector_tag', lang)}
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#111111]">
@@ -184,7 +184,7 @@ export default function CheckPage() {
                 onClick={() => handleExampleClick(ex.text)}
                 className="text-xs font-semibold bg-white text-[#111111] border-2 border-[#111111] rounded-md shadow-hard-sm px-3 py-1.5 hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer text-left"
               >
-                {ex.label[lang] || ex.label.en}
+                {t(ex.labelKey, lang)}
               </button>
             ))}
           </div>
@@ -242,19 +242,19 @@ export default function CheckPage() {
               </span>
 
               {result.verdict === 'likely_scam' && (
-                <div className="inline-block bg-[#D92D20] text-white font-bold text-sm md:text-base px-3.5 py-1.5 rounded-md border-2 border-[#111111] shadow-hard-sm">
+                <div className="inline-block bg-[#D92D20] text-white font-bold text-sm md:text-base px-3.5 py-1.5 rounded-md border-2 border-[#111111] shadow-hard-sm leading-normal">
                   {t('likely_scam', lang)}
                 </div>
               )}
 
               {result.verdict === 'suspicious' && (
-                <div className="inline-block bg-[#FF5A1F] text-white font-bold text-sm md:text-base px-3.5 py-1.5 rounded-md border-2 border-[#111111] shadow-hard-sm">
+                <div className="inline-block bg-[#FF5A1F] text-white font-bold text-sm md:text-base px-3.5 py-1.5 rounded-md border-2 border-[#111111] shadow-hard-sm leading-normal">
                   {t('suspicious', lang)}
                 </div>
               )}
 
               {result.verdict === 'no_red_flags_found' && (
-                <div className="inline-block bg-neutral-200 text-[#111111] font-bold text-sm md:text-base px-3.5 py-1.5 rounded-md border-2 border-[#111111] shadow-hard-sm">
+                <div className="inline-block bg-neutral-200 text-[#111111] font-bold text-sm md:text-base px-3.5 py-1.5 rounded-md border-2 border-[#111111] shadow-hard-sm leading-normal">
                   {t('no_red_flags_found', lang)}
                 </div>
               )}

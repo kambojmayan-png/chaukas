@@ -3,7 +3,7 @@
   "title": { "en": "Your power will be cut tonight", "hi": "आज रात आपकी बिजली कट जाएगी" },
   "archetype": "utility_kyc_remote",
   "setup": { "en": "It's 7:40 PM. An SMS arrives from an unknown number.", "hi": "शाम के 7:40 बजे हैं। एक अनजान नंबर से SMS आता है।" },
-  "rule": { "en": "No real officer asks you to install an app, make a 'test payment' or read out an OTP. Check bills only in the official app or office.", "hi": "कोई असली अधिकारी आपसे ऐप इंस्टॉल नहीं करवाता, 'टेस्ट पेमेंट' नहीं माँगता और OTP नहीं पूछता। बिल सिर्फ़ official ऐप या दफ़्तर में देखें।" },
+  "rule": { "en": "No real officer asks you to install an app, make a 'test payment' or read out an OTP. Check bills only in the official app or office.", "hi": "कोई असली अधिकारी आपसे ऐप इंस्टॉल नहीं करवाता, 'टेस्ट पेमेंट' नहीं माँगता और OTP नहीं पूछता। बिल सिर्फ़ आधिकारिक ऐप या दफ़्तर में देखें।" },
   "precheck": { "q": { "en": "An OTP arrives while a 'bank officer' is on the call asking for it. Should you refuse to read it out?", "hi": "कॉल पर 'बैंक अधिकारी' OTP माँग रहा है और OTP आ गया। क्या आपको बताने से मना कर देना चाहिए?" }, "correct": "yes" },
   "sources": [ { "label": "National Cyber Crime Reporting Portal (report: 1930)", "url": "https://cybercrime.gov.in" } ],
   "start": "n1",
@@ -12,7 +12,7 @@
       "messages": [ { "text": { "en": "Dear Consumer, your electricity will be DISCONNECTED tonight at 9:30 PM because your last bill is not updated. Contact the electricity officer immediately: 82•••••391.", "hi": "प्रिय उपभोक्ता, पिछला बिल अपडेट न होने के कारण आज रात 9:30 बजे आपकी बिजली काट दी जाएगी। तुरंत बिजली अधिकारी से संपर्क करें: 82•••••391।" }, "flags": ["urgency", "fear", "unofficial_contact"] } ],
       "choices": [
         { "id": "a", "label": { "en": "Call the number", "hi": "इस नंबर पर कॉल करें" }, "next": "n2", "risk": "risky", "tag": "call_unknown" },
-        { "id": "b", "label": { "en": "Check my bill in the official electricity app", "hi": "बिजली विभाग के official ऐप में बिल देखें" }, "next": "end_escaped", "risk": "safe", "tag": "verify_official" },
+        { "id": "b", "label": { "en": "Check my bill in the official electricity app", "hi": "बिजली विभाग के आधिकारिक ऐप में बिल देखें" }, "next": "end_escaped", "risk": "safe", "tag": "verify_official" },
         { "id": "c", "label": { "en": "Report the SMS and block the number", "hi": "SMS रिपोर्ट करें और नंबर ब्लॉक करें" }, "next": "end_escaped", "risk": "safe", "tag": "block_report" }
       ] },
     "n2": { "id": "n2", "surface": "call", "from": "Electricity Officer",
@@ -23,7 +23,7 @@
         { "id": "c", "label": { "en": "Hang up. Call the number printed on my bill.", "hi": "फ़ोन काटें। बिल पर छपे नंबर पर कॉल करें।" }, "next": "end_escaped", "risk": "safe", "tag": "hangup" }
       ] },
     "n2b": { "id": "n2b", "surface": "call", "from": "Electricity Officer", "timerSec": 20, "timeoutNext": "n2c",
-      "messages": [ { "text": { "en": "By tomorrow the line will be cut, and reconnection costs ₹2,500. This takes only 2 minutes.", "hi": "कल तक तो लाइन कट जाएगी, फिर reconnection के ₹2,500 लगेंगे। सिर्फ़ 2 मिनट का काम है।" }, "flags": ["urgency", "fear"], "speak": true } ],
+      "messages": [ { "text": { "en": "By tomorrow the line will be cut, and reconnection costs ₹2,500. This takes only 2 minutes.", "hi": "कल तक तो लाइन कट जाएगी, फिर दोबारा कनेक्शन के ₹2,500 लगेंगे। सिर्फ़ 2 मिनट का काम है।" }, "flags": ["urgency", "fear"], "speak": true } ],
       "choices": [
         { "id": "a", "label": { "en": "Fine, install it.", "hi": "ठीक है, इंस्टॉल कर लेते हैं।" }, "next": "n3", "risk": "risky", "tag": "install_app" },
         { "id": "b", "label": { "en": "Hang up", "hi": "फ़ोन काट दें" }, "next": "end_escaped", "risk": "safe", "tag": "hangup" }
@@ -41,7 +41,7 @@
         { "id": "b", "label": { "en": "Deny and hang up", "hi": "मना करें और फ़ोन काट दें" }, "next": "end_escaped", "risk": "safe", "tag": "hangup" }
       ] },
     "n4": { "id": "n4", "surface": "upi", "from": "Electricity Officer",
-      "messages": [ { "text": { "en": "Very good. Now make a ₹10 test payment so the system can verify your account.", "hi": "बहुत बढ़िया। अब ₹10 का एक टेस्ट पेमेंट कीजिए ताकि सिस्टम आपका अकाउंट verify कर ले।" }, "flags": ["pay_to_verify"], "via": "call", "speak": true } ],
+      "messages": [ { "text": { "en": "Very good. Now make a ₹10 test payment so the system can verify your account.", "hi": "बहुत बढ़िया। अब ₹10 का एक टेस्ट पेमेंट कीजिए ताकि सिस्टम आपका अकाउंट वेरिफ़ाई कर ले।" }, "flags": ["pay_to_verify"], "via": "call", "speak": true } ],
       "input": { "kind": "pin", "prompt": { "en": "Enter UPI PIN", "hi": "UPI PIN डालें" }, "detail": { "en": "Paying ₹10 to BILL UPDATE DESK (billdesk.help@okbank)", "hi": "₹10 का भुगतान — BILL UPDATE DESK (billdesk.help@okbank) को" }, "flags": ["screen_says_pay"], "onSubmit": "n5", "onCancel": "end_escaped" } },
     "n5": { "id": "n5", "surface": "call", "from": "Electricity Officer",
       "messages": [

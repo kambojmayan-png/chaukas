@@ -121,7 +121,7 @@ export function PinPad({
           <span>{t('cancel_go_back', lang)}</span>
         </button>
         <span className="text-[10px] min-[480px]:text-xs font-mono text-[#111111]/60 uppercase font-semibold">
-          {kind === 'pin' ? 'UPI AUTH' : 'SMS OTP'}
+          {kind === 'pin' ? t('upi_auth_badge', lang) : t('sms_otp_badge', lang)}
         </span>
       </div>
 
@@ -196,7 +196,7 @@ export function PinPad({
           <button
             type="button"
             onClick={handleBackspace}
-            aria-label="Backspace"
+            aria-label={t('backspace', lang)}
             className="min-h-[44px] h-11 min-[480px]:min-h-[52px] min-[480px]:h-13 bg-[#F6F3EC] text-[#111111] border-2 border-[#111111] rounded-md shadow-hard-sm text-lg min-[480px]:text-xl font-bold flex items-center justify-center hover:bg-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
           >
             ⌫
