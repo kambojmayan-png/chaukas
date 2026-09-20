@@ -195,13 +195,16 @@ export interface PlayLineOptions {
   index: number;
   voiceLang: VoiceChoice;
   text: string;
+  uiLang?: 'en' | 'hi';
+  uiText?: string;
 }
 
 /**
  * Plays a pre-recorded clip if present in manifest, else falls back to TTS speak().
+ * If a Hindi clip is missing for a line, falls back to TTS in the UI language.
  * If voiceLang === 'off', stays silent.
  */
-export function playLine({ scenarioId, nodeId, index, voiceLang, text }: PlayLineOptions) {
+export function playLine({ scenarioId, nodeId, index, voiceLang, text, uiLang, uiText }: PlayLineOptions) {
   if (voiceLang === 'off') return;
 
   const key = `${voiceLang}/${scenarioId}__${nodeId}__${index}`;
@@ -210,8 +213,10 @@ export function playLine({ scenarioId, nodeId, index, voiceLang, text }: PlayLin
   if (clipUrl) {
     playClip(clipUrl);
   } else {
-    // Fall back to existing TTS speak(text, voiceLang) (no Hindi TTS voice -> stay silent)
-    speak(text, voiceLang);
+    // If a Hindi clip is missing for a line, fall back to TTS in the UI language.
+    const targetLang = (voiceLang === 'hi' && uiLang) ? uiLang : (voiceLang as 'en' | 'hi');
+    const targetText = (voiceLang === 'hi' && uiText) ? uiText : text;
+    speak(targetText, targetLang);
   }
 }
 

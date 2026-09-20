@@ -78,7 +78,7 @@ export default function DrillPage() {
   const [scenarioIndex, setScenarioIndex] = useState<number>(0);
   const [onlyMode, setOnlyMode] = useState<boolean>(false);
   const [lang, setLang] = useState<Lang>('en');
-  const [voiceChoice, setVoiceChoice] = useState<VoiceChoice>('en');
+  const [voiceChoice, setVoiceChoice] = useState<VoiceChoice>('hi');
   const [userOverrodeVoice, setUserOverrodeVoice] = useState<boolean>(false);
   const [muted, setMuted] = useState<boolean>(false);
   const [started, setStarted] = useState<boolean>(false);
@@ -125,9 +125,6 @@ export default function DrillPage() {
 
   const handleLangChange = (newLang: Lang) => {
     setLang(newLang);
-    if (!userOverrodeVoice) {
-      setVoiceChoice(newLang);
-    }
   };
 
   const handleVoiceChange = (choice: VoiceChoice) => {
@@ -613,7 +610,8 @@ function DrillRunner({
         voiceChoice === 'hi'
           ? (msg.text.hi || msg.text.en)
           : (msg.text.en || msg.text.hi || '');
-      const key = `${node.id}-${shown}-${voiceChoice}`;
+      const uiText = msg.text[lang] || msg.text.en;
+      const key = `${node.id}-${shown}-${voiceChoice}-${lang}`;
       if (lastSpokenRef.current !== key) {
         lastSpokenRef.current = key;
         if (!muted && voiceChoice !== 'off') {
@@ -623,11 +621,13 @@ function DrillRunner({
             index: msgIndex,
             voiceLang: voiceChoice,
             text: voiceText,
+            uiLang: lang,
+            uiText,
           });
         }
       }
     }
-  }, [shown, node.id, node.messages, muted, voiceChoice, scenario.id]);
+  }, [shown, node.id, node.messages, muted, voiceChoice, lang, scenario.id]);
 
   // Messages from earlier nodes stay in scrollback, fully shown
   const scrollbackMessages = useMemo(() => {
@@ -916,6 +916,13 @@ function DrillRunner({
           </>
         )}
       </PhoneFrame>
+
+      {/* When UI is English and voice is Hindi, show small note under the phone */}
+      {lang === 'en' && voiceChoice === 'hi' && (
+        <p className="mt-2 text-xs font-mono text-[#111111]/70 text-center">
+          Caller speaks Hindi, as real scam calls do · captions in English
+        </p>
+      )}
     </div>
   );
 }
