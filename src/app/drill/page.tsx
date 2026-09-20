@@ -235,7 +235,7 @@ export default function DrillPage() {
 
   if (!scenario) {
     return (
-      <main className="min-h-screen p-6 flex flex-col items-center justify-center">
+      <main className="min-h-screen p-3 md:p-8 flex flex-col items-center justify-center">
         <p className="text-red-600 font-bold">{t('scenario_not_found', lang)}</p>
       </main>
     );
@@ -375,59 +375,60 @@ export default function DrillPage() {
   const currentKnew = knewAnswers[scenario.id]?.knew ?? null;
 
   return (
-    <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-4 md:p-8 flex flex-col items-center">
-      {/* Top Header Bar with Breadcrumb, Wallet, Mute Toggle, Language Toggle, and Caller Voice */}
-      <div className="w-full max-w-[440px] flex flex-col gap-2 mb-4">
-        <div className="flex items-center justify-between">
+    <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-3 md:p-8 flex flex-col items-center">
+      {/* Top Header Bar: below 480px row 1 = back + wallet + mute; row 2 = Lang toggle; row 3 = Voice */}
+      <div className="w-full max-w-[440px] flex flex-col gap-2 mb-3">
+        {/* Row 1: Back link + Wallet + Mute */}
+        <div className="flex items-center justify-between gap-2">
           <Link
             href="/"
             onClick={() => {
               stopSpeaking();
               stopRing();
             }}
-            className="text-sm font-bold text-[#111111] hover:underline flex items-center gap-1 min-h-[40px]"
+            className="text-sm font-bold text-[#111111] hover:underline flex items-center gap-1 min-h-[36px] shrink-0"
           >
             <span>←</span>
             <span>{t('home', lang)}</span>
           </Link>
 
           {/* Wallet Balance in Header */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border-2 border-[#111111] rounded-md shadow-hard-sm font-mono font-bold text-xs">
+          <div className="flex items-center gap-1 px-2 py-1 bg-white border-2 border-[#111111] rounded-md shadow-hard-sm font-mono font-bold text-xs shrink-0">
             <span className="text-[#111111]/70">{t('wallet', lang)}</span>
             <span className="tabular-nums text-[#111111]">
               ₹{animatedBalance.toLocaleString('en-IN')}
             </span>
           </div>
 
-          <div className="flex items-center space-x-2">
-            {/* Mute Toggle */}
-            <button
-              type="button"
-              onClick={() => {
-                setMuted(m => {
-                  const next = !m;
-                  if (next) {
-                    stopSpeaking();
-                    stopRing();
-                  }
-                  return next;
-                });
-              }}
-              aria-label={muted ? t('sound_muted', lang) : t('sound_on', lang)}
-              className="min-h-[36px] px-2.5 py-1 text-xs font-mono font-bold border-2 border-[#111111] rounded-md bg-white shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center gap-1 cursor-pointer"
-            >
-              <span>{muted ? '🔇' : '🔊'}</span>
-            </button>
-          </div>
+          {/* Mute Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              setMuted(m => {
+                const next = !m;
+                if (next) {
+                  stopSpeaking();
+                  stopRing();
+                }
+                return next;
+              });
+            }}
+            aria-label={muted ? t('sound_muted', lang) : t('sound_on', lang)}
+            className="min-h-[36px] px-2.5 py-1 text-xs font-mono font-bold border-2 border-[#111111] rounded-md bg-white shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center gap-1 cursor-pointer shrink-0"
+          >
+            <span>{muted ? '🔇' : '🔊'}</span>
+          </button>
         </div>
 
-        {/* Controls Row: Language Toggle and Caller Voice placed next to each other */}
-        <div className="flex flex-wrap items-center justify-between gap-2 bg-white border-2 border-[#111111] rounded-md p-2 shadow-hard-sm">
-          {/* Shared Language Toggle */}
-          <LangToggle />
+        {/* Row 2 & Row 3 below 480px: Language toggle & Caller's voice */}
+        <div className="flex flex-col min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between gap-2 bg-white border-2 border-[#111111] rounded-md p-2 shadow-hard-sm">
+          {/* Row 2: Language Toggle */}
+          <div className="flex items-center justify-between min-[480px]:justify-start">
+            <LangToggle />
+          </div>
 
-          {/* Caller Voice Control */}
-          <div className="flex items-center gap-1.5">
+          {/* Row 3: Caller Voice Control */}
+          <div className="flex items-center justify-between min-[480px]:justify-start gap-1.5 pt-1.5 border-t border-[#111111]/15 min-[480px]:border-t-0 min-[480px]:pt-0">
             <span className="text-xs font-mono font-bold text-[#111111]/80 whitespace-nowrap">
               {t('caller_voice', lang)}
             </span>
@@ -472,7 +473,7 @@ export default function DrillPage() {
 
       {/* SCREEN 1: PRE-CHECK UPFRONT */}
       {screen === 'precheck' && (
-        <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 my-auto space-y-6 text-center">
+        <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 min-[400px]:p-5 md:p-6 my-auto space-y-4 sm:space-y-5 text-center">
           <div className="flex items-center justify-between border-b border-[#111111]/20 pb-2">
             <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F]">
               {t('precheck_title', lang)}
@@ -522,7 +523,7 @@ export default function DrillPage() {
 
       {/* SCREEN 2: DRILL INTRO CARD */}
       {screen === 'intro' && (
-        <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 my-auto space-y-5">
+        <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 min-[400px]:p-5 md:p-6 my-auto space-y-4 sm:space-y-5">
           <div className="flex items-center justify-between">
             <div className="inline-block bg-[#FF5A1F] text-white text-xs font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded">
               {onlyMode
@@ -534,15 +535,15 @@ export default function DrillPage() {
             {/* Raw scenario.archetype REMOVED per constraint 5 */}
           </div>
 
-          <h1 className="text-2xl font-bold tracking-tight text-[#111111]">
+          <h1 className="text-xl min-[400px]:text-2xl font-bold tracking-tight text-[#111111]">
             {scenario.title[lang] || scenario.title.en}
           </h1>
 
-          <div className="bg-[#F6F3EC] border border-[#111111] p-4 rounded-md text-sm md:text-base text-[#111111] leading-relaxed">
+          <div className="bg-[#F6F3EC] border border-[#111111] p-3.5 rounded-md text-sm md:text-base text-[#111111] leading-relaxed">
             {scenario.setup[lang] || scenario.setup.en}
           </div>
 
-          <div className="text-xs text-[#111111]/90 font-mono space-y-1 bg-neutral-100 p-3.5 rounded border border-[#111111]/30">
+          <div className="text-xs text-[#111111]/90 font-mono space-y-1 bg-neutral-100 p-3 rounded border border-[#111111]/30">
             <p className="font-bold text-[#111111] leading-relaxed">
               {t('drill_safety_notice', lang)}
             </p>
@@ -552,7 +553,7 @@ export default function DrillPage() {
           <button
             type="button"
             onClick={handleStartDrill}
-            className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-lg border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base min-[400px]:text-lg border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>
               {onlyMode
@@ -905,19 +906,8 @@ function DrillRunner({
 
   // Drill in progress inside PhoneFrame
   return (
-    <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 w-full max-w-5xl">
-      <div className="w-full max-w-[380px] flex flex-col items-center">
-        {/* Pressure Timer Countdown: starts only when done is true */}
-        {node.timerSec && done && (
-          <div className="w-full mb-2">
-            <PressureTimer
-              seconds={node.timerSec}
-              lang={lang}
-              onTimeout={() => safeAct({ type: 'timeout' })}
-            />
-          </div>
-        )}
-
+    <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-6 md:gap-8 w-full max-w-5xl">
+      <div className="w-full min-[480px]:max-w-[380px] flex flex-col items-center">
         <PhoneFrame from={node.from} surface={node.surface} lang={lang}>
           {/* Top SMS Notification Banner for any revealed message with via: 'sms' */}
           {smsBannerMessages.length > 0 && (
@@ -925,9 +915,9 @@ function DrillRunner({
               {smsBannerMessages.map((sms, i) => (
                 <div
                   key={i}
-                  className="bg-white border-2 border-[#111111] shadow-hard rounded-md p-3 text-left transition-all"
+                  className="bg-white border-2 border-[#111111] shadow-hard-sm rounded-md p-2.5 text-left transition-all"
                 >
-                  <div className="flex items-center justify-between text-xs font-mono font-bold text-[#FF5A1F] border-b border-[#111111]/10 pb-1 mb-1">
+                  <div className="flex items-center justify-between text-[11px] font-mono font-bold text-[#FF5A1F] border-b border-[#111111]/10 pb-1 mb-1">
                     <span className="flex items-center gap-1">
                       <span>💬</span>
                       <span>{t('sms_banner_title', lang)}</span>
@@ -944,14 +934,14 @@ function DrillRunner({
 
           {/* Incoming Call Screen (Non-call to Call transition) */}
           {isCallNode && !callAccepted ? (
-            <div className="flex-1 flex flex-col justify-between p-6 bg-[#0E0E10] text-[#F6F3EC] select-none text-center">
-              <div className="pt-8 space-y-2">
+            <div className="flex-1 flex flex-col justify-between p-4 min-[480px]:p-6 bg-[#0E0E10] text-[#F6F3EC] select-none text-center">
+              <div className="pt-4 min-[480px]:pt-8 space-y-2">
                 <span className="text-xs font-mono text-[#FF5A1F] uppercase tracking-widest block animate-pulse">
                   {node.surface === 'videocall'
                     ? t('incoming_videocall', lang)
                     : t('incoming_call', lang)}
                 </span>
-                <h2 className="text-2xl font-bold tracking-tight text-white">
+                <h2 className="text-xl min-[480px]:text-2xl font-bold tracking-tight text-white">
                   {node.from || 'Unknown Caller'}
                 </h2>
                 <p className="text-xs font-mono text-white/60">
@@ -962,22 +952,22 @@ function DrillRunner({
               </div>
 
               {/* Pulsing Avatar */}
-              <div className="flex flex-col items-center justify-center my-auto">
+              <div className="flex flex-col items-center justify-center my-auto py-2">
                 <div className="relative flex items-center justify-center">
-                  <div className="w-24 h-24 rounded-full bg-slate-800 border-2 border-white/40 flex items-center justify-center text-4xl shadow-xl z-10">
+                  <div className="w-20 h-20 min-[480px]:w-24 min-[480px]:h-24 rounded-full bg-slate-800 border-2 border-white/40 flex items-center justify-center text-3xl min-[480px]:text-4xl shadow-xl z-10">
                     {node.surface === 'videocall' ? '👮‍♂️' : '📞'}
                   </div>
-                  <div className="absolute w-32 h-32 rounded-full border border-green-500/40 animate-ping opacity-40 pointer-events-none" />
-                  <div className="absolute w-40 h-40 rounded-full border border-green-500/20 animate-pulse pointer-events-none" />
+                  <div className="absolute w-28 h-28 min-[480px]:w-32 min-[480px]:h-32 rounded-full border border-green-500/40 animate-ping opacity-40 pointer-events-none" />
+                  <div className="absolute w-36 h-36 min-[480px]:w-40 min-[480px]:h-40 rounded-full border border-green-500/20 animate-pulse pointer-events-none" />
                 </div>
               </div>
 
               {/* Accept Call Button (Not a scored action) */}
-              <div className="pb-6">
+              <div className="pb-4 min-[480px]:pb-6">
                 <button
                   type="button"
                   onClick={handleAcceptCall}
-                  className="w-full min-h-[52px] py-3.5 bg-[#12B76A] text-white font-bold text-lg rounded-full shadow-lg hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full min-h-[48px] min-[480px]:min-h-[52px] py-3 bg-[#12B76A] text-white font-bold text-base min-[480px]:text-lg rounded-full shadow-lg hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>📞</span>
                   <span>{t('accept', lang)}</span>
@@ -996,52 +986,58 @@ function DrillRunner({
             />
           ) : (
             /* Standard Surfaces: Chat, SMS, Call, VideoCall, UPI */
-            <>
-              {/* If node has input: show MessageList while !done, then show PinPad when done */}
-              {node.input ? (
-                done ? (
-                  <PinPad
-                    kind={node.input.kind}
-                    prompt={node.input.prompt[lang] || node.input.prompt.en}
-                    detail={node.input.detail[lang] || node.input.detail.en}
-                    practicePin={PRACTICE_PIN}
-                    expectedCode={expectedCode}
-                    lang={lang}
-                    onSubmit={(len, hesitationMs) =>
-                      safeAct({ type: 'input_submit', len, hesitationMs })
-                    }
-                    onCancel={() => safeAct({ type: 'input_cancel' })}
-                  />
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
+              {/* MessageList: scrollable area */}
+              <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+                <MessageList
+                  messages={allMessages}
+                  typing={typing}
+                  lang={lang}
+                  skin={node.surface}
+                  from={node.from}
+                  callSeconds={callSeconds}
+                />
+              </div>
+
+              {/* Bottom Pinned Controls: Pressure Timer, ChoiceBar or PinPad */}
+              <div className="shrink-0 mt-auto sticky bottom-0 z-20 bg-white">
+                {/* Pressure Timer Countdown: starts only when done is true */}
+                {node.timerSec && done && (
+                  <div className="w-full">
+                    <PressureTimer
+                      seconds={node.timerSec}
+                      lang={lang}
+                      onTimeout={() => safeAct({ type: 'timeout' })}
+                    />
+                  </div>
+                )}
+
+                {node.input ? (
+                  done && (
+                    <PinPad
+                      kind={node.input.kind}
+                      prompt={node.input.prompt[lang] || node.input.prompt.en}
+                      detail={node.input.detail[lang] || node.input.detail.en}
+                      practicePin={PRACTICE_PIN}
+                      expectedCode={expectedCode}
+                      lang={lang}
+                      onSubmit={(len, hesitationMs) =>
+                        safeAct({ type: 'input_submit', len, hesitationMs })
+                      }
+                      onCancel={() => safeAct({ type: 'input_cancel' })}
+                    />
+                  )
                 ) : (
-                  <MessageList
-                    messages={allMessages}
-                    typing={typing}
-                    lang={lang}
-                    skin={node.surface}
-                    from={node.from}
-                    callSeconds={callSeconds}
-                  />
-                )
-              ) : (
-                <>
-                  <MessageList
-                    messages={allMessages}
-                    typing={typing}
-                    lang={lang}
-                    skin={node.surface}
-                    from={node.from}
-                    callSeconds={callSeconds}
-                  />
-                  {done && node.choices && (
+                  done && node.choices && (
                     <ChoiceBar
                       choices={node.choices}
                       lang={lang}
                       onChoose={choiceId => safeAct({ type: 'choose', choiceId })}
                     />
-                  )}
-                </>
-              )}
-            </>
+                  )
+                )}
+              </div>
+            </div>
           )}
         </PhoneFrame>
 
@@ -1053,7 +1049,7 @@ function DrillRunner({
         )}
 
         {/* On screens < 1024px: "Show engine log" toggle under the phone */}
-        <div className="lg:hidden w-full">
+        <div className="lg:hidden w-full mt-2">
           <GlassBox events={state.events} result={result} />
         </div>
       </div>

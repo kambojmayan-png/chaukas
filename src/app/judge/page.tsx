@@ -76,10 +76,10 @@ export default function JudgePage() {
   const [lang] = useLang();
 
   return (
-    <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-4 md:p-10 max-w-4xl mx-auto space-y-8">
+    <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-3 min-[400px]:p-4 md:p-10 max-w-4xl mx-auto space-y-6 md:space-y-8">
       {/* Header */}
       <header className="flex flex-wrap items-center justify-between border-b-2 border-[#111111] pb-4 gap-3">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 min-w-0">
           <Link
             href="/"
             className="font-mono font-bold tracking-tight text-xl bg-[#111111] text-[#F6F3EC] px-2 py-0.5 rounded-sm hover:opacity-90"
@@ -90,22 +90,22 @@ export default function JudgePage() {
             / JUDGE
           </span>
         </div>
-        <div className="flex items-center space-x-3 text-xs md:text-sm font-bold">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0 text-xs md:text-sm font-bold">
           <LangToggle />
-          <Link href="/drill" className="hover:underline whitespace-nowrap">
+          <Link href="/drill" className="hover:underline">
             {t('drills_nav', lang)}
           </Link>
-          <Link href="/check" className="hover:underline whitespace-nowrap">
+          <Link href="/check" className="hover:underline">
             {t('message_checker_nav', lang)}
           </Link>
-          <Link href="/insights" className="hover:underline whitespace-nowrap">
+          <Link href="/insights" className="hover:underline">
             {t('live_insights_nav', lang)}
           </Link>
         </div>
       </header>
 
       {/* Guide Section */}
-      <section className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 space-y-6">
+      <section className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 sm:p-6 space-y-5 sm:space-y-6">
         <div className="space-y-1">
           <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-sm">
             {t('evaluation_guide_tag', lang)}
@@ -217,7 +217,7 @@ export default function JudgePage() {
       </section>
 
       {/* Reality Ledger Section */}
-      <section className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 space-y-6">
+      <section className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 sm:p-6 space-y-5 sm:space-y-6">
         <div className="space-y-1">
           <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-sm">
             SECTION 12
@@ -267,7 +267,7 @@ export default function JudgePage() {
       </section>
 
       {/* GitHub Repository Card */}
-      <section className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 space-y-4">
+      <section className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <h3 className="text-lg font-bold text-[#111111]">
@@ -281,10 +281,10 @@ export default function JudgePage() {
             href="https://github.com/kambojmayan-png/chaukas"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center min-h-[44px] px-5 py-2 bg-[#FF5A1F] text-white font-bold text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 transition-all whitespace-nowrap"
+            className="inline-flex items-center justify-center min-h-[44px] px-4 py-2 bg-[#FF5A1F] text-white font-bold text-xs sm:text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 transition-all break-all text-center"
           >
             <span>github.com/kambojmayan-png/chaukas</span>
-            <span className="ml-1.5">↗</span>
+            <span className="ml-1.5 shrink-0">↗</span>
           </a>
         </div>
       </section>

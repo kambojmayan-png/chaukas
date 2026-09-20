@@ -131,10 +131,10 @@ export default function CheckPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-4 md:p-10 flex flex-col justify-between max-w-3xl mx-auto">
+    <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-3 min-[400px]:p-4 md:p-10 flex flex-col justify-between max-w-3xl mx-auto">
       {/* Header */}
       <header className="flex flex-wrap items-center justify-between border-b-2 border-[#111111] pb-4 mb-6 gap-3">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 min-w-0">
           <Link
             href="/"
             className="font-mono font-bold tracking-tight text-xl bg-[#111111] text-[#F6F3EC] px-2 py-0.5 rounded-sm hover:opacity-90"
@@ -145,11 +145,11 @@ export default function CheckPage() {
             / CHECK
           </span>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
           <LangToggle />
           <Link
             href="/drill"
-            className="text-sm font-bold text-[#111111] hover:underline whitespace-nowrap"
+            className="text-sm font-bold text-[#111111] hover:underline"
           >
             {t('start_3min_drill', lang)} →
           </Link>
@@ -234,7 +234,7 @@ export default function CheckPage() {
 
         {/* Results Section */}
         {result && (
-          <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 space-y-5 animate-in fade-in duration-300">
+          <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 sm:p-6 space-y-4 sm:space-y-5 animate-in fade-in duration-300">
             {/* Verdict Chip */}
             <div className="space-y-2">
               <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#111111]/70 block">

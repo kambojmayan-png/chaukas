@@ -51,8 +51,8 @@ export function Debrief({
   const showKnewBox = knewAnswer?.knew === true && result.outcome === 'scammed';
 
   return (
-    <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 w-full max-w-5xl my-auto">
-      <div className="w-full max-w-[440px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-5 md:p-6 space-y-6">
+    <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-6 md:gap-8 w-full max-w-5xl my-auto">
+      <div className="w-full max-w-[440px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 min-[400px]:p-5 md:p-6 space-y-5 sm:space-y-6">
         {/* 1. Headline and Amount */}
         <div className="space-y-2 text-center">
           <div className="text-xs font-mono uppercase tracking-widest text-[#111111]/60">

@@ -75,7 +75,7 @@ export function Report({
   };
 
   return (
-    <div className="w-full max-w-[480px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 my-auto space-y-6">
+    <div className="w-full max-w-[480px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 sm:p-6 my-auto space-y-5 sm:space-y-6">
       {/* Header */}
       <div className="space-y-1 text-center">
         <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-sm">

@@ -109,36 +109,36 @@ export function PinPad({
   const isReady = digits.length === targetLen;
 
   return (
-    <div className="flex-1 flex flex-col justify-between bg-white p-4">
+    <div className="flex-1 flex flex-col justify-between bg-white p-2.5 min-[480px]:p-4 min-h-0 overflow-y-auto">
       {/* Top Bar with Cancel / Go back */}
-      <div className="flex items-center justify-between border-b border-[#111111]/10 pb-2">
+      <div className="flex items-center justify-between border-b border-[#111111]/10 pb-1.5 shrink-0">
         <button
           type="button"
           onClick={onCancel}
-          className="min-h-[48px] px-3 -ml-3 text-sm font-semibold text-[#111111] hover:underline flex items-center gap-1 cursor-pointer"
+          className="min-h-[40px] px-2 -ml-2 text-xs min-[480px]:text-sm font-semibold text-[#111111] hover:underline flex items-center gap-1 cursor-pointer"
         >
           <span>←</span>
           <span>{t('cancel_go_back', lang)}</span>
         </button>
-        <span className="text-xs font-mono text-[#111111]/60 uppercase font-semibold">
+        <span className="text-[10px] min-[480px]:text-xs font-mono text-[#111111]/60 uppercase font-semibold">
           {kind === 'pin' ? 'UPI AUTH' : 'SMS OTP'}
         </span>
       </div>
 
       {/* Center Details & Prompt */}
-      <div className="flex-1 flex flex-col items-center justify-center space-y-3 py-3">
+      <div className="flex-1 flex flex-col items-center justify-center space-y-2 py-2 min-h-0">
         {/* Detail: normal small type exactly like real UPI sheet, NOT highlighted */}
         <div className="text-center px-2">
-          <p className="text-xs text-[#111111]/70 leading-normal font-normal">
+          <p className="text-[11px] min-[480px]:text-xs text-[#111111]/70 leading-tight font-normal">
             {detail}
           </p>
         </div>
 
         {/* Prompt */}
-        <div className="text-center space-y-1">
-          <h2 className="text-lg font-bold text-[#111111]">{prompt}</h2>
+        <div className="text-center space-y-0.5">
+          <h2 className="text-base min-[480px]:text-lg font-bold text-[#111111] leading-tight">{prompt}</h2>
           {kind === 'pin' && (
-            <div className="inline-block bg-[#F6F3EC] border border-[#111111] text-xs px-2.5 py-1 rounded-md font-mono text-[#111111]">
+            <div className="inline-block bg-[#F6F3EC] border border-[#111111] text-[11px] min-[480px]:text-xs px-2 py-0.5 rounded-md font-mono text-[#111111]">
               {t('practice_pin', lang)}: <strong>{practicePin}</strong>
             </div>
           )}
@@ -146,7 +146,7 @@ export function PinPad({
 
         {/* PIN/OTP Dots with Shake Animation on Error */}
         <div
-          className={`flex items-center justify-center space-x-2.5 py-2 ${
+          className={`flex items-center justify-center space-x-2.5 py-1 ${
             isShaking ? 'animate-shake' : ''
           }`}
         >
@@ -155,7 +155,7 @@ export function PinPad({
             return (
               <div
                 key={i}
-                className={`w-3.5 h-3.5 rounded-full border-2 border-[#111111] transition-all ${
+                className={`w-3 h-3 min-[480px]:w-3.5 min-[480px]:h-3.5 rounded-full border-2 border-[#111111] transition-all ${
                   filled ? 'bg-[#111111]' : 'bg-transparent'
                 }`}
               />
@@ -165,12 +165,12 @@ export function PinPad({
 
         {/* Local Validation Error Notice */}
         {error && (
-          <div className="text-center px-4 space-y-1 max-w-[320px]">
-            <p className="text-xs font-bold text-[#D92D20] leading-snug">
+          <div className="text-center px-2 space-y-0.5 max-w-[320px]">
+            <p className="text-xs font-bold text-[#D92D20] leading-tight">
               {error.message}
             </p>
             {error.subtext && (
-              <p className="text-[11px] text-neutral-500 leading-tight">
+              <p className="text-[10px] min-[480px]:text-[11px] text-neutral-500 leading-tight">
                 {error.subtext}
               </p>
             )}
@@ -179,14 +179,14 @@ export function PinPad({
       </div>
 
       {/* Keypad Grid */}
-      <div className="border-t-2 border-[#111111] pt-3 pb-1">
-        <div className="grid grid-cols-3 gap-2 max-w-[320px] mx-auto">
+      <div className="border-t-2 border-[#111111] pt-2 pb-1 shrink-0">
+        <div className="grid grid-cols-3 gap-1.5 min-[480px]:gap-2 max-w-[320px] mx-auto">
           {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(d => (
             <button
               key={d}
               type="button"
               onClick={() => handleDigit(d)}
-              className="min-h-[52px] h-13 bg-[#F6F3EC] text-[#111111] border-2 border-[#111111] rounded-md shadow-hard-sm text-2xl font-bold tabular-nums flex items-center justify-center hover:bg-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+              className="min-h-[44px] h-11 min-[480px]:min-h-[52px] min-[480px]:h-13 bg-[#F6F3EC] text-[#111111] border-2 border-[#111111] rounded-md shadow-hard-sm text-xl min-[480px]:text-2xl font-bold tabular-nums flex items-center justify-center hover:bg-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
             >
               {d}
             </button>
@@ -197,7 +197,7 @@ export function PinPad({
             type="button"
             onClick={handleBackspace}
             aria-label="Backspace"
-            className="min-h-[52px] h-13 bg-[#F6F3EC] text-[#111111] border-2 border-[#111111] rounded-md shadow-hard-sm text-xl font-bold flex items-center justify-center hover:bg-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+            className="min-h-[44px] h-11 min-[480px]:min-h-[52px] min-[480px]:h-13 bg-[#F6F3EC] text-[#111111] border-2 border-[#111111] rounded-md shadow-hard-sm text-lg min-[480px]:text-xl font-bold flex items-center justify-center hover:bg-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
           >
             ⌫
           </button>
@@ -206,7 +206,7 @@ export function PinPad({
           <button
             type="button"
             onClick={() => handleDigit('0')}
-            className="min-h-[52px] h-13 bg-[#F6F3EC] text-[#111111] border-2 border-[#111111] rounded-md shadow-hard-sm text-2xl font-bold tabular-nums flex items-center justify-center hover:bg-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+            className="min-h-[44px] h-11 min-[480px]:min-h-[52px] min-[480px]:h-13 bg-[#F6F3EC] text-[#111111] border-2 border-[#111111] rounded-md shadow-hard-sm text-xl min-[480px]:text-2xl font-bold tabular-nums flex items-center justify-center hover:bg-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
           >
             0
           </button>
@@ -217,7 +217,7 @@ export function PinPad({
             onClick={handleSubmit}
             disabled={!isReady}
             aria-label={kind === 'pin' ? t('submit_pin', lang) : t('submit_otp', lang)}
-            className={`min-h-[52px] h-13 border-2 border-[#111111] rounded-md shadow-hard-sm text-2xl font-bold flex items-center justify-center transition-all ${
+            className={`min-h-[44px] h-11 min-[480px]:min-h-[52px] min-[480px]:h-13 border-2 border-[#111111] rounded-md shadow-hard-sm text-xl min-[480px]:text-2xl font-bold flex items-center justify-center transition-all ${
               isReady
                 ? 'bg-[#FF5A1F] text-white hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer'
                 : 'bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'

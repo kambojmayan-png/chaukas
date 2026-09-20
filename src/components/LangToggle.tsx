@@ -11,8 +11,8 @@ export function LangToggle({ className = '' }: LangToggleProps) {
   const [lang, setLang] = useLang();
 
   return (
-    <div className={`flex items-center gap-1.5 ${className}`}>
-      <span className="text-xs font-mono font-bold text-[#111111]/80 select-none whitespace-nowrap">
+    <div role="group" aria-label="Language / भाषा" className={`flex items-center gap-1.5 min-w-0 ${className}`}>
+      <span className="hidden min-[360px]:inline text-xs font-mono font-bold text-[#111111]/80 select-none whitespace-nowrap">
         Language / भाषा:
       </span>
       <div className="flex items-center border-2 border-[#111111] rounded-md overflow-hidden bg-white shadow-hard-sm">

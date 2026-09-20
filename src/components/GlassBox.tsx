@@ -72,7 +72,7 @@ export function GlassBoxPanel({
           <div className="text-[11px] font-bold uppercase tracking-wider text-[#111111]/70 mb-1.5">
             RunResult
           </div>
-          <pre className="bg-[#111111] text-[#F6F3EC] p-3 rounded text-[11px] overflow-x-auto leading-tight">
+          <pre className="bg-[#111111] text-[#F6F3EC] p-3 rounded text-[11px] max-w-full overflow-x-auto leading-tight">
             {JSON.stringify(result, null, 2)}
           </pre>
         </div>

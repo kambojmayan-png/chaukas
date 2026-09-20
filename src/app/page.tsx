@@ -9,10 +9,10 @@ export default function Home() {
   const [lang] = useLang();
 
   return (
-    <main className="min-h-screen bg-[#F6F3EC] text-[#111111] flex flex-col justify-between p-6 md:p-12 max-w-4xl mx-auto">
+    <main className="min-h-screen bg-[#F6F3EC] text-[#111111] flex flex-col justify-between p-4 min-[400px]:p-6 md:p-12 max-w-4xl mx-auto">
       {/* Brand Header */}
       <header className="flex flex-wrap items-center justify-between border-b-2 border-[#111111] pb-4 gap-3">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 min-w-0">
           <span className="font-mono font-bold tracking-tight text-xl bg-[#111111] text-[#F6F3EC] px-2 py-0.5 rounded-sm">
             CHAUKAS
           </span>
@@ -20,27 +20,27 @@ export default function Home() {
             चौकस
           </span>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
           <LangToggle />
           <Link
             href="/check"
-            className="text-xs md:text-sm font-bold text-[#111111] hover:underline whitespace-nowrap"
+            className="text-xs md:text-sm font-bold text-[#111111] hover:underline"
           >
             {t('check_message_nav', lang)}
           </Link>
-          <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F] border border-[#FF5A1F] px-2 py-1 rounded whitespace-nowrap">
+          <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F] border border-[#FF5A1F] px-2 py-1 rounded">
             {t('fire_drill_1_badge', lang)}
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <div className="my-auto py-12 flex flex-col items-start space-y-8 max-w-2xl">
-        <div className="space-y-4">
+      <div className="my-auto py-8 min-[400px]:py-12 flex flex-col items-start space-y-6 min-[400px]:space-y-8 max-w-2xl">
+        <div className="space-y-3 min-[400px]:space-y-4">
           <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-3 py-1 rounded-sm">
             {t('hero_tag', lang)}
           </div>
-          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-[#111111] leading-[1.1]">
+          <h1 className="text-3xl min-[400px]:text-4xl sm:text-6xl font-extrabold tracking-tight text-[#111111] leading-[1.1]">
             {t('hero_title', lang)}
           </h1>
         </div>
@@ -49,13 +49,13 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <Link
             href="/drill"
-            className="inline-flex items-center justify-center min-h-[56px] px-8 py-4 bg-[#FF5A1F] text-white text-lg md:text-xl font-bold border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center min-h-[56px] px-8 py-4 bg-[#FF5A1F] text-white text-lg md:text-xl font-bold border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-center"
           >
             {t('start_3min_drill', lang)}
           </Link>
           <Link
             href="/check"
-            className="inline-flex items-center justify-center min-h-[56px] px-6 py-4 bg-white text-[#111111] text-base md:text-lg font-bold border-2 border-[#111111] rounded-md shadow-hard hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center min-h-[56px] px-6 py-4 bg-white text-[#111111] text-base md:text-lg font-bold border-2 border-[#111111] rounded-md shadow-hard hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-center"
           >
             {t('check_a_message', lang)}
           </Link>

@@ -33,10 +33,10 @@ export function InsightsView({ data }: InsightsViewProps) {
   const noData = !data.available || (data.totals?.first_runs ?? 0) === 0;
 
   return (
-    <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-4 md:p-10 flex flex-col justify-between max-w-4xl mx-auto">
+    <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-3 min-[400px]:p-4 md:p-10 flex flex-col justify-between max-w-4xl mx-auto">
       {/* Header */}
       <header className="flex flex-wrap items-center justify-between border-b-2 border-[#111111] pb-4 mb-6 gap-3">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 min-w-0">
           <Link
             href="/"
             className="font-mono font-bold tracking-tight text-xl bg-[#111111] text-[#F6F3EC] px-2 py-0.5 rounded-sm hover:opacity-90"
@@ -47,11 +47,11 @@ export function InsightsView({ data }: InsightsViewProps) {
             / INSIGHTS
           </span>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
           <LangToggle />
           <Link
             href="/drill"
-            className="min-h-[40px] px-3.5 py-1.5 bg-[#FF5A1F] text-white font-bold text-xs uppercase font-mono tracking-wider border-2 border-[#111111] rounded shadow-hard-sm hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap"
+            className="min-h-[40px] px-3.5 py-1.5 bg-[#FF5A1F] text-white font-bold text-xs uppercase font-mono tracking-wider border-2 border-[#111111] rounded shadow-hard-sm hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1 cursor-pointer"
           >
             <span>{t('start_3min_drill', lang)}</span>
             <span>→</span>
@@ -63,7 +63,7 @@ export function InsightsView({ data }: InsightsViewProps) {
       <div className="my-auto py-6 space-y-8">
         {noData ? (
           /* Empty state: No data yet. Only when first_runs is 0 or data unavailable. */
-          <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-8 md:p-12 text-center space-y-4 max-w-xl mx-auto">
+          <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-5 min-[400px]:p-8 md:p-12 text-center space-y-4 max-w-xl mx-auto">
             <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-3 py-1 rounded-sm">
               {t('insights_tag', lang)}
             </div>
@@ -102,7 +102,7 @@ export function InsightsView({ data }: InsightsViewProps) {
             </div>
 
             {/* Big Headline Card: Knowledge-Behaviour Gap */}
-            <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 md:p-8 space-y-3 text-center md:text-left">
+            <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 sm:p-6 md:p-8 space-y-3 text-center md:text-left">
               <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-sm">
                 {t('the_gap_tag', lang)}
               </div>
@@ -141,7 +141,7 @@ export function InsightsView({ data }: InsightsViewProps) {
             </div>
 
             {/* Per-Drill Fall Rates (CSS Bars) */}
-            <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 md:p-8 space-y-5">
+            <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 sm:p-6 md:p-8 space-y-5">
               <div className="border-b-2 border-[#111111] pb-2">
                 <h2 className="text-lg font-bold text-[#111111]">
                   {t('fall_rate_by_archetype', lang)}
@@ -185,7 +185,7 @@ export function InsightsView({ data }: InsightsViewProps) {
                       </div>
 
                       {/* Subtext info */}
-                      <div className="flex items-center justify-between text-[11px] font-mono text-[#111111]/70">
+                      <div className="flex flex-wrap items-center justify-between text-[11px] font-mono text-[#111111]/70 gap-1">
                         <span>
                           {s.first_scammed} of {s.first_runs} {lang === 'hi' ? 'पहली कोशिश में फँस गए' : 'fell on first attempt'}
                         </span>
@@ -203,7 +203,7 @@ export function InsightsView({ data }: InsightsViewProps) {
 
             {/* Re-drill vs First-Attempt Fall Rate Summary */}
             {data.totals!.redrills > 0 && (
-              <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 md:p-8 space-y-4">
+              <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 sm:p-6 md:p-8 space-y-4">
                 <div className="border-b-2 border-[#111111] pb-2">
                   <h2 className="text-lg font-bold text-[#111111]">
                     {t('learning_effect_title', lang)}
