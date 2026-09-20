@@ -33,6 +33,12 @@ export function InsightsView({ data }: InsightsViewProps) {
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
+          <Link
+            href="/about"
+            className="text-xs md:text-sm font-bold text-[#111111] hover:underline"
+          >
+            {t('about_nav', lang)}
+          </Link>
           <LangToggle />
           <Link
             href="/drill"

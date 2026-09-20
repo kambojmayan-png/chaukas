@@ -48,7 +48,7 @@ export function Report({
     (s, i) => knewArray[i] && results[s.id]?.outcome === 'scammed'
   );
 
-  const shareText = `3 minute ka scam drill — ek baar zaroor karo: ${origin}/drill?src=family&lang=hi`;
+  const shareText = `3 minute ka scam drill — ek baar zaroor karo: ${origin}/?src=family`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
 
   const getOutcomeBadge = (outcome: Outcome) => {

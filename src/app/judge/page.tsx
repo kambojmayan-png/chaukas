@@ -91,6 +91,9 @@ export default function JudgePage() {
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0 text-xs md:text-sm font-bold">
+          <Link href="/about" className="hover:underline">
+            {t('about_nav', lang)}
+          </Link>
           <LangToggle />
           <Link href="/drill" className="hover:underline">
             {t('drills_nav', lang)}
@@ -103,6 +106,16 @@ export default function JudgePage() {
           </Link>
         </div>
       </header>
+
+      {/* What changed at 2 pm notice */}
+      <div className="bg-[#FFF8E7] border-2 border-[#111111] rounded-md p-4 sm:p-5 shadow-hard-sm space-y-1">
+        <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F]">
+          UPDATE · 2:00 PM
+        </p>
+        <p className="text-sm sm:text-base font-semibold text-[#111111] leading-relaxed">
+          {t('judge_change_notice', lang)}
+        </p>
+      </div>
 
       {/* Guide Section */}
       <section className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 sm:p-6 space-y-5 sm:space-y-6">
@@ -118,8 +131,31 @@ export default function JudgePage() {
           </p>
         </div>
 
-        {/* 4 Steps */}
+        {/* Steps */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Step 0 */}
+          <div className="bg-[#FFF8E7] border-2 border-[#111111] rounded-md p-4 shadow-hard-sm space-y-2 flex flex-col justify-between md:col-span-2">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[#111111] text-[#F6F3EC] font-mono font-bold text-xs flex items-center justify-center">
+                  0
+                </span>
+                <span className="font-bold text-sm sm:text-base text-[#111111]">
+                  {t('step0_title', lang)}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-[#111111]/80 leading-relaxed">
+                {t('step0_desc', lang)}
+              </p>
+            </div>
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center min-h-[38px] px-4 py-2 bg-[#111111] text-[#F6F3EC] font-bold text-xs sm:text-sm border border-[#111111] rounded shadow-hard-sm hover:bg-neutral-800 transition-all self-start"
+            >
+              {t('step0_btn', lang)}
+            </Link>
+          </div>
+
           {/* Step 1 */}
           <div className="bg-[#F6F3EC] border-2 border-[#111111] rounded-md p-4 shadow-hard-sm space-y-2 flex flex-col justify-between">
             <div className="space-y-1.5">

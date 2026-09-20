@@ -380,17 +380,25 @@ export default function DrillPage() {
       <div className="w-full max-w-[440px] flex flex-col gap-2 mb-3">
         {/* Row 1: Back link + Wallet + Mute */}
         <div className="flex items-center justify-between gap-2">
-          <Link
-            href="/"
-            onClick={() => {
-              stopSpeaking();
-              stopRing();
-            }}
-            className="text-sm font-bold text-[#111111] hover:underline flex items-center gap-1 min-h-[36px] shrink-0"
-          >
-            <span>←</span>
-            <span>{t('home', lang)}</span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              onClick={() => {
+                stopSpeaking();
+                stopRing();
+              }}
+              className="text-sm font-bold text-[#111111] hover:underline flex items-center gap-1 min-h-[36px] shrink-0"
+            >
+              <span>←</span>
+              <span>{t('home', lang)}</span>
+            </Link>
+            <Link
+              href="/about"
+              className="text-xs font-bold text-[#111111]/70 hover:underline"
+            >
+              {t('about_nav', lang)}
+            </Link>
+          </div>
 
           {/* Wallet Balance in Header */}
           <div className="flex items-center gap-1 px-2 py-1 bg-white border-2 border-[#111111] rounded-md shadow-hard-sm font-mono font-bold text-xs shrink-0">

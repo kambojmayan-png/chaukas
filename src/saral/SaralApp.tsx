@@ -784,12 +784,15 @@ export function SaralApp() {
           </div>
 
           {/* Tiny Links at the Very Bottom */}
-          <div className="w-full pt-6 border-t-2 border-[#1A1A1A]/15 flex items-center justify-between text-xs sm:text-sm font-bold text-[#1A1A1A]/70">
+          <div className="w-full pt-6 border-t-2 border-[#1A1A1A]/15 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm font-bold text-[#1A1A1A]/70">
             <Link href="/judge" className="hover:underline">
               {t('for_judges', lang)}
             </Link>
             <Link href="/drill" className="hover:underline">
               {t('detailed_view', lang)}
+            </Link>
+            <Link href="/about" className="hover:underline">
+              {t('about_project', lang)}
             </Link>
           </div>
         </div>
@@ -1256,7 +1259,7 @@ export function SaralApp() {
             const gap = knowledgeBehaviourGap(knewArray, resultsArray);
 
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
-              `${t('share_text', lang)} ${origin}/saral?src=family`
+              `${t('share_text', lang)} ${origin}/?src=family`
             )}`;
 
             return (
@@ -1320,6 +1323,10 @@ export function SaralApp() {
                   <span>·</span>
                   <Link href="/check" className="hover:underline">
                     {t('check_msg_link', lang)}
+                  </Link>
+                  <span>·</span>
+                  <Link href="/about" className="hover:underline">
+                    {t('about_project', lang)}
                   </Link>
                   <span>·</span>
                   <Link href="/judge" className="hover:underline">

@@ -406,7 +406,37 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   },
   insights_footer: { en: '© 2026 Chaukas · Anonymous Telemetry', hi: '© 2026 Chaukas · Anonymous Telemetry' },
 
+  // /about and navigation
+  detailed_view_banner: {
+    en: 'Detailed view for judges and developers',
+    hi: 'जजों और डेवलपर्स के लिए विस्तृत रूप',
+  },
+  about_project: {
+    en: 'About this project',
+    hi: 'इस प्रोजेक्ट के बारे में',
+  },
+  about_nav: {
+    en: 'About',
+    hi: 'परिचय',
+  },
+
   // /judge
+  judge_change_notice: {
+    en: 'What changed at 2 pm: testers, including developers, found the first interface too complex. So the front door was rebuilt as a Hindi-first, voice-guided simple mode for older users (the home page). The detailed view (timeline replay, engine log) is still at /drill.',
+    hi: 'दोपहर 2 बजे क्या बदला: परीक्षकों और डेवलपर्स ने पहले इंटरफ़ेस को बहुत जटिल पाया। इसलिए मुख्य पेज को बुजुर्गों के लिए हिंदी-प्रथम, आवाज़-निर्देशित सरल मोड (होम पेज) के रूप में फिर से बनाया गया। विस्तृत दृश्य (टाइमलाइन रीप्ले, इंजन लॉग) अभी भी /drill पर उपलब्ध है।',
+  },
+  step0_title: {
+    en: 'Open the home page as an elder would: sound on, Hindi.',
+    hi: 'होम पेज को एक बुजुर्ग की तरह खोलें: आवाज़ चालू, हिंदी।',
+  },
+  step0_desc: {
+    en: 'Experience the Hindi-first, voice-guided simple mode with zero cognitive overload.',
+    hi: 'बिना किसी उलझन के हिंदी-प्रथम, आवाज़-निर्देशित सरल मोड का अनुभव करें।',
+  },
+  step0_btn: {
+    en: 'Open Home (/) →',
+    hi: 'होम (/) खोलें →',
+  },
   evaluation_guide_tag: { en: 'EVALUATION GUIDE', hi: 'मूल्यांकन गाइड' },
   two_minutes_title: { en: 'Two minutes? Do this:', hi: 'दो मिनट हैं? यह करें:' },
   two_minutes_desc: {
