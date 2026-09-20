@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --experimental-strip-types tests/run-tests.mjs",
-    "test:layout": "playwright test"
+    "test:layout": "playwright test tests/layout.spec.ts",
+    "screenshots": "playwright test scripts/screenshots.spec.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
