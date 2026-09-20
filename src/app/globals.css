@@ -1,26 +1,55 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #F6F3EC;
+  --foreground: #111111;
+  --paper: #F6F3EC;
+  --ink: #111111;
+  --safety-orange: #FF5A1F;
+  --loss-red: #D92D20;
+  --safe-green: #12B76A;
+  --phone-bg: #0E0E10;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #F6F3EC;
+  color: #111111;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading, system-ui, sans-serif);
+}
+
+.font-hindi {
+  font-family: var(--font-hindi, system-ui, sans-serif);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hard offset shadows for emergency signage aesthetic */
+.shadow-hard {
+  box-shadow: 4px 4px 0 #111111;
+}
+
+.shadow-hard-sm {
+  box-shadow: 2px 2px 0 #111111;
+}
+
+/* Tap target utility */
+.tap-target {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
