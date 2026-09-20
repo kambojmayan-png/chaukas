@@ -7,7 +7,7 @@ import { SCENARIOS } from '@/scenarios';
 import { useLang } from '@/lib/useLang';
 import { LangToggle } from '@/components/LangToggle';
 import { t } from '@/lib/i18n';
-import { unlockAudio } from '@/lib/speak';
+import { unlockAudio, isFastMode } from '@/lib/speak';
 import { SaralErrorBoundary } from './SaralErrorBoundary';
 
 // Dynamically load the practice flow after Home
@@ -43,8 +43,9 @@ export function SaralApp() {
 
   // Global navigation lock (600 ms after tap)
   const navLockUntilRef = useRef<number>(0);
-  const isNavLocked = () => Date.now() < navLockUntilRef.current;
+  const isNavLocked = () => !isFastMode() && Date.now() < navLockUntilRef.current;
   const lockNav = () => {
+    if (isFastMode()) return;
     navLockUntilRef.current = Date.now() + 600;
   };
 
@@ -100,7 +101,7 @@ export function SaralApp() {
       <SaralFlow
         initialPracticeIdx={practiceIdx}
         initialScreen={directStart ? 'precheck' : 'soundcheck'}
-        initialSoundOn={true}
+        initialSoundOn={!isFastMode()}
         isFamily={isFamily}
         onReturnHome={() => {
           setDirectStart(false);
@@ -112,14 +113,14 @@ export function SaralApp() {
 
   return (
     <SaralErrorBoundary lang={lang} soundOn={true}>
-      <main className="min-h-screen bg-[#FBF7F0] text-[#1A1A1A] flex flex-col justify-between p-4 sm:p-6 max-w-xl mx-auto antialiased">
+      <main className="min-h-screen bg-[#FBF7F0] text-[#1A1A1A] flex flex-col justify-between p-4 sm:p-6 w-full max-w-[480px] mx-auto min-w-0 box-border antialiased">
         {/* Top-Right Language Toggle */}
         <div className="w-full flex justify-end">
           <LangToggle />
         </div>
 
         {/* Home Content (P2 2.3 - strictly ordered top to bottom) */}
-        <div className="flex-1 flex flex-col justify-center items-center py-6 text-center space-y-6 max-w-md mx-auto w-full my-auto">
+        <div className="flex-1 flex flex-col justify-center items-center py-6 text-center space-y-6 w-full max-w-[480px] mx-auto min-w-0 my-auto">
           {/* 1. The word "चौकस" */}
           <h1
             lang="hi"

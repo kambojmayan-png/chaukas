@@ -23,6 +23,7 @@ import {
   stopRing,
   preloadClips,
   subscribeAudioState,
+  isFastMode,
   type AudioPlaybackState,
   type VoiceRole,
 } from '@/lib/speak';
@@ -93,7 +94,7 @@ export function SaralFlow({
   initialScreen = 'soundcheck',
 }: SaralFlowProps) {
   const [lang] = useLang();
-  const [soundOn, setSoundOn] = useState<boolean>(initialSoundOn);
+  const [soundOn, setSoundOn] = useState<boolean>(() => (isFastMode() ? false : initialSoundOn));
   const [screen, setScreen] = useState<FlowScreen>(initialScreen);
   const [practiceIdx, setPracticeIdx] = useState<number>(initialPracticeIdx);
   const [origin, setOrigin] = useState<string>('');
@@ -110,8 +111,9 @@ export function SaralFlow({
 
   // Global navigation lock (600 ms after any screen or node change)
   const navLockUntilRef = useRef<number>(0);
-  const isNavLocked = () => Date.now() < navLockUntilRef.current;
+  const isNavLocked = () => !isFastMode() && Date.now() < navLockUntilRef.current;
   const lockNav = () => {
+    if (isFastMode()) return;
     navLockUntilRef.current = Date.now() + 600;
   };
 
@@ -513,7 +515,7 @@ export function SaralFlow({
     if (!currentScenario || !drillState) return;
     if (isNavLocked()) return;
     if (actionVisitKey && actionVisitKey !== currentVisitKey) return;
-    if (Date.now() - nodeEnteredAtRef.current < 600) return;
+    if (!isFastMode() && Date.now() - nodeEnteredAtRef.current < 600) return;
 
     lockNav();
     stopSpeaking();
@@ -799,7 +801,7 @@ export function SaralFlow({
 
   return (
     <SaralErrorBoundary lang={lang} soundOn={soundOn}>
-      <main className="min-h-screen bg-[#FBF7F0] text-[#1A1A1A] flex flex-col justify-between p-3 sm:p-5 max-w-xl mx-auto antialiased">
+      <main className="h-screen max-h-screen bg-[#FBF7F0] text-[#1A1A1A] flex flex-col justify-between p-2.5 sm:p-5 w-full max-w-[480px] mx-auto min-w-0 box-border antialiased overflow-hidden">
         {/* Top Bar on all screens */}
         <SaralTopBar
           lang={lang}
@@ -842,7 +844,7 @@ export function SaralFlow({
 
         {/* SCREEN 1: SOUND CHECK (P2 2.4) */}
         {screen === 'soundcheck' && (
-          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
+          <div className="flex-1 flex flex-col justify-between items-center py-6 w-full max-w-[480px] mx-auto min-w-0 my-auto space-y-6">
             <div className="w-full space-y-4">
               {/* Question */}
               <SaralGuideBubble text={t('soundcheck_text', lang)} />
@@ -910,10 +912,12 @@ export function SaralFlow({
 
         {/* SCREEN 2: WHAT THIS IS */}
         {screen === 'welcome' && (
-          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-            <SaralGuideBubble text={t('welcome_text', lang)} />
+          <div className="flex-1 flex flex-col justify-between items-center py-2 sm:py-6 w-full max-w-[480px] mx-auto min-w-0 min-h-0 overflow-hidden space-y-3 sm:space-y-6">
+            <div className="flex-1 min-h-0 overflow-y-auto w-full flex flex-col justify-center">
+              <SaralGuideBubble text={t('welcome_text', lang)} />
+            </div>
 
-            <div className="w-full space-y-3 pt-4">
+            <div className="w-full space-y-2.5 sm:space-y-3 pt-2 shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -922,7 +926,7 @@ export function SaralFlow({
                   stopSpeaking();
                   setScreen('howto');
                 }}
-                className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[52px] sm:min-h-[64px] py-2.5 sm:py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
               >
                 {t('next', lang)}
               </button>
@@ -931,7 +935,7 @@ export function SaralFlow({
                 onClick={() => {
                   playSequence([{ key: 'narr__welcome', text: t('welcome_text', lang) }]);
                 }}
-                className="w-full min-h-[64px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[48px] sm:min-h-[64px] py-1.5 sm:py-2 px-4 bg-white text-[#1A1A1A] text-base sm:text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 {t('replay', lang)}
               </button>
@@ -941,29 +945,31 @@ export function SaralFlow({
 
         {/* SCREEN 3: HOW IT WORKS */}
         {screen === 'howto' && (
-          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-            <SaralGuideBubble text={t('howto_text', lang)} />
+          <div className="flex-1 flex flex-col justify-between items-center py-2 sm:py-6 w-full max-w-[480px] mx-auto min-w-0 min-h-0 overflow-hidden space-y-2 sm:space-y-4">
+            <div className="flex-1 min-h-0 overflow-y-auto w-full space-y-2 sm:space-y-3 pr-1">
+              <SaralGuideBubble text={t('howto_text', lang)} />
 
-            {/* Tiny static illustration of two numbered buttons & hear again */}
-            <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-4 space-y-2.5 shadow-2xs">
-              <div className="w-full p-2.5 bg-white border-2 border-[#1A1A1A] rounded-[12px] flex items-center gap-3 text-sm font-bold">
-                <span className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xs font-black">
-                  1
-                </span>
-                <span>{lang === 'hi' ? 'पहला विकल्प' : 'First option'}</span>
-              </div>
-              <div className="w-full p-2.5 bg-white border-2 border-[#1A1A1A] rounded-[12px] flex items-center gap-3 text-sm font-bold">
-                <span className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xs font-black">
-                  2
-                </span>
-                <span>{lang === 'hi' ? 'दूसरा विकल्प' : 'Second option'}</span>
-              </div>
-              <div className="w-full p-2 bg-[#FBF7F0] border border-[#1A1A1A]/30 rounded-[12px] text-center text-xs font-bold text-[#1A1A1A]/80">
-                {t('replay', lang)}
+              {/* Tiny static illustration of two numbered buttons & hear again */}
+              <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-2.5 sm:p-4 space-y-2 shadow-2xs">
+                <div className="w-full p-2 bg-white border-2 border-[#1A1A1A] rounded-[12px] flex items-center gap-2.5 text-xs sm:text-sm font-bold">
+                  <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xs font-black">
+                    1
+                  </span>
+                  <span>{lang === 'hi' ? 'पहला विकल्प' : 'First option'}</span>
+                </div>
+                <div className="w-full p-2 bg-white border-2 border-[#1A1A1A] rounded-[12px] flex items-center gap-2.5 text-xs sm:text-sm font-bold">
+                  <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xs font-black">
+                    2
+                  </span>
+                  <span>{lang === 'hi' ? 'दूसरा विकल्प' : 'Second option'}</span>
+                </div>
+                <div className="w-full p-1.5 bg-[#FBF7F0] border border-[#1A1A1A]/30 rounded-[12px] text-center text-xs font-bold text-[#1A1A1A]/80">
+                  {t('replay', lang)}
+                </div>
               </div>
             </div>
 
-            <div className="w-full space-y-3 pt-2">
+            <div className="w-full space-y-2 sm:space-y-3 pt-1.5 shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -972,7 +978,7 @@ export function SaralFlow({
                   stopSpeaking();
                   setScreen('practice_pin');
                 }}
-                className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[52px] sm:min-h-[64px] py-2.5 sm:py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
               >
                 {t('next', lang)}
               </button>
@@ -981,7 +987,7 @@ export function SaralFlow({
                 onClick={() => {
                   playSequence([{ key: 'narr__howto', text: t('howto_text', lang) }]);
                 }}
-                className="w-full min-h-[64px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[48px] sm:min-h-[64px] py-1.5 sm:py-2 px-4 bg-white text-[#1A1A1A] text-base sm:text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 {t('replay', lang)}
               </button>
@@ -991,17 +997,19 @@ export function SaralFlow({
 
         {/* SCREEN 4: PRACTICE PIN */}
         {screen === 'practice_pin' && (
-          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-            <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-4 sm:p-8 text-center space-y-4 shadow-sm my-auto">
-              <span className="text-xl sm:text-2xl font-bold text-[#1A1A1A]/80 block">
-                {t('practice_pin_title', lang)}
-              </span>
-              <div className="text-4xl xs:text-5xl sm:text-7xl font-black tracking-wider sm:tracking-widest text-[#E8590C] py-2 break-words">
-                {PRACTICE_PIN.split('').join(' ')}
+          <div className="flex-1 flex flex-col justify-between items-center py-2 sm:py-6 w-full max-w-[480px] mx-auto min-w-0 min-h-0 overflow-hidden space-y-3 sm:space-y-6">
+            <div className="flex-1 min-h-0 overflow-y-auto w-full flex flex-col justify-center">
+              <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-4 sm:p-8 text-center space-y-3 sm:space-y-4 shadow-sm my-auto">
+                <span className="text-lg sm:text-2xl font-bold text-[#1A1A1A]/80 block">
+                  {t('practice_pin_title', lang)}
+                </span>
+                <div className="text-4xl xs:text-5xl sm:text-7xl font-black tracking-wider sm:tracking-widest text-[#E8590C] py-1 sm:py-2 break-words">
+                  {PRACTICE_PIN.split('').join(' ')}
+                </div>
               </div>
             </div>
 
-            <div className="w-full space-y-3 pt-4">
+            <div className="w-full space-y-2.5 sm:space-y-3 pt-2 shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -1010,7 +1018,7 @@ export function SaralFlow({
                   stopSpeaking();
                   setScreen('precheck');
                 }}
-                className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[52px] sm:min-h-[64px] py-2.5 sm:py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
               >
                 {t('next', lang)}
               </button>
@@ -1019,7 +1027,7 @@ export function SaralFlow({
                 onClick={() => {
                   playSequence([{ key: 'narr__practice_pin', text: `${t('practice_pin_title', lang)}: ${PRACTICE_PIN}` }]);
                 }}
-                className="w-full min-h-[64px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[48px] sm:min-h-[64px] py-1.5 sm:py-2 px-4 bg-white text-[#1A1A1A] text-base sm:text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 {t('replay', lang)}
               </button>
@@ -1029,38 +1037,54 @@ export function SaralFlow({
 
         {/* SCREEN 5: ONE QUESTION (Pre-check) */}
         {screen === 'precheck' && currentScenario && (
-          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-            <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-5 sm:p-7 text-center shadow-sm space-y-3 my-auto">
-              <p className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] leading-[1.6]">
-                {currentScenario.precheck.q[lang] || currentScenario.precheck.q.en}
-              </p>
+          <div className="flex-1 flex flex-col justify-between items-center py-2 sm:py-6 w-full max-w-[480px] mx-auto min-w-0 min-h-0 overflow-hidden space-y-3 sm:space-y-6">
+            <div className="flex-1 min-h-0 overflow-y-auto w-full flex flex-col justify-center">
+              <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-4 sm:p-7 text-center shadow-sm space-y-2 sm:space-y-3 my-auto">
+                <p className="text-xl sm:text-3xl font-extrabold text-[#1A1A1A] leading-[1.6]">
+                  {currentScenario.precheck.q[lang] || currentScenario.precheck.q.en}
+                </p>
+              </div>
             </div>
 
-            {/* Two Equal Neutral Buttons: हाँ / नहीं (min-height 72px) */}
-            <div className="w-full space-y-3 pt-2">
-              <div className="grid grid-cols-2 gap-3 w-full">
+            {/* Two Equal Neutral Buttons: हाँ / नहीं */}
+            <div className="w-full space-y-2 sm:space-y-2.5 pt-2 shrink-0">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3 w-full">
                 <button
                   type="button"
                   onClick={() => handlePrecheckAnswer('yes')}
-                  className="min-h-[72px] py-4 px-4 bg-white text-[#1A1A1A] text-2xl sm:text-3xl font-black rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer text-center"
+                  className="min-h-[56px] sm:min-h-[64px] py-2.5 sm:py-3.5 px-4 bg-white text-[#1A1A1A] text-xl sm:text-3xl font-black rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer text-center"
                 >
                   {t('yes', lang)}
                 </button>
                 <button
                   type="button"
                   onClick={() => handlePrecheckAnswer('no')}
-                  className="min-h-[72px] py-4 px-4 bg-white text-[#1A1A1A] text-2xl sm:text-3xl font-black rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer text-center"
+                  className="min-h-[56px] sm:min-h-[64px] py-2.5 sm:py-3.5 px-4 bg-white text-[#1A1A1A] text-xl sm:text-3xl font-black rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer text-center"
                 >
                   {t('no', lang)}
                 </button>
               </div>
 
+              <button
+                type="button"
+                onClick={() => {
+                  const qText = currentScenario.precheck.q[lang] || currentScenario.precheck.q.en;
+                  playSequence([
+                    { key: 'narr__one_question', text: qText },
+                    { key: `${sid}__precheck`, text: qText },
+                  ]);
+                }}
+                className="w-full min-h-[48px] sm:min-h-[56px] py-1.5 sm:py-2 px-4 bg-white text-[#1A1A1A] text-base sm:text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer text-center"
+              >
+                {t('replay', lang)}
+              </button>
+
               {/* Tiny link: skip_question */}
-              <div className="text-center pt-2">
+              <div className="text-center">
                 <button
                   type="button"
                   onClick={handleSkipPrecheck}
-                  className="min-h-[48px] px-4 py-2 inline-flex items-center justify-center text-sm font-bold text-[#1A1A1A]/80 hover:underline cursor-pointer"
+                  className="min-h-[40px] sm:min-h-[44px] px-4 py-1 inline-flex items-center justify-center text-xs sm:text-sm font-bold text-[#1A1A1A]/80 hover:underline cursor-pointer"
                 >
                   {t('skip_question', lang)}
                 </button>
@@ -1071,16 +1095,18 @@ export function SaralFlow({
 
         {/* SCREEN 6: THE SITUATION (Setup) */}
         {screen === 'setup' && currentScenario && (
-          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-            <SaralGuideBubble
-              text={currentScenario.setup[lang] || currentScenario.setup.en}
-            />
+          <div className="flex-1 flex flex-col justify-between items-center py-2 sm:py-6 w-full max-w-[480px] mx-auto min-w-0 min-h-0 overflow-hidden space-y-3 sm:space-y-6">
+            <div className="flex-1 min-h-0 overflow-y-auto w-full flex flex-col justify-center">
+              <SaralGuideBubble
+                text={currentScenario.setup[lang] || currentScenario.setup.en}
+              />
+            </div>
 
-            <div className="w-full space-y-3 pt-4">
+            <div className="w-full space-y-2.5 sm:space-y-3 pt-2 shrink-0">
               <button
                 type="button"
                 onClick={startConversation}
-                className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[52px] sm:min-h-[64px] py-2.5 sm:py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
               >
                 {t('next', lang)}
               </button>
@@ -1090,7 +1116,7 @@ export function SaralFlow({
                   const setupText = currentScenario.setup[lang] || currentScenario.setup.en;
                   playSequence([{ key: `${sid}__setup`, text: setupText }]);
                 }}
-                className="w-full min-h-[64px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[48px] sm:min-h-[64px] py-1.5 sm:py-2 px-4 bg-white text-[#1A1A1A] text-base sm:text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 {t('replay', lang)}
               </button>
@@ -1100,7 +1126,7 @@ export function SaralFlow({
 
         {/* SCREEN 7: THE CONVERSATION */}
         {screen === 'conversation' && currentScenario && drillState && (
-          <div className="flex-1 flex flex-col justify-between w-full max-w-md mx-auto min-h-0 overflow-hidden py-2 space-y-4">
+          <div className="flex-1 flex flex-col justify-between w-full max-w-[480px] mx-auto min-w-0 min-h-0 overflow-hidden py-2 space-y-4">
             {isCallNode && !callPickedUp ? (
               <SaralCallScreen
                 callerName={currNode?.from || 'Unknown Caller'}
@@ -1162,44 +1188,46 @@ export function SaralFlow({
 
         {/* SCREEN 8: RESULT */}
         {screen === 'result' && currentScenario && (
-          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6 text-center">
-            {(() => {
-              const res = runResults[sid];
-              const isScammed = res?.outcome === 'scammed';
-              const isLate = res?.outcome === 'escaped_late';
+          <div className="flex-1 flex flex-col justify-between items-center py-2 sm:py-6 w-full max-w-[480px] mx-auto min-w-0 min-h-0 overflow-hidden space-y-3 sm:space-y-6 text-center">
+            <div className="flex-1 min-h-0 overflow-y-auto w-full flex flex-col justify-center">
+              {(() => {
+                const res = runResults[sid];
+                const isScammed = res?.outcome === 'scammed';
+                const isLate = res?.outcome === 'escaped_late';
 
-              let bgClass = 'bg-[#2B8A3E] text-white';
-              let icon = '✓';
-              let titleText = t('result_escaped', lang);
+                let bgClass = 'bg-[#2B8A3E] text-white';
+                let icon = '✓';
+                let titleText = t('result_escaped', lang);
 
-              if (isScammed) {
-                bgClass = 'bg-[#C92A2A] text-white';
-                icon = '⚠️';
-                titleText = t('result_scammed', lang);
-              } else if (isLate) {
-                bgClass = 'bg-[#E67700] text-white';
-                icon = '⏱';
-                titleText = t('result_late', lang);
-              }
+                if (isScammed) {
+                  bgClass = 'bg-[#C92A2A] text-white';
+                  icon = '⚠️';
+                  titleText = t('result_scammed', lang);
+                } else if (isLate) {
+                  bgClass = 'bg-[#E67700] text-white';
+                  icon = '⏱';
+                  titleText = t('result_late', lang);
+                }
 
-              return (
-                <div className="w-full space-y-5 my-auto" role="status" aria-live="polite">
-                  <div className={`w-full ${bgClass} rounded-[16px] p-6 sm:p-8 shadow-md space-y-3`}>
-                    <div className="text-6xl sm:text-7xl font-black" aria-hidden="true">{icon}</div>
-                    <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-                      {titleText}
-                    </h2>
-                    {isScammed && res.lossInr > 0 && (
-                      <div className="text-xl sm:text-3xl font-extrabold bg-white/20 px-4 py-2 rounded-full inline-block max-w-full break-words">
-                        {t('lost_amount', lang, { x: res.lossInr })}
-                      </div>
-                    )}
+                return (
+                  <div className="w-full space-y-3 sm:space-y-5 my-auto" role="status" aria-live="polite">
+                    <div className={`w-full ${bgClass} rounded-[16px] p-4 sm:p-8 shadow-md space-y-2 sm:space-y-3`}>
+                      <div className="text-5xl sm:text-7xl font-black" aria-hidden="true">{icon}</div>
+                      <h2 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
+                        {titleText}
+                      </h2>
+                      {isScammed && res.lossInr > 0 && (
+                        <div className="text-lg sm:text-3xl font-extrabold bg-white/20 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full inline-block max-w-full break-words">
+                          {t('lost_amount', lang, { x: res.lossInr })}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })()}
+                );
+              })()}
+            </div>
 
-            <div className="w-full pt-4">
+            <div className="w-full space-y-2 sm:space-y-3 pt-2 shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -1208,9 +1236,30 @@ export function SaralFlow({
                   stopSpeaking();
                   setScreen('lesson');
                 }}
-                className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[52px] sm:min-h-[64px] py-2.5 sm:py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
               >
                 {t('see_how', lang)}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const res = runResults[sid];
+                  if (res) {
+                    let key = `${sid}__end_escaped`;
+                    let text = t('result_escaped', lang);
+                    if (res.outcome === 'scammed') {
+                      key = `${sid}__end_scammed`;
+                      text = `${t('result_scammed', lang)}. ${t('lost_amount', lang, { x: res.lossInr })}`;
+                    } else if (res.outcome === 'escaped_late') {
+                      key = `${sid}__end_late`;
+                      text = t('result_late', lang);
+                    }
+                    playSequence([{ key, text }]);
+                  }
+                }}
+                className="w-full min-h-[48px] sm:min-h-[56px] py-1.5 sm:py-2 px-4 bg-white text-[#1A1A1A] text-base sm:text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+              >
+                {t('replay', lang)}
               </button>
             </div>
           </div>
@@ -1218,8 +1267,8 @@ export function SaralFlow({
 
         {/* SCREEN 9: THE LESSON, EXPLAINED */}
         {screen === 'lesson' && currentScenario && drillState && (
-          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-            <div className="w-full space-y-4">
+          <div className="flex-1 flex flex-col justify-between w-full max-w-[480px] mx-auto min-w-0 min-h-0 overflow-hidden py-3 space-y-3">
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1">
               <h2 className="text-2xl sm:text-3xl font-black text-[#1A1A1A] text-center">
                 {runResults[sid]?.outcome === 'scammed' ? t('lesson_fell', lang) : t('lesson_safe', lang)}
               </h2>
@@ -1234,11 +1283,11 @@ export function SaralFlow({
               />
             </div>
 
-            <div className="w-full space-y-3 pt-4">
+            <div className="w-full space-y-2.5 pt-2 shrink-0">
               <button
                 type="button"
                 onClick={handleNextFromLesson}
-                className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[56px] sm:min-h-[64px] py-3 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
               >
                 {t('next', lang)}
               </button>
@@ -1266,7 +1315,7 @@ export function SaralFlow({
                   });
                   playSequence(items);
                 }}
-                className="w-full min-h-[64px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[52px] sm:min-h-[64px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 {t('replay', lang)}
               </button>
@@ -1276,7 +1325,7 @@ export function SaralFlow({
 
         {/* SCREEN 10: ANOTHER ONE? */}
         {screen === 'another' && (
-          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6 text-center">
+          <div className="flex-1 flex flex-col justify-between items-center py-6 w-full max-w-[480px] mx-auto min-w-0 my-auto space-y-6 text-center">
             <SaralGuideBubble text={t('another_yes', lang)} />
 
             <div className="w-full space-y-3 pt-6">
@@ -1300,7 +1349,7 @@ export function SaralFlow({
 
         {/* SCREEN 11: THE END */}
         {screen === 'final' && (
-          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6 text-center">
+          <div className="flex-1 flex flex-col justify-between items-center py-6 w-full max-w-[480px] mx-auto min-w-0 my-auto space-y-6 text-center">
             {(() => {
               const totalDone = Object.keys(runResults).length;
               const notScammed = Object.values(runResults).filter(r => r.outcome !== 'scammed').length;

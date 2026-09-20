@@ -218,12 +218,26 @@ function getBestVoice(lang: 'en' | 'hi'): SpeechSynthesisVoice | null {
     .sort((a, b) => b.score - a.score)[0].voice;
 }
 
+export function isFastMode(): boolean {
+  if (typeof window === 'undefined') return false;
+  const allow =
+    process.env.NODE_ENV !== 'production' ||
+    process.env.NEXT_PUBLIC_ALLOW_FAST === 'true';
+  if (!allow) return false;
+  try {
+    return new URLSearchParams(window.location.search).get('fast') === '1';
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Speech synthesis helper.
  * Queues utterances without canceling existing ones.
  * Fails silently if unsupported or blocked.
  */
 export function speak(text: string, lang: 'en' | 'hi', role: VoiceRole = 'guide') {
+  if (isFastMode()) return;
   try {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
@@ -325,6 +339,7 @@ function getSharedAudio(): HTMLAudioElement | null {
  * with play() then pause(), enabling playback on iOS Safari.
  */
 export function unlockAudio() {
+  if (isFastMode()) return;
   try {
     const audio = getSharedAudio();
     if (!audio) return;
@@ -377,6 +392,11 @@ export function playClip(
   soundOn: boolean = true,
   role?: VoiceRole
 ): Promise<void> {
+  if (isFastMode()) {
+    stopSpeaking();
+    return Promise.resolve();
+  }
+
   return new Promise<void>((resolve) => {
     // Stop any current speaking/waiting first
     stopSpeaking();
@@ -529,7 +549,7 @@ export interface PlayLineOptions {
  * If voiceLang === 'off', stays silent.
  */
 export function playLine({ scenarioId, nodeId, index, voiceLang, text, uiLang, uiText }: PlayLineOptions) {
-  if (voiceLang === 'off') return;
+  if (isFastMode() || voiceLang === 'off') return;
 
   const key = `${voiceLang}/${scenarioId}__${nodeId}__${index}`;
   const clipUrl = (voiceManifest as Record<string, string>)[key];
@@ -633,6 +653,7 @@ export function stopRing() {
  * Returns a stop function to silence immediately if answered early.
  */
 export function playRingtone(): () => void {
+  if (isFastMode()) return () => {};
   stopRing(); // Stop previous ring if still active
 
   try {
