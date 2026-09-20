@@ -71,7 +71,7 @@ export function SaralApp() {
         import('./SaralFlow');
       };
       if ('requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(prefetchFlow);
+        (window as Window & { requestIdleCallback?: (cb: () => void) => void }).requestIdleCallback?.(prefetchFlow);
       } else {
         setTimeout(prefetchFlow, 1500);
       }

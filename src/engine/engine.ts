@@ -112,6 +112,33 @@ export function knowledgeBehaviourGap(knew: boolean[], results: RunResult[]) {
 export function validate(s: Scenario): string[] {
   const err: string[] = []; const N = s.nodes;
   const l10n = (v: L10n | undefined, where: string) => { if (!v || !v.en?.trim() || !v.hi?.trim()) err.push(`${where}: missing en/hi text`); };
+  // Structural checks: the JSON is cast to Scenario at import time, so enums are verified here at runtime.
+  const SURFACES = ['sms', 'chat', 'call', 'videocall', 'upi', 'system'];
+  const RISKS = ['safe', 'risky', 'compromise'];
+  const TAGS = ['comply', 'stall', 'refuse', 'hangup', 'block_report', 'verify_official', 'tell_family', 'call_1930', 'scan_qr', 'install_app', 'call_unknown'];
+  const FLAGS = ['urgency', 'fear', 'authority', 'secrecy', 'too_good', 'pin_to_receive', 'otp_request', 'remote_app', 'unofficial_contact', 'pay_to_verify', 'screen_says_pay'];
+  if (!s || typeof s !== 'object' || !s.nodes || typeof s.nodes !== 'object') return ['scenario is not an object with nodes'];
+  if (typeof s.id !== 'string' || !s.id) err.push('id missing');
+  if (s.precheck?.correct !== 'yes' && s.precheck?.correct !== 'no') err.push('precheck.correct must be yes|no');
+  for (const [key, n] of Object.entries(s.nodes)) {
+    if (!SURFACES.includes(n.surface)) err.push(`${key}: unknown surface ${String(n.surface)}`);
+    for (const m of n.messages ?? []) {
+      for (const f of m.flags ?? []) if (!FLAGS.includes(f)) err.push(`${key}: unknown flag ${String(f)}`);
+      if (m.via !== undefined && !SURFACES.includes(m.via)) err.push(`${key}: unknown via ${String(m.via)}`);
+    }
+    for (const c of n.choices ?? []) {
+      if (!RISKS.includes(c.risk)) err.push(`${key}.${c.id}: unknown risk ${String(c.risk)}`);
+      if (!TAGS.includes(c.tag)) err.push(`${key}.${c.id}: unknown tag ${String(c.tag)}`);
+      if (typeof c.next !== 'string') err.push(`${key}.${c.id}: next must be a node id`);
+    }
+    if (n.input) {
+      if (n.input.kind !== 'pin' && n.input.kind !== 'otp') err.push(`${key}: input.kind must be pin|otp`);
+      for (const f of n.input.flags ?? []) if (!FLAGS.includes(f)) err.push(`${key}: unknown input flag ${String(f)}`);
+    }
+    if (n.end && n.end.outcome !== 'scammed' && n.end.outcome !== 'escaped') err.push(`${key}: end.outcome must be scammed|escaped`);
+    if (n.timerSec !== undefined && !(typeof n.timerSec === 'number' && n.timerSec > 0)) err.push(`${key}: timerSec must be a positive number`);
+  }
+  if (err.length) return err;
   if (!N[s.start]) err.push('start node missing');
   l10n(s.title, 'title'); l10n(s.setup, 'setup'); l10n(s.rule, 'rule'); l10n(s.precheck?.q, 'precheck.q');
   const edges = (n: ScenarioNode): string[] => [
@@ -144,4 +171,9 @@ export function validate(s: Scenario): string[] {
   for (const id of all) if (!N[id].end && !ends(reach(id), 'escaped')) err.push(`${id}: player can get trapped (no safe exit)`);
   if (allFlags(s).length < 3) err.push('needs >=3 distinct red flags');
   return err;
+}
+
+/** Runtime type guard for JSON imports: use this instead of a blind cast. */
+export function isScenario(x: unknown): x is Scenario {
+  try { return validate(x as Scenario).length === 0; } catch { return false; }
 }

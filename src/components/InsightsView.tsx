@@ -458,6 +458,10 @@ export function InsightsView({ data }: InsightsViewProps) {
                   {t('no_retry_data', lang)}
                 </p>
               )}
+
+              <p className="text-sm font-medium text-[#1A1A1A]/70 pt-1">
+                {t('attempt_note', lang)}
+              </p>
             </Card>
 
             {/* SECTION 7: Who played */}

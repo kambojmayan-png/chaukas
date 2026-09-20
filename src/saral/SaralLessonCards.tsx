@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { Lang, Scenario, RunState, RunResult } from '@/engine/engine';
+import type { Lang, Scenario, RunState } from '@/engine/engine';
 import { t, getFlagLabel } from '@/lib/i18n';
 
 const FLAG_PRIORITY = [
@@ -72,6 +72,66 @@ export function extractTrickCards(
   }));
 }
 
+const EARLY_EXIT_FLAGS = [
+  'pin_to_receive',
+  'screen_says_pay',
+  'otp_request',
+  'remote_app',
+  'pay_to_verify',
+  'secrecy',
+] as const;
+
+export function extractEarlyExitCards(
+  scenario: Scenario,
+  state: RunState,
+  lang: Lang
+): TrickCardData[] {
+  const unvisitedNodeIds = Object.keys(scenario.nodes).filter(
+    id => !state.path.includes(id)
+  );
+
+  const cards: TrickCardData[] = [];
+
+  for (const targetFlag of EARLY_EXIT_FLAGS) {
+    if (cards.length >= 3) break;
+
+    let found = false;
+    for (const nodeId of unvisitedNodeIds) {
+      const node = scenario.nodes[nodeId];
+      if (!node) continue;
+
+      if (node.messages) {
+        for (const msg of node.messages) {
+          if (msg.flags && msg.flags.includes(targetFlag)) {
+            cards.push({
+              flag: targetFlag,
+              words: msg.text[lang] || msg.text.en,
+              explanation: t(`flag_explain_${targetFlag}`, lang),
+              audioKey: `flag__${targetFlag}`,
+            });
+            found = true;
+            break;
+          }
+        }
+      }
+      if (found) break;
+
+      if (node.input && node.input.flags && node.input.flags.includes(targetFlag)) {
+        cards.push({
+          flag: targetFlag,
+          words: node.input.detail[lang] || node.input.detail.en,
+          explanation: t(`flag_explain_${targetFlag}`, lang),
+          audioKey: `flag__${targetFlag}`,
+        });
+        found = true;
+        break;
+      }
+    }
+  }
+
+  return cards;
+}
+
 interface SaralLessonCardsProps {
   scenario: Scenario;
   cards: TrickCardData[];
@@ -94,7 +154,7 @@ export function SaralLessonCards({
   return (
     <div className="w-full space-y-4 text-left max-w-xl mx-auto">
       {/* Trick Cards: Up to 3 cards */}
-      {!showSummaryFallback && cards.length >= 2 ? (
+      {!showSummaryFallback && cards.length > 0 ? (
         <div className="space-y-3.5">
           {cards.map((card, idx) => {
             const isActive = activeCardIndex === idx;

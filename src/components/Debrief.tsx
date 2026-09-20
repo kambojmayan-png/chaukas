@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Scenario, RunState, RunResult, Lang } from '@/engine/engine';
 import { getFlagLabel, t } from '@/lib/i18n';
 import { GlassBox, GlassBoxPanel } from '@/components/GlassBox';
+import { extractEarlyExitCards } from '@/saral/SaralLessonCards';
 
 interface DebriefProps {
   scenario: Scenario;
@@ -49,6 +50,13 @@ export function Debrief({
       : `${Math.round(elapsedSec / 60)} ${t('minutes', lang)}`;
 
   const showKnewBox = knewAnswer?.knew === true && result.outcome === 'scammed';
+  const nonEndNodes = state.path.filter(id => !scenario.nodes[id]?.end);
+  const isEarlyExit =
+    result.outcome === 'escaped' &&
+    (result.flagsWalkedPast.length < 2 || nonEndNodes.length <= 1);
+  const earlyExitCards = isEarlyExit
+    ? extractEarlyExitCards(scenario, state, lang)
+    : [];
 
   return (
     <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-6 md:gap-8 w-full max-w-5xl my-auto">
@@ -73,7 +81,9 @@ export function Debrief({
               : t('zero_lost', lang)}
           </div>
           <p className="text-lg font-bold text-[#1A1A1A] leading-snug">
-            {result.headline[lang] || result.headline.en}
+            {isEarlyExit
+              ? t('lesson_next_title', lang)
+              : (result.headline[lang] || result.headline.en)}
           </p>
         </div>
 
@@ -193,6 +203,35 @@ export function Debrief({
             </p>
           )}
         </div>
+
+        {/* 4b. Early exit cards: what the scammer would have tried next */}
+        {isEarlyExit && earlyExitCards.length > 0 && (
+          <div className="space-y-3 text-left">
+            <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#111111]/70 border-b border-[#111111]/20 pb-1">
+              {t('lesson_next_title', lang)}
+            </div>
+            <div className="space-y-2.5">
+              {earlyExitCards.map((card) => (
+                <div
+                  key={card.flag}
+                  className="bg-white border-2 border-[#1A1A1A] rounded-[14px] p-3.5 space-y-2 text-left shadow-sm"
+                >
+                  <div className="bg-[#FBF7F0] border border-[#1A1A1A]/20 rounded-[10px] p-2.5 text-xs sm:text-sm font-semibold text-[#1A1A1A] leading-relaxed break-words [overflow-wrap:anywhere]">
+                    "{card.words}"
+                  </div>
+                  <div>
+                    <span className="inline-block bg-red-100 text-[#C92A2A] border border-[#C92A2A]/40 text-xs font-bold px-2.5 py-0.5 rounded-full leading-normal break-words">
+                      🚩 {getFlagLabel(card.flag, lang)}
+                    </span>
+                  </div>
+                  <p className="text-sm sm:text-base font-bold text-[#1A1A1A] leading-snug break-words [overflow-wrap:anywhere]">
+                    {card.explanation}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 5. The rule in a bordered box */}
         <div className="border border-[#1A1A1A]/15 bg-[#FBF7F0] p-4 rounded-[14px] shadow-[0_2px_8px_rgba(26,26,26,0.04)] space-y-1.5 text-left">

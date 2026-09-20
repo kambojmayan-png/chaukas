@@ -5,7 +5,7 @@
 export type Flag =
   | 'urgency' | 'fear' | 'authority' | 'secrecy' | 'too_good' | 'pin_to_receive'
   | 'otp_request' | 'remote_app' | 'unofficial_contact' | 'pay_to_verify' | 'bad_link'
-  | 'money_request' | 'new_number';
+  | 'money_request' | 'new_number' | 'job_bait';
 export type Archetype = 'receive_money_pin' | 'utility_kyc_remote' | 'digital_arrest' | 'reward_refund' | 'job_task' | 'money_request' | 'unknown';
 export interface Finding { flag: Flag; start: number; end: number; match: string }
 export interface CheckResult {
@@ -15,12 +15,12 @@ export interface CheckResult {
 
 const W: Record<Flag, number> = {
   otp_request: 4, pin_to_receive: 4, remote_app: 4, pay_to_verify: 4, secrecy: 3, bad_link: 3,
-  unofficial_contact: 2, fear: 2, urgency: 1, authority: 1, too_good: 3, money_request: 3, new_number: 2,
+  unofficial_contact: 2, fear: 2, urgency: 1, authority: 1, too_good: 3, money_request: 3, new_number: 2, job_bait: 3,
 };
 
 // English + Hinglish + Devanagari. No \b around Devanagari (JS \b is ASCII-only).
 const P: [Flag, RegExp][] = [
-  ['urgency', /\b(immediately|urgent(ly)?|right now|within \d+ ?(min|minutes|hrs?|hours)|tonight|today only|last chance|expire[sd]?|turant|abhi|jaldi|aaj raat)\b|तुरंत|अभी|जल्दी|आज रात|आख़िरी मौक़ा|अंतिम/gi],
+  ['urgency', /\b(immediately|urgent(ly)?|right now|within \d+ ?(min|minutes|hrs?|hours)|tonight|today only|last chance|expire[sd]?|turant|abhi|jaldi|aaj raat)\b|तुरंत|अभी|जल्दी|आज रात|आख़िरी मौक़ा|आखिरी मौका|अंतिम (मौक़ा|मौका|चेतावनी)/gi],
   ['fear', /\b(disconnect(ed|ion)?|block(ed)?|suspend(ed)?|deactivat(ed|ion)|seized|arrest(ed)?|warrant|legal action|fir|penalty|kat jayeg[ai]|band ho jayeg[ai])\b|काट दी जाएगी|कट जाएग[ीा]|बंद हो जाएग[ाी]|गिरफ़्तार|गिरफ्तार|वारंट|कानूनी कार्रवाई|ज़ब्त/gi],
   ['authority', /\b(cbi|ed|customs?|trai|rbi|police|cyber ?crime|income tax|court|officer|army|narcotics|ncb)\b|पुलिस|अधिकारी|कस्टम|अदालत|सीबीआई/gi],
   ['secrecy', /\b(do ?n[o']t (tell|inform|call|contact) (anyone|anybody|family|police)|keep (it|this) (secret|confidential)|stay on (the )?(call|camera)|digital arrest|kisi ko (mat|na) bata)/gi],
@@ -36,6 +36,9 @@ const P: [Flag, RegExp][] = [
   ['money_request', /\b(send|transfer|deposit|pay)\b[^.!?\n]{0,30}(₹|rs\.?\s?|inr\s?|\$)\s?\d[\d,]*[^.!?\n]{0,40}\b(to|on|at|in)\b[^.!?\n]{0,25}\b(number|no\.?|upi|account|a\/c|qr|wallet|id)\b/gi],
   ['money_request', /\b(paise|paisa|rupaye|rupay|amount|payment)\b[^.!?\n]{0,30}\b(bhej\w*|daal\w*|transfer kar\w*|send kar\w*|de do|dedo)\b/gi],
   ['money_request', /(पैसे|पैसा|रुपये|रुपए|रक़म|रकम)[^।.!?\n]{0,30}(भेज|ट्रांसफर|डाल|दे दो)/g],
+  // Task / easy-money job bait. "Part-time" or "work from home" alone never counts: only a promised payout or paid likes do.
+  ['job_bait', /\b(earn|kamao|kamaye|kamaiye|income)\b[^.!?\n]{0,25}(₹|rs\.?|inr)?\s?\d[\d,]*\s*(\/|per|a|har|prati)\s*(day|din|hour|ghanta|week)\b|\b(like|subscribe|rate|review)\b[^.!?\n]{0,30}\b(earn|paid|payment|commission)\b|\b(telegram|whatsapp)\b[^.!?\n]{0,20}\b(task|job)\b|\bprepaid task\b/gi],
+  ['job_bait', /घर बैठे[^।\n]{0,20}कमा|रोज़? ?\d[\d,]* ?(रुपये|रु\.?|₹)[^।\n]{0,15}कमा/g],
   // "Hi mum, this is my new number" impersonation opener.
   ['new_number', /\b(this is my new (number|no\.?)|my new (number|no\.?)|new (number|no\.?) (hai|he)|changed my (number|no\.?)|(my )?phone (is |got )?(broken|lost|damaged|stolen|dead)|lost my phone|naya (number|no\.?)|mera phone (kharab|toot\w*|kho\w*))\b|नया नंबर|फ़ोन (ख़राब|खराब|टूट|खो)/gi],
   ['unofficial_contact', /\b(call|contact|whats ?app|sampark)\b[^.!?\n]{0,40}(\+?91[\s-]?)?[6-9]\d[\d•xX*\s-]{7,11}\d|संपर्क करें[^।\n]{0,30}[6-9]\d[\d•xX*\s-]{7,11}\d/gi],

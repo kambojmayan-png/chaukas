@@ -21,7 +21,7 @@ import {
 } from '@/lib/speak';
 import voiceDurations from '@/lib/voiceDurations.json';
 import { sendRun } from '@/lib/telemetry';
-import { step, result as computeResult } from '@/engine/engine';
+import { step, result as computeResult, type RunState, type RunResult, type Lang, type Scenario, type Message, type Surface, type Action } from '@/engine/engine';
 import { PhoneFrame } from '@/components/phone/PhoneFrame';
 import { MessageList } from '@/components/phone/MessageList';
 import { ChoiceBar } from '@/components/phone/ChoiceBar';
@@ -31,7 +31,7 @@ import { SystemDialog } from '@/components/phone/SystemDialog';
 import { GlassBox, GlassBoxPanel } from '@/components/GlassBox';
 import { Debrief } from '@/components/Debrief';
 import { Report } from '@/components/Report';
-import type { Lang, Scenario, Message, Surface, Action, RunResult } from '@/engine/engine';
+import { getAttempt, nextAttempt } from '@/lib/attempts';
 
 const INITIAL_WALLET = 60000;
 
@@ -51,27 +51,6 @@ function getSessionId(): string {
     return id;
   } catch {
     return 'anon-' + Math.random().toString(36).slice(2);
-  }
-}
-
-function getAttempt(scenarioId: string): number {
-  if (typeof window === 'undefined') return 1;
-  try {
-    const val = sessionStorage.getItem(`chaukas_attempt_${scenarioId}`);
-    return val ? parseInt(val, 10) : 1;
-  } catch {
-    return 1;
-  }
-}
-
-function incrementAttempt(scenarioId: string): number {
-  if (typeof window === 'undefined') return 2;
-  try {
-    const next = getAttempt(scenarioId) + 1;
-    sessionStorage.setItem(`chaukas_attempt_${scenarioId}`, String(next));
-    return next;
-  } catch {
-    return 2;
   }
 }
 
@@ -167,7 +146,7 @@ export default function DrillPage() {
   const [screen, setScreen] = useState<DrillScreen>('intro');
   const [results, setResults] = useState<Record<string, RunResult>>({});
   const [currentResult, setCurrentResult] = useState<RunResult | null>(null);
-  const [currentState, setCurrentState] = useState<any>(null);
+  const [currentState, setCurrentState] = useState<RunState | null>(null);
 
   const animatedBalance = useAnimatedWallet(walletBalance);
 
@@ -310,7 +289,7 @@ export default function DrillPage() {
     unlockAudio();
     stopSpeaking();
     stopRing();
-    incrementAttempt(scenario.id);
+    nextAttempt(scenario.id);
     preloadScenarioClips(scenario.id, voiceChoice);
     setRunKey(k => k + 1);
     setCurrentResult(null);
@@ -351,7 +330,7 @@ export default function DrillPage() {
   };
 
   // Called when runner completes a drill
-  const handleDrillFinish = (res: RunResult, finalSt: any) => {
+  const handleDrillFinish = (res: RunResult, finalSt: RunState) => {
     setCurrentResult(res);
     setCurrentState(finalSt);
     setResults(prev => ({ ...prev, [scenario.id]: res }));
@@ -519,6 +498,7 @@ export default function DrillPage() {
                 ? t('targeted_practice', lang)
                 : t('drill_n_of_3', lang, {
                     n: scenarioIndex + 1,
+                    total: SCENARIOS.length,
                   })}
             </Chip>
           </div>
@@ -615,7 +595,7 @@ interface DrillRunnerProps {
   knewRule: boolean | null;
   attempt: number;
   source: string;
-  onFinish: (result: RunResult, state: any) => void;
+  onFinish: (result: RunResult, state: RunState) => void;
 }
 
 function DrillRunner({
@@ -675,6 +655,7 @@ function DrillRunner({
               attempt,
               source,
             });
+            nextAttempt(scenario.id);
           }
         } catch {
           /* never block the drill */

@@ -2,27 +2,47 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { checkMessage, type CheckResult, type Flag, type Finding } from '@/check/rules';
+import { checkMessage, type CheckResult, type Flag, type Finding, type Archetype } from '@/check/rules';
 import { useLang } from '@/lib/useLang';
 import { t, getFlagLabel } from '@/lib/i18n';
 import { AppShell, Card, Chip, PageTitle } from '@/ui';
 import { playClip, stopSpeaking } from '@/lib/speak';
 import type { Lang } from '@/engine/engine';
 
+const ARCHETYPE_CONFIG: Record<Archetype, { adviceKey: string; clipKey: string }> = {
+  receive_money_pin: {
+    adviceKey: 'advice_receive_money_pin',
+    clipKey: 'check__advice_receive_money_pin',
+  },
+  reward_refund: {
+    adviceKey: 'advice_receive_money_pin',
+    clipKey: 'check__advice_receive_money_pin',
+  },
+  utility_kyc_remote: {
+    adviceKey: 'advice_utility_kyc_remote',
+    clipKey: 'check__advice_utility_kyc_remote',
+  },
+  digital_arrest: {
+    adviceKey: 'advice_digital_arrest',
+    clipKey: 'check__advice_digital_arrest',
+  },
+  money_request: {
+    adviceKey: 'advice_money_request',
+    clipKey: 'check__advice_money_request',
+  },
+  job_task: {
+    adviceKey: 'advice_job_task',
+    clipKey: 'check__advice_job_task',
+  },
+  unknown: {
+    adviceKey: 'advice_other',
+    clipKey: 'check__advice_other',
+  },
+};
+
 function getAdvice(result: CheckResult, lang: Lang): string {
-  switch (result.archetype) {
-    case 'money_request':
-      return t('advice_money_request', lang);
-    case 'digital_arrest':
-      return t('advice_digital_arrest', lang);
-    case 'utility_kyc_remote':
-      return t('advice_utility_kyc_remote', lang);
-    case 'receive_money_pin':
-    case 'reward_refund':
-      return t('advice_receive_money_pin', lang);
-    default:
-      return t('advice_other', lang);
-  }
+  const config = ARCHETYPE_CONFIG[result.archetype] || ARCHETYPE_CONFIG.unknown;
+  return t(config.adviceKey, lang);
 }
 
 function getAudioClips(result: CheckResult, lang: Lang): {
@@ -45,22 +65,9 @@ function getAudioClips(result: CheckResult, lang: Lang): {
       ? t('suspicious', lang)
       : t('no_red_flags_found', lang);
 
-  let adviceClip = 'check__advice_other';
-  let adviceFallback = t('advice_other', lang);
-
-  if (result.archetype === 'money_request') {
-    adviceClip = 'check__advice_money_request';
-    adviceFallback = t('advice_money_request', lang);
-  } else if (result.archetype === 'digital_arrest') {
-    adviceClip = 'check__advice_digital_arrest';
-    adviceFallback = t('advice_digital_arrest', lang);
-  } else if (result.archetype === 'utility_kyc_remote') {
-    adviceClip = 'check__advice_utility_kyc_remote';
-    adviceFallback = t('advice_utility_kyc_remote', lang);
-  } else if (result.archetype === 'receive_money_pin' || result.archetype === 'reward_refund') {
-    adviceClip = 'check__advice_receive_money_pin';
-    adviceFallback = t('advice_receive_money_pin', lang);
-  }
+  const config = ARCHETYPE_CONFIG[result.archetype] || ARCHETYPE_CONFIG.unknown;
+  const adviceClip = config.clipKey;
+  const adviceFallback = t(config.adviceKey, lang);
 
   return { verdictClip, verdictFallback, adviceClip, adviceFallback };
 }
@@ -77,6 +84,10 @@ const EXAMPLES = [
   {
     labelKey: 'example_bank_otp_sms',
     text: '482913 is your OTP for txn of INR 1,250.00 at AMAZON. Do not share it with anyone. -HDFC Bank',
+  },
+  {
+    labelKey: 'example_job_task_sms',
+    text: 'Part-time job offer: Earn ₹2,000 to ₹5,000 per day by liking videos and simple Telegram tasks. Contact HR on WhatsApp: 9876543210.',
   },
 ];
 

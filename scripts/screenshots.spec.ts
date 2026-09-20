@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
 import fs from 'fs';
 
@@ -9,7 +9,7 @@ test.use({
 
 const SCREENS_DIR = path.resolve(process.cwd(), 'docs/screens');
 
-async function prepCapture(page: any) {
+async function prepCapture(page: Page) {
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(300);
 }

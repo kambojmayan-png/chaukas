@@ -13,6 +13,12 @@ export const SCAM = [
   "Hi mum, this is my new number, my phone is broken. Please send Rs 20,000 to this number urgently, I will explain later.",
   "bhai urgent hai 5000 rupaye bhej do is number pe, kal wapas kar dunga",
   "Please transfer ₹15,000 to this UPI id today itself: helpdesk.refund@okbank",
+  "आपका बैंक खाता आज बंद हो जाएगा। KYC अपडेट करने के लिए तुरंत इस लिंक पर क्लिक करें: http://sbi-kyc.top/verify",
+  "बधाई हो! आपने KBC लॉटरी में 25 लाख रुपये जीते हैं। इनाम पाने के लिए 9876543210 पर WhatsApp करें।",
+  "मम्मी मेरा फ़ोन खराब हो गया है, यह मेरा नया नंबर है। जल्दी से 5000 रुपये भेज दो।",
+  "सर आपका पार्सल कस्टम में पकड़ा गया है। आप डिजिटल अरेस्ट में हैं, किसी को मत बताना।",
+  "Part time work from home. Earn 3000 per day. Join our Telegram task group, like and subscribe videos and get paid.",
+  "घर बैठे कमाएँ! रोज़ 2000 रुपये कमाने का मौका। अभी WhatsApp करें।",
 ];
 export const GENUINE = [
   "482913 is your OTP for txn of INR 1,250.00 at AMAZON. Do not share it with anyone. -HDFC Bank",
@@ -27,4 +33,10 @@ export const GENUINE = [
   "Salary of INR 45,000.00 credited to your A/c XX9921 on 20-09-26. Avl bal INR 61,204.55 -ICICI Bank",
   "Lunch at 1? I will pay today, you paid last time.",
   "Your Amazon order of Rs 1,299 is out for delivery. Pay on delivery or pay online in the app.",
+  "आपके खाते XX1234 में 20-09-26 को ₹5,000 जमा किए गए। उपलब्ध शेष ₹12,450। - SBI",
+  "आपका बिजली बिल ₹1,840 जनरेट हो गया है। अंतिम तिथि 28-09-2026। आधिकारिक ऐप से भुगतान करें।",
+  "बेटा घर पहुँच कर फ़ोन करना। खाना फ्रिज में रखा है।",
+  "आपकी गैस बुकिंग हो गई है। सिलेंडर 2 दिन में पहुँच जाएगा। बुकिंग नंबर 448211।",
+  "Your interview for the part-time content writer role is scheduled on Monday at 11 AM at our Mohali office.",
+  "Reminder: work from home is allowed on Friday. Please update the team tracker.",
 ];

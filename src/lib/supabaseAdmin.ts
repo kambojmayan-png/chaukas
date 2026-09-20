@@ -94,17 +94,17 @@ export async function fetchInsights(): Promise<InsightsData> {
     }
 
     // Try reading insights_v2 first, fallback to insights
-    let data: any = null;
+    let data: Record<string, unknown>[] | null = null;
     let isV2 = false;
 
     const resV2 = await supabase.from('insights_v2').select('*');
     if (!resV2.error && resV2.data && resV2.data.length > 0) {
-      data = resV2.data;
+      data = resV2.data as Record<string, unknown>[];
       isV2 = true;
     } else {
       const resV1 = await supabase.from('insights').select('*');
       if (!resV1.error && resV1.data) {
-        data = resV1.data;
+        data = resV1.data as Record<string, unknown>[];
         isV2 = false;
       } else {
         if (resV2.error) console.error('[insights_v2]', resV2.error.message);
@@ -132,7 +132,7 @@ export async function fetchInsights(): Promise<InsightsData> {
     let sumFamilyLink = 0;
     let sumRuns24h = 0;
 
-    const scenarios: ScenarioInsight[] = data.map((row: any) => {
+    const scenarios: ScenarioInsight[] = (data || []).map((row: Record<string, unknown>) => {
       const firstRuns = Number(row.first_runs || 0);
       const firstScammed = Number(row.first_scammed || 0);
       const firstEscapedLate = Number(row.first_escaped_late || 0);
@@ -194,7 +194,7 @@ export async function fetchInsights(): Promise<InsightsData> {
       sumRuns24h += runs24h;
 
       return {
-        scenario_id: row.scenario_id,
+        scenario_id: String(row.scenario_id || ''),
         first_runs: firstRuns,
         first_scammed: firstScammed,
         first_escaped_late: firstEscapedLate,

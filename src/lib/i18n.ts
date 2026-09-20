@@ -62,6 +62,10 @@ export const RED_FLAG_LABELS: Record<string, FlagLabel> = {
     en: 'Claims a new number or broken phone',
     hi: 'नया नंबर या फ़ोन ख़राब होने का दावा',
   },
+  job_bait: {
+    en: 'Promises easy money for small tasks',
+    hi: 'छोटे काम के बदले आसान कमाई का वादा',
+  },
 };
 
 export function getFlagLabel(flag: string, lang: Lang = 'en'): string {
@@ -152,7 +156,7 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   footer_copy: { en: '© 2026 Chaukas · Tech for a Better Tomorrow', hi: '© 2026 Chaukas · Tech for a Better Tomorrow' },
 
   // Drill Intro & Keypad
-  drill_n_of_3: { en: 'Drill {n} of 3', hi: 'ड्रिल {n} / 3' },
+  drill_n_of_3: { en: 'Drill {n} of {total}', hi: 'ड्रिल {n} / {total}' },
   targeted_practice: { en: 'Targeted Practice', hi: 'चुनी हुई ड्रिल' },
   precheck_title: { en: 'Pre-Check', hi: 'पहले 3 छोटे सवाल' },
   start_drill: { en: 'Start drill', hi: 'ड्रिल शुरू करें' },
@@ -269,6 +273,22 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
     hi: 'कोई संदिग्ध मैसेज जाँचें'
   },
   live_numbers: { en: 'Live numbers', hi: 'लाइव आँकड़े' },
+  advice_job_task: {
+    en: "No real job asks you to pay first, or pays you for liking videos. Never pay a 'registration' or 'task' fee.",
+    hi: "कोई भी असली नौकरी पहले पैसे नहीं माँगती, और वीडियो लाइक करने के पैसे नहीं देती। 'रजिस्ट्रेशन' या 'टास्क' के नाम पर कभी पैसे न भेजें।",
+  },
+  example_job_task_sms: {
+    en: '💼 Part-Time Job / Video Like SMS',
+    hi: '💼 पार्ट-टाइम जॉब / वीडियो लाइक SMS',
+  },
+  lesson_next_title: {
+    en: 'You left at once. Here is what he would have tried next.',
+    hi: 'आप तुरंत निकल आए। देखिए, ठग आगे क्या चाल चलता।',
+  },
+  attempt_note: {
+    en: 'Attempts are counted per device, across visits.',
+    hi: 'कोशिशें हर फ़ोन पर अलग गिनी जाती हैं, और दोबारा आने पर भी याद रहती हैं।',
+  },
   start_over: { en: 'Start over', hi: 'फिर से शुरू करें' },
   final_report_tag: { en: 'FINAL REPORT', hi: 'अंतिम रिपोर्ट' },
   scorecard_title: { en: 'Your 3-Drill Scorecard', hi: 'आपका 3-ड्रिल स्कोरकार्ड' },
@@ -836,8 +856,8 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
     hi: 'नक़ली PIN: 4827',
   },
   practice_n: {
-    en: 'Practice {n} of 3',
-    hi: 'अभ्यास {n} / 3',
+    en: 'Practice {n} of {total}',
+    hi: 'अभ्यास {n} / {total}',
   },
   skip_question: {
     en: 'skip this question',

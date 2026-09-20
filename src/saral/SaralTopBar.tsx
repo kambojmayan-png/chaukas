@@ -11,6 +11,7 @@ interface SaralTopBarProps {
   soundOn: boolean;
   onToggleSound: () => void;
   practiceNumber?: number | null;
+  totalPractices?: number;
   onLeavePractice?: () => void;
 }
 
@@ -19,6 +20,7 @@ export function SaralTopBar({
   soundOn,
   onToggleSound,
   practiceNumber,
+  totalPractices,
   onLeavePractice,
 }: SaralTopBarProps) {
   const [, setLang] = useLang();
@@ -70,7 +72,7 @@ export function SaralTopBar({
       {/* Inside practice: progress indicator and leave link */}
       {practiceNumber != null && (
         <div className="flex items-center justify-between text-xs sm:text-base font-bold text-[#1A1A1A]/80 pt-1.5 mt-1.5 border-t border-[#1A1A1A]/10 w-full min-w-0">
-          <span className="min-w-0">{t('practice_n', lang, { n: practiceNumber })}</span>
+          <span className="min-w-0">{t('practice_n', lang, { n: practiceNumber, total: totalPractices ?? 3 })}</span>
           {onLeavePractice && (
             <button
               type="button"

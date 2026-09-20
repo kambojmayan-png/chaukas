@@ -13,7 +13,10 @@ import {
   type RunState,
   type RunResult,
   type Action,
+  type Message,
+  type Surface,
 } from '@/engine/engine';
+import { getAttempt, nextAttempt } from '@/lib/attempts';
 import { t } from '@/lib/i18n';
 import { useLang } from '@/lib/useLang';
 import {
@@ -33,7 +36,7 @@ import { SaralGuideBubble } from './SaralGuideBubble';
 import { SaralKeypad } from './SaralKeypad';
 import { SaralCallScreen } from './SaralCallScreen';
 import { SaralConversation, type DisplayMessage } from './SaralConversation';
-import { SaralLessonCards, extractTrickCards } from './SaralLessonCards';
+import { SaralLessonCards, extractTrickCards, extractEarlyExitCards } from './SaralLessonCards';
 import { SaralErrorBoundary } from './SaralErrorBoundary';
 
 type FlowScreen =
@@ -304,23 +307,39 @@ export function SaralFlow({
       preloadClips(['narr__another_or_stop', 'narr__next_drill'], lang);
       const res = runResults[sid];
       const isScammed = res?.outcome === 'scammed';
-      const lessonTitleKey = isScammed ? 'narr__lesson_fell' : 'narr__lesson_safe';
-      const lessonTitleText = isScammed ? t('lesson_fell', lang) : t('lesson_safe', lang);
+      const visitedCards = extractTrickCards(currentScenario, drillState, lang);
+      const nonEndNodes = drillState.path.filter(id => !currentScenario.nodes[id]?.end);
+      const isEarlyExit = res?.outcome === 'escaped' && (visitedCards.length < 2 || nonEndNodes.length <= 1);
 
-      const cards = extractTrickCards(currentScenario, drillState, lang);
+      const cards = isEarlyExit
+        ? extractEarlyExitCards(currentScenario, drillState, lang)
+        : visitedCards;
+
       const items: { key: string; text: string }[] = [];
 
-      items.push({ key: lessonTitleKey, text: lessonTitleText });
-
-      if (cards.length >= 2) {
+      if (isEarlyExit) {
+        items.push({
+          key: `${sid}__flags`,
+          text: t('lesson_next_title', lang),
+        });
         cards.forEach(c => {
           items.push({ key: c.audioKey, text: c.explanation });
         });
       } else {
-        items.push({
-          key: `${sid}__flags`,
-          text: t(`flags_summary_${sid.replace(/-/g, '_')}`, lang),
-        });
+        const lessonTitleKey = isScammed ? 'narr__lesson_fell' : 'narr__lesson_safe';
+        const lessonTitleText = isScammed ? t('lesson_fell', lang) : t('lesson_safe', lang);
+        items.push({ key: lessonTitleKey, text: lessonTitleText });
+
+        if (cards.length >= 2) {
+          cards.forEach(c => {
+            items.push({ key: c.audioKey, text: c.explanation });
+          });
+        } else {
+          items.push({
+            key: `${sid}__flags`,
+            text: t(`flags_summary_${sid.replace(/-/g, '_')}`, lang),
+          });
+        }
       }
 
       // Rule card
@@ -495,7 +514,7 @@ export function SaralFlow({
     };
   }, [currentVisitKey, convPhase, msgIndex, lang, soundOn, screen, callPickedUp]);
 
-  const getMessageLabel = (msg: any, surface: any, from: string | undefined, currentLang: Lang): string => {
+  const getMessageLabel = (msg: Message, surface: Surface | undefined, from: string | undefined, currentLang: Lang): string => {
     if (surface === 'call' || surface === 'videocall') {
       return t('label_call', currentLang);
     }
@@ -538,6 +557,7 @@ export function SaralFlow({
       // Telemetry dispatch
       try {
         const knewVal = knewAnswers[sid]?.knew ?? null;
+        const attempt = getAttempt(sid);
         sendRun({
           session_id: getSessionId(),
           scenario_id: sid,
@@ -550,9 +570,10 @@ export function SaralFlow({
           flags_total: res.flagsTotal,
           duration_ms: Math.max(2000, res.durationMs),
           hesitation_ms: res.hesitationMs,
-          attempt: 1,
+          attempt,
           source: isFamily ? 'saral_family' : 'saral',
         });
+        nextAttempt(sid);
       } catch {
         /* telemetry is best-effort */
       }
@@ -812,6 +833,7 @@ export function SaralFlow({
               ? practiceIdx + 1
               : null
           }
+          totalPractices={SCENARIOS.length}
           onLeavePractice={() => setShowLeaveConfirm(true)}
         />
 
@@ -1266,62 +1288,91 @@ export function SaralFlow({
         )}
 
         {/* SCREEN 9: THE LESSON, EXPLAINED */}
-        {screen === 'lesson' && currentScenario && drillState && (
-          <div className="flex-1 flex flex-col justify-between w-full max-w-[480px] mx-auto min-w-0 min-h-0 overflow-hidden py-3 space-y-3">
-            <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1">
-              <h2 className="text-2xl sm:text-3xl font-black text-[#1A1A1A] text-center">
-                {runResults[sid]?.outcome === 'scammed' ? t('lesson_fell', lang) : t('lesson_safe', lang)}
-              </h2>
+        {screen === 'lesson' && currentScenario && drillState && (() => {
+          const res = runResults[sid];
+          const isScammed = res?.outcome === 'scammed';
+          const visitedCards = extractTrickCards(currentScenario, drillState, lang);
+          const nonEndNodes = drillState.path.filter(id => !currentScenario.nodes[id]?.end);
+          const isEarlyExit = res?.outcome === 'escaped' && (visitedCards.length < 2 || nonEndNodes.length <= 1);
+          const cards = isEarlyExit
+            ? extractEarlyExitCards(currentScenario, drillState, lang)
+            : visitedCards;
 
-              <SaralLessonCards
-                scenario={currentScenario}
-                cards={extractTrickCards(currentScenario, drillState, lang)}
-                activeCardIndex={activeTrickIndex}
-                showSummaryFallback={extractTrickCards(currentScenario, drillState, lang).length < 2}
-                showHelpline={runResults[sid]?.outcome === 'scammed' && !hasEverBeenScammed}
-                lang={lang}
-              />
-            </div>
+          const titleText = isEarlyExit
+            ? t('lesson_next_title', lang)
+            : isScammed
+            ? t('lesson_fell', lang)
+            : t('lesson_safe', lang);
 
-            <div className="w-full space-y-2.5 pt-2 shrink-0">
-              <button
-                type="button"
-                onClick={handleNextFromLesson}
-                className="w-full min-h-[56px] sm:min-h-[64px] py-3 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
-              >
-                {t('next', lang)}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const isScammed = runResults[sid]?.outcome === 'scammed';
-                  const cards = extractTrickCards(currentScenario, drillState, lang);
-                  const items: { key: string; text: string }[] = [];
-                  items.push({
-                    key: isScammed ? 'narr__lesson_fell' : 'narr__lesson_safe',
-                    text: isScammed ? t('lesson_fell', lang) : t('lesson_safe', lang),
-                  });
-                  if (cards.length >= 2) {
-                    cards.forEach(c => items.push({ key: c.audioKey, text: c.explanation }));
-                  } else {
+          return (
+            <div className="flex-1 flex flex-col justify-between w-full max-w-[480px] mx-auto min-w-0 min-h-0 overflow-hidden py-3 space-y-3">
+              <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1">
+                <h2 className="text-2xl sm:text-3xl font-black text-[#1A1A1A] text-center">
+                  {titleText}
+                </h2>
+
+                <SaralLessonCards
+                  scenario={currentScenario}
+                  cards={cards}
+                  activeCardIndex={activeTrickIndex}
+                  showSummaryFallback={!isEarlyExit && cards.length < 2}
+                  showHelpline={isScammed && !hasEverBeenScammed}
+                  lang={lang}
+                />
+              </div>
+
+              <div className="w-full space-y-2.5 pt-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleNextFromLesson}
+                  className="w-full min-h-[56px] sm:min-h-[64px] py-3 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+                >
+                  {t('next', lang)}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const items: { key: string; text: string }[] = [];
+                    if (isEarlyExit) {
+                      items.push({
+                        key: `${sid}__flags`,
+                        text: t('lesson_next_title', lang),
+                      });
+                      cards.forEach(c => items.push({ key: c.audioKey, text: c.explanation }));
+                    } else {
+                      items.push({
+                        key: isScammed ? 'narr__lesson_fell' : 'narr__lesson_safe',
+                        text: isScammed ? t('lesson_fell', lang) : t('lesson_safe', lang),
+                      });
+                      if (cards.length >= 2) {
+                        cards.forEach(c => items.push({ key: c.audioKey, text: c.explanation }));
+                      } else {
+                        items.push({
+                          key: `${sid}__flags`,
+                          text: t(`flags_summary_${sid.replace(/-/g, '_')}`, lang),
+                        });
+                      }
+                    }
                     items.push({
-                      key: `${sid}__flags`,
-                      text: t(`flags_summary_${sid.replace(/-/g, '_')}`, lang),
+                      key: `${sid}__rule`,
+                      text: `${t('remember', lang)}: ${currentScenario.rule[lang] || currentScenario.rule.en}`,
                     });
-                  }
-                  items.push({
-                    key: `${sid}__rule`,
-                    text: `${t('remember', lang)}: ${currentScenario.rule[lang] || currentScenario.rule.en}`,
-                  });
-                  playSequence(items);
-                }}
-                className="w-full min-h-[52px] sm:min-h-[64px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
-              >
-                {t('replay', lang)}
-              </button>
+                    if (isScammed && !hasEverBeenScammed) {
+                      items.push({
+                        key: 'narr__if_real',
+                        text: t('helpline_card', lang),
+                      });
+                    }
+                    playSequence(items);
+                  }}
+                  className="w-full min-h-[52px] sm:min-h-[64px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                >
+                  {t('replay', lang)}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* SCREEN 10: ANOTHER ONE? */}
         {screen === 'another' && (
