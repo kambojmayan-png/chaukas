@@ -81,7 +81,8 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   skip_questions: { en: 'skip questions', hi: 'सवाल छोड़ें' },
   accept: { en: 'Accept', hi: 'कॉल उठाएँ' },
   off: { en: 'Off', hi: 'बंद' },
-  sound_on: { en: 'Sound', hi: 'आवाज़' },
+  sound_on: { en: 'Sound on', hi: 'आवाज़ चालू' },
+  sound_off: { en: 'Sound off', hi: 'आवाज़ बंद' },
   sound_muted: { en: 'Muted', hi: 'आवाज़ बंद' },
   caller_voice: { en: "Caller's voice:", hi: 'कॉल करने वाले की आवाज़:' },
   caller_speaks_hindi_note: {
@@ -571,6 +572,260 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   },
   event: { en: 'event', hi: 'इवेंट' },
   events: { en: 'events', hi: 'इवेंट्स' },
+
+  // SARAL (Elder-first UI) strings
+  home_tagline: {
+    en: 'Practise staying safe from scams. It takes 3 minutes.',
+    hi: 'ठगी से बचने का अभ्यास। बस 3 मिनट।',
+  },
+  home_start: {
+    en: '▶ Start',
+    hi: '▶ शुरू करें',
+  },
+  home_hint: {
+    en: 'Press the button. A voice will explain everything.',
+    hi: 'बटन दबाइए। आवाज़ आपको सब समझाएगी।',
+  },
+  practice_chip: {
+    en: 'This is practice, not real',
+    hi: 'यह अभ्यास है, असली नहीं',
+  },
+  soundcheck_text: {
+    en: 'Namaste! I am Chaukas Didi. Can you hear my voice?',
+    hi: 'नमस्ते! मैं चौकस दीदी हूँ। क्या आपको मेरी आवाज़ सुनाई दे रही है?',
+  },
+  sound_yes: {
+    en: '✓ Yes, I can hear you',
+    hi: '✓ हाँ, सुनाई दे रही है',
+  },
+  sound_no: {
+    en: 'No, I cannot',
+    hi: 'नहीं सुनाई दे रही',
+  },
+  sound_help: {
+    en: 'Press the volume button on the side of your phone to make it louder.',
+    hi: 'फ़ोन के किनारे वाला बटन दबाकर आवाज़ बढ़ाइए।',
+  },
+  continue_without_sound: {
+    en: 'Continue without sound',
+    hi: 'बिना आवाज़ के आगे बढ़ें',
+  },
+  welcome_text: {
+    en: 'This is a practice for staying safe from scams. It is not real. None of your real money will go anywhere, and we will never ask for your real PIN, OTP or bank details.',
+    hi: 'यह ठगी से बचने का एक अभ्यास है। यह असली नहीं है। इसमें आपका कोई असली पैसा नहीं जाएगा, और हम आपसे कभी आपका असली PIN, OTP या बैंक की जानकारी नहीं पूछेंगे।',
+  },
+  howto_text: {
+    en: "A pretend scammer will now message or call you. Do exactly what you would do in real life. I will read every message aloud. Then choose one of the big buttons below. To listen again, press 'Hear again'.",
+    hi: "अभी आपके फ़ोन पर एक नक़ली ठग का मैसेज या कॉल आएगा। आपको वही करना है जो आप असल ज़िंदगी में करते। हर मैसेज मैं आपको पढ़कर सुनाऊँगी। फिर नीचे दिए बड़े बटनों में से एक चुनिए। दोबारा सुनना हो तो 'फिर से सुनें' दबाइए।",
+  },
+  next: {
+    en: 'Continue ▶',
+    hi: 'आगे बढ़ें ▶',
+  },
+  replay: {
+    en: '🔊 Hear again',
+    hi: '🔊 फिर से सुनें',
+  },
+  practice_pin_title: {
+    en: 'Your practice PIN',
+    hi: 'आपका नक़ली PIN',
+  },
+  practice_pin_chip: {
+    en: 'Practice PIN: 4827',
+    hi: 'नक़ली PIN: 4827',
+  },
+  practice_n: {
+    en: 'Practice {n} of 3',
+    hi: 'अभ्यास {n} / 3',
+  },
+  skip_question: {
+    en: 'skip this question',
+    hi: 'यह सवाल छोड़ें',
+  },
+  label_sms: {
+    en: 'New SMS',
+    hi: 'नया SMS',
+  },
+  label_bank_sms: {
+    en: 'SMS from your bank',
+    hi: 'आपके बैंक का SMS',
+  },
+  label_call: {
+    en: 'On the call',
+    hi: 'कॉल पर',
+  },
+  label_system: {
+    en: 'Your phone is asking',
+    hi: 'आपका फ़ोन पूछ रहा है',
+  },
+  what_will_you_do: {
+    en: 'What will you do?',
+    hi: 'आप क्या करेंगे?',
+  },
+  pick_up: {
+    en: '📞 Pick up',
+    hi: '📞 उठाएँ',
+  },
+  ok: {
+    en: 'OK ✓',
+    hi: 'ठीक है ✓',
+  },
+  go_back: {
+    en: 'Go back',
+    hi: 'वापस जाएँ',
+  },
+  wrong_pin_text: {
+    en: 'That PIN is wrong. The practice PIN is 4827.',
+    hi: 'यह PIN ग़लत है। नक़ली PIN 4827 है।',
+  },
+  leave_practice: {
+    en: 'Leave this practice',
+    hi: 'अभ्यास छोड़ें',
+  },
+  leave_confirm: {
+    en: 'Leave this practice and go to the start?',
+    hi: 'क्या यह अभ्यास छोड़कर शुरुआत पर जाना है?',
+  },
+  result_scammed: {
+    en: 'You were scammed',
+    hi: 'आप फँस गए',
+  },
+  result_escaped: {
+    en: 'You stayed safe!',
+    hi: 'आप बच गए!',
+  },
+  result_late: {
+    en: 'A narrow escape',
+    hi: 'बाल-बाल बचे',
+  },
+  lost_amount: {
+    en: '₹{x} of practice money is gone',
+    hi: 'नक़ली ₹{x} चले गए',
+  },
+  see_how: {
+    en: 'See how ▶',
+    hi: 'देखें कैसे ▶',
+  },
+  lesson_fell: {
+    en: 'How the scammer trapped you',
+    hi: 'ठग ने आपको कैसे फँसाया',
+  },
+  lesson_safe: {
+    en: "The scammer's tricks",
+    hi: 'ठग की चालें',
+  },
+  remember: {
+    en: 'Remember',
+    hi: 'याद रखिए',
+  },
+  helpline_card: {
+    en: 'If this really happens: call 1930 at once, then call your bank.',
+    hi: 'असल में ऐसा हो जाए तो तुरंत 1930 पर कॉल करें, फिर अपने बैंक को।',
+  },
+  another_yes: {
+    en: '▶ One more practice',
+    hi: '▶ एक और अभ्यास',
+  },
+  another_no: {
+    en: "That's enough for today",
+    hi: 'आज के लिए बस',
+  },
+  final_title: {
+    en: 'You stayed safe {x} out of {y} times',
+    hi: '{y} में से {x} बार आप बच गए',
+  },
+  send_family: {
+    en: 'Send to family on WhatsApp',
+    hi: 'परिवार को WhatsApp पर भेजें',
+  },
+  practice_again: {
+    en: 'Practise again',
+    hi: 'दोबारा अभ्यास करें',
+  },
+  share_text: {
+    en: 'A 3-minute practice for staying safe from scams. Everything is explained aloud in Hindi. Please try it once:',
+    hi: 'ठगी से बचने का 3 मिनट का अभ्यास। सब कुछ हिंदी में बोलकर समझाया जाता है। एक बार ज़रूर कीजिए:',
+  },
+  detailed_view: {
+    en: 'See the detailed analysis',
+    hi: 'पूरा विश्लेषण देखें',
+  },
+  check_msg_link: {
+    en: 'Check a suspicious message',
+    hi: 'कोई संदिग्ध मैसेज जाँचें',
+  },
+  for_judges: {
+    en: 'For judges',
+    hi: 'जजों के लिए',
+  },
+  flag_explain_urgency: {
+    en: 'Here the scammer rushed you, so that you could not think.',
+    hi: 'यहाँ ठग ने जल्दी मचाई, ताकि आप सोच न पाएँ।',
+  },
+  flag_explain_fear: {
+    en: 'Here the scammer frightened you.',
+    hi: 'यहाँ ठग ने आपको डराया।',
+  },
+  flag_explain_authority: {
+    en: 'Here the scammer claimed to be an officer or someone you can trust.',
+    hi: 'यहाँ ठग ने ख़ुद को अधिकारी या भरोसेमंद आदमी बताया।',
+  },
+  flag_explain_secrecy: {
+    en: 'Here the scammer told you not to tell anyone. Real officers never say that.',
+    hi: 'यहाँ ठग ने कहा कि किसी को मत बताना। असली अधिकारी ऐसा कभी नहीं कहते।',
+  },
+  flag_explain_too_good: {
+    en: 'This deal was too good. A buyer who pays in full without bargaining is often a scammer.',
+    hi: 'यह सौदा ज़रूरत से ज़्यादा अच्छा था। बिना मोल-भाव के पूरा पैसा देने वाला ख़रीदार अक्सर ठग होता है।',
+  },
+  flag_explain_pin_to_receive: {
+    en: "Here the scammer asked for your PIN to 'receive' money. A PIN is only for sending money.",
+    hi: 'यहाँ ठग ने पैसा लेने के लिए PIN माँगा। PIN सिर्फ़ पैसा भेजने के लिए होता है।',
+  },
+  flag_explain_otp_request: {
+    en: 'Here the scammer asked for your OTP. Never tell your OTP to anyone.',
+    hi: 'यहाँ ठग ने OTP माँगा। OTP कभी किसी को नहीं बताना चाहिए।',
+  },
+  flag_explain_remote_app: {
+    en: 'Here the scammer made you install an app so that he could see your screen.',
+    hi: 'यहाँ ठग ने एक ऐप इंस्टॉल करवाया, ताकि वह आपकी स्क्रीन देख सके।',
+  },
+  flag_explain_unofficial_contact: {
+    en: 'This number did not belong to any government office. Always take the number from your bill or the official app.',
+    hi: 'यह नंबर किसी सरकारी दफ़्तर का नहीं था। सही नंबर हमेशा अपने बिल या आधिकारिक ऐप से लीजिए।',
+  },
+  flag_explain_pay_to_verify: {
+    en: "Here the scammer asked for money in the name of a 'check'. No real check ever asks for money.",
+    hi: 'यहाँ ठग ने जाँच के नाम पर पैसे माँगे। कोई असली जाँच पैसे नहीं माँगती।',
+  },
+  flag_explain_screen_says_pay: {
+    en: 'The screen clearly said you were PAYING, not receiving.',
+    hi: 'स्क्रीन पर साफ़ लिखा था कि आप भुगतान कर रहे हैं, पैसा ले नहीं रहे।',
+  },
+  'flags_summary_olx-qr': {
+    en: "This scammer used three tricks: he claimed to be a soldier, he rushed you, and he asked for your PIN to 'receive' money.",
+    hi: 'इस ठग ने तीन चालें चलीं: ख़ुद को फ़ौजी बताया, जल्दी मचाई, और पैसा लेने के नाम पर PIN डलवाना चाहा।',
+  },
+  flags_summary_olx_qr: {
+    en: "This scammer used three tricks: he claimed to be a soldier, he rushed you, and he asked for your PIN to 'receive' money.",
+    hi: 'इस ठग ने तीन चालें चलीं: ख़ुद को फ़ौजी बताया, जल्दी मचाई, और पैसा लेने के नाम पर PIN डलवाना चाहा।',
+  },
+  'flags_summary_bijli-remote': {
+    en: 'This scammer frightened you about a power cut, claimed to be an officer, made you install a screen-sharing app, and then asked for your OTP.',
+    hi: 'इस ठग ने बिजली कटने का डर दिखाया, ख़ुद को अधिकारी बताया, स्क्रीन देखने वाला ऐप इंस्टॉल करवाया, और आख़िर में OTP माँगा।',
+  },
+  flags_summary_bijli_remote: {
+    en: 'This scammer frightened you about a power cut, claimed to be an officer, made you install a screen-sharing app, and then asked for your OTP.',
+    hi: 'इस ठग ने बिजली कटने का डर दिखाया, ख़ुद को अधिकारी बताया, स्क्रीन देखने वाला ऐप इंस्टॉल करवाया, और आख़िर में OTP माँगा।',
+  },
+  'flags_summary_digital-arrest': {
+    en: 'This scammer frightened you, claimed to be a police officer, told you to tell no one, and then asked for money in the name of a check.',
+    hi: 'इस ठग ने पहले डराया, ख़ुद को पुलिस अफ़सर बताया, कहा किसी को मत बताना, और आख़िर में जाँच के नाम पर पैसे माँगे।',
+  },
+  flags_summary_digital_arrest: {
+    en: 'This scammer frightened you, claimed to be a police officer, told you to tell no one, and then asked for money in the name of a check.',
+    hi: 'इस ठग ने पहले डराया, ख़ुद को पुलिस अफ़सर बताया, कहा किसी को मत बताना, और आख़िर में जाँच के नाम पर पैसे माँगे।',
+  },
 };
 
 export function t(key: string, lang: Lang = 'en', vars?: Record<string, string | number>): string {

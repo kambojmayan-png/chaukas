@@ -173,7 +173,10 @@ export function unlockAudio() {
   }
 }
 
-function playClip(src: string) {
+let activeClipResolver: (() => void) | null = null;
+let activeWaitTimer: ReturnType<typeof setTimeout> | null = null;
+
+function enqueueAudioSrc(src: string) {
   const audio = getSharedAudio();
   if (!audio) return;
 
@@ -187,6 +190,136 @@ function playClip(src: string) {
       onClipEnded();
     });
   }
+}
+
+/**
+ * Play a narration or dialogue clip by key, or fallback to TTS / wait.
+ * Resolves when the clip ends OR stopSpeaking() is called.
+ */
+export function playClip(
+  key: string,
+  fallbackText: string,
+  lang: 'en' | 'hi',
+  soundOn: boolean = true
+): Promise<void> {
+  return new Promise<void>((resolve) => {
+    // Stop any current speaking/waiting first
+    stopSpeaking();
+
+    activeClipResolver = resolve;
+
+    // If sound is off -> wait clamp(text.length * 70, 1500, 8000) ms
+    if (!soundOn || key === 'off') {
+      const waitMs = Math.min(Math.max(fallbackText.length * 70, 1500), 8000);
+      activeWaitTimer = setTimeout(() => {
+        activeWaitTimer = null;
+        if (activeClipResolver === resolve) {
+          activeClipResolver = null;
+          resolve();
+        }
+      }, waitMs);
+      return;
+    }
+
+    // Look for pre-recorded clip in manifest
+    const manifest = voiceManifest as Record<string, string>;
+    const directKey = key.includes('/') ? key : `${lang}/${key}`;
+    const hiKey = key.includes('/') ? key : `hi/${key}`;
+    const clipUrl = manifest[directKey] || (lang === 'hi' ? manifest[hiKey] : undefined);
+
+    if (lang === 'hi' && clipUrl) {
+      const audio = getSharedAudio();
+      if (!audio) {
+        resolve();
+        return;
+      }
+      isPlayingAudio = true;
+      audio.src = clipUrl;
+      audio.currentTime = 0;
+
+      const finishAudio = () => {
+        audio.removeEventListener('ended', finishAudio);
+        audio.removeEventListener('error', finishAudio);
+        isPlayingAudio = false;
+        if (activeClipResolver === resolve) {
+          activeClipResolver = null;
+          resolve();
+        }
+      };
+
+      audio.addEventListener('ended', finishAudio, { once: true });
+      audio.addEventListener('error', finishAudio, { once: true });
+
+      audio.play().catch(() => {
+        finishAudio();
+      });
+      return;
+    }
+
+    // English or missing clip -> browser TTS with fallbackText
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      const waitMs = Math.min(Math.max(fallbackText.length * 70, 1500), 8000);
+      activeWaitTimer = setTimeout(() => {
+        activeWaitTimer = null;
+        if (activeClipResolver === resolve) {
+          activeClipResolver = null;
+          resolve();
+        }
+      }, waitMs);
+      return;
+    }
+
+    const voice = getBestVoice(lang);
+    if (lang === 'hi' && !voice) {
+      // No TTS voice on device for Hindi -> just wait clamp(...)
+      const waitMs = Math.min(Math.max(fallbackText.length * 70, 1500), 8000);
+      activeWaitTimer = setTimeout(() => {
+        activeWaitTimer = null;
+        if (activeClipResolver === resolve) {
+          activeClipResolver = null;
+          resolve();
+        }
+      }, waitMs);
+      return;
+    }
+
+    try {
+      const u = new SpeechSynthesisUtterance(fallbackText);
+      if (voice) {
+        u.voice = voice;
+        u.lang = voice.lang;
+      } else {
+        u.lang = lang === 'hi' ? 'hi-IN' : 'en-IN';
+      }
+      u.rate = 0.95;
+      u.pitch = 0.9;
+
+      let completed = false;
+      const finishTTS = () => {
+        if (completed) return;
+        completed = true;
+        if (activeWaitTimer) {
+          clearTimeout(activeWaitTimer);
+          activeWaitTimer = null;
+        }
+        if (activeClipResolver === resolve) {
+          activeClipResolver = null;
+          resolve();
+        }
+      };
+
+      u.onend = finishTTS;
+      u.onerror = finishTTS;
+
+      // Fallback timeout in case speech synthesis hangs
+      const maxMs = Math.max(fallbackText.length * 150, 10000);
+      activeWaitTimer = setTimeout(finishTTS, maxMs);
+
+      window.speechSynthesis.speak(u);
+    } catch {
+      resolve();
+    }
+  });
 }
 
 export interface PlayLineOptions {
@@ -211,7 +344,7 @@ export function playLine({ scenarioId, nodeId, index, voiceLang, text, uiLang, u
   const clipUrl = (voiceManifest as Record<string, string>)[key];
 
   if (clipUrl) {
-    playClip(clipUrl);
+    enqueueAudioSrc(clipUrl);
   } else {
     // If a Hindi clip is missing for a line, fall back to TTS in the UI language.
     const targetLang = (voiceLang === 'hi' && uiLang) ? uiLang : (voiceLang as 'en' | 'hi');
@@ -242,6 +375,10 @@ export function preloadScenarioClips(scenarioId: string, voiceLang: VoiceChoice)
 export function stopSpeaking() {
   audioQueue = [];
   isPlayingAudio = false;
+  if (activeWaitTimer) {
+    clearTimeout(activeWaitTimer);
+    activeWaitTimer = null;
+  }
   if (sharedAudio) {
     try {
       sharedAudio.pause();
@@ -256,6 +393,11 @@ export function stopSpeaking() {
     }
   } catch {
     /* ignore */
+  }
+  if (activeClipResolver) {
+    const res = activeClipResolver;
+    activeClipResolver = null;
+    res();
   }
 }
 
