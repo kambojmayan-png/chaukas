@@ -404,6 +404,130 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
     en: 'Comparing initial fall rate with repeated practice runs',
     hi: 'पहली कोशिश और दोबारा अभ्यास की तुलना'
   },
+  early_numbers: {
+    en: 'Early numbers',
+    hi: 'शुरुआती आँकड़े',
+  },
+  gap_meaning: {
+    en: 'Percentage of people who knew the safety rule before the drill, yet still sent money or gave their OTP when pressured.',
+    hi: 'उन लोगों का प्रतिशत जो ड्रिल से पहले नियम जानते थे, फिर भी दबाव में पैसे भेज दिए या OTP बता दिया।',
+  },
+  gap_how_measured_line1: {
+    en: 'Before each practice, we ask a plain yes/no question testing the exact rule.',
+    hi: 'हर अभ्यास से पहले, हम उसी नियम से जुड़ा एक सीधा हाँ/नहीं सवाल पूछते हैं।',
+  },
+  gap_how_measured_line2: {
+    en: 'During the practice, we measure whether the player follows that rule when the scammer creates urgency.',
+    hi: 'अभ्यास के दौरान, हम देखते हैं कि ठग द्वारा दबाव बनाने पर खिलाड़ी उस नियम का पालन करता है या नहीं।',
+  },
+  fall_rate_per_practice_title: {
+    en: 'Fall rate per practice (first attempts)',
+    hi: 'हर अभ्यास में फँसने की दर (पहली कोशिश)',
+  },
+  fall_rate_meaning: {
+    en: 'The percentage of players who lost practice money on their very first attempt of each scenario.',
+    hi: 'हर परिदृश्य में अपनी पहली ही कोशिश में नक़ली पैसे गँवाने वाले खिलाड़ियों का प्रतिशत।',
+  },
+  trap_olx_qr: {
+    en: 'The scammer poses as an army officer and claims you must enter your PIN to receive money.',
+    hi: 'ठग ख़ुद को फ़ौजी बताता है और कहता है कि पैसे लेने के लिए भी PIN डालना पड़ता है।',
+  },
+  trap_bijli_remote: {
+    en: 'The scammer threatens an immediate power cut and tricks you into sharing your screen and OTP.',
+    hi: 'ठग बिजली कटने का डर दिखाता है, स्क्रीन-शेयरिंग ऐप डलवाता है और OTP ले लेता है।',
+  },
+  trap_digital_arrest: {
+    en: 'The scammer poses as a police officer on video call, demands total secrecy, and orders money transfer for "verification".',
+    hi: 'ठग वीडियो कॉल पर पुलिस अफ़सर बनकर डराता है, बात छुपाने को कहता है और "जाँच" के नाम पर पैसे माँगता है।',
+  },
+  what_people_did_title: {
+    en: 'What people did',
+    hi: 'लोगों ने क्या किया',
+  },
+  what_people_did_meaning: {
+    en: 'How each first attempt ended: scammed (lost money), escaped late (took risky steps before stopping), or escaped clean.',
+    hi: 'पहली कोशिश का नतीजा: फँस गए (पैसे गँवाए), देर से बचे (ख़तरनाक क़दम उठाने के बाद संभले), या साफ़ बच निकले।',
+  },
+  hesitation_title: {
+    en: 'Hesitation at the keypad',
+    hi: 'कीपैड पर हिचकिचाहट',
+  },
+  hesitation_meaning: {
+    en: 'Average pause at the PIN or OTP keypad before submitting, among people who were scammed.',
+    hi: 'ठगी का शिकार होने वाले लोगों ने सबमिट करने से पहले कीपैड पर औसतन कितना समय सोचा।',
+  },
+  hesitation_stat_desc: {
+    en: 'Players paused for {sec} seconds on average before making the critical mistake.',
+    hi: 'ग़लती करने से पहले खिलाड़ी औसतन {sec} सेकंड तक रुके।',
+  },
+  flags_walked_past_title: {
+    en: 'Red flags walked past',
+    hi: 'अनदेखे किए गए ख़तरे के संकेत',
+  },
+  flags_walked_past_meaning: {
+    en: 'The average number of scam warning signs encountered and ignored out of the total present.',
+    hi: 'सामने आए ख़तरे के कुल संकेतों में से औसतन कितने संकेतों को अनदेखा किया गया।',
+  },
+  flags_stat_desc: {
+    en: '{avg} out of {total} warning signs ignored on average',
+    hi: 'औसतन {total} में से {avg} ख़तरे के संकेत अनदेखे किए गए',
+  },
+  does_practice_help_title: {
+    en: 'Does practice help?',
+    hi: 'क्या अभ्यास से मदद मिलती है?',
+  },
+  does_practice_help_meaning: {
+    en: 'Comparing fall rates between someone\'s first attempt and their repeated practice runs.',
+    hi: 'पहली कोशिश और उसी अभ्यास को दोबारा करने पर फँसने की दर में तुलना।',
+  },
+  first_attempt_label: {
+    en: 'First attempt',
+    hi: 'पहली कोशिश',
+  },
+  retry_label: {
+    en: 'Re-try',
+    hi: 'दोबारा अभ्यास',
+  },
+  no_retry_data: {
+    en: 'No re-try data recorded yet.',
+    hi: 'अभी दोबारा अभ्यास का कोई डेटा नहीं है।',
+  },
+  who_played_title: {
+    en: 'Who played',
+    hi: 'किसने खेला',
+  },
+  who_played_meaning: {
+    en: 'Breakdown of user interfaces, language preferences, family shares, and 24-hour activity.',
+    hi: 'इंटरफ़ेस के प्रकार, चुनी गई भाषा, पारिवारिक लिंक और 24 घंटों की गतिविधि का विवरण।',
+  },
+  simple_ui_label: {
+    en: 'Simple interface (Home)',
+    hi: 'सरल इंटरफ़ेस (होम)',
+  },
+  detailed_ui_label: {
+    en: 'Detailed view (/drill)',
+    hi: 'विस्तृत दृश्य (/drill)',
+  },
+  hindi_share_label: {
+    en: 'Played in Hindi',
+    hi: 'हिंदी में खेला',
+  },
+  family_share_label: {
+    en: 'Came via family link',
+    hi: 'पारिवारिक लिंक से आए',
+  },
+  last_24h_label: {
+    en: 'Runs in last 24 hours',
+    hi: 'पिछले 24 घंटों में कुल खेल',
+  },
+  method_and_limits_title: {
+    en: 'Method and limits',
+    hi: 'तरीक़ा और सीमाएँ',
+  },
+  method_and_limits_desc: {
+    en: 'All telemetry is strictly anonymous and aggregate. This dataset comes from a self-selected hackathon sample and is not a representative national study. No personal identifiers, phone numbers, real credentials, or IP addresses are ever collected or stored.',
+    hi: 'सभी आँकड़े पूरी तरह से अज्ञात और सामूहिक हैं। यह डेटा हैकाथॉन में भाग लेने वाले लोगों का है और पूरे देश का प्रतिनिधित्व नहीं करता। कोई भी व्यक्तिगत जानकारी, फ़ोन नंबर, असली पिन या IP एड्रेस कभी स्टोर नहीं किया जाता।',
+  },
   insights_footer: { en: '© 2026 Chaukas · Anonymous Telemetry', hi: '© 2026 Chaukas · Anonymous Telemetry' },
 
   // /about and navigation

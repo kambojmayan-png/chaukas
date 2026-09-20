@@ -225,13 +225,6 @@ export function Report({
           <span>{t('check_suspicious_message', lang)}</span>
         </Link>
 
-        <Link
-          href="/insights"
-          className="w-full min-h-[48px] py-2.5 px-4 bg-[#FBF7F0] text-[#1A1A1A] font-bold text-base border border-[#1A1A1A]/15 rounded-[14px] hover:bg-[#F0EBE1] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-        >
-          <span>📊</span>
-          <span>{t('live_numbers', lang)}</span>
-        </Link>
 
         <button
           type="button"
