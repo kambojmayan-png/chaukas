@@ -884,6 +884,94 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
     en: 'This scammer frightened you, claimed to be a police officer, told you to tell no one, and then asked for money in the name of a check.',
     hi: 'इस ठग ने पहले डराया, ख़ुद को पुलिस अफ़सर बताया, कहा किसी को मत बताना, और आख़िर में जाँच के नाम पर पैसे माँगे।',
   },
+  back_to_practice: {
+    en: '← Back to the practice',
+    hi: '← अभ्यास पर वापस',
+  },
+  about_lead: {
+    en: 'Chaukas lets people practise staying safe from phone and UPI scams, in a safe place where no real money is involved. It was made for our parents and grandparents.',
+    hi: 'चौकस लोगों को फ़ोन और UPI की ठगी से बचने का अभ्यास कराता है, एक सुरक्षित जगह पर, जहाँ कोई असली पैसा नहीं लगता। यह हमारे माता-पिता और दादा-दादी के लिए बनाया गया है।',
+  },
+  how_it_works_title: {
+    en: 'How it works',
+    hi: 'यह कैसे काम करता है',
+  },
+  how_it_works_step1_title: {
+    en: '1. A simulated scam call or message begins',
+    hi: '1. नक़ली कॉल या मैसेज से शुरुआत',
+  },
+  how_it_works_step1_desc: {
+    en: 'You see the screen and hear the caller, just like in a real fraud attempt.',
+    hi: 'आप स्क्रीन देखते हैं और फ़ोन करने वाले की आवाज़ सुनते हैं, बिल्कुल असली ठगी की तरह।',
+  },
+  how_it_works_step2_title: {
+    en: '2. You decide what to do at every step',
+    hi: '2. हर क़दम पर आपका फ़ैसला',
+  },
+  how_it_works_step2_desc: {
+    en: 'Pick an answer or enter practice PIN 4827. No real money can ever be lost.',
+    hi: 'जवाब चुनिए या प्रैक्टिस PIN 4827 डालिए। आपका कोई असली पैसा नहीं लग सकता।',
+  },
+  how_it_works_step3_title: {
+    en: '3. See the tricks and learn the rules',
+    hi: '3. ठग की चालें और बचाव के नियम',
+  },
+  how_it_works_step3_desc: {
+    en: 'We show the red flags you walked past and explain how to stay safe next time.',
+    hi: 'हम दिखाते हैं कि आपने कौन से ख़तरे अनदेखे किए और अगली बार कैसे बचना है।',
+  },
+  why_practise_title: {
+    en: 'Why practise',
+    hi: 'अभ्यास क्यों ज़रूरी है',
+  },
+  for_judges_devs_title: {
+    en: 'For judges & developers',
+    hi: 'जजों और डेवलपर्स के लिए',
+  },
+  for_judges_devs_desc: {
+    en: 'Technical details, evaluation guides, telemetry data, and source code.',
+    hi: 'तकनीकी जानकारी, मूल्यांकन गाइड, डेटा और सोर्स कोड।',
+  },
+  judge_card_title: {
+    en: 'Evaluation Guide & Reality Ledger',
+    hi: 'मूल्यांकन गाइड और रियलिटी लेजर',
+  },
+  judge_card_desc: {
+    en: 'A 2-minute walkthrough for hackathon judges and what is production vs demo.',
+    hi: 'जजों के लिए 2 मिनट का वॉकथ्रू और क्या असली है, क्या डेमो।',
+  },
+  drill_card_title: {
+    en: 'Behavioural Simulator (Drill)',
+    hi: 'व्यवहार की ड्रिल (सिमुलेटर)',
+  },
+  drill_card_desc: {
+    en: 'Interactive phone frames, synthetic Hindi voice, and glass-box engine log.',
+    hi: 'फ़ोन फ़्रेम, हिंदी आवाज़ और ग्लास-बॉक्स इंजन लॉग के साथ ड्रिल।',
+  },
+  insights_card_title: {
+    en: 'Live Telemetry & Learning Effects',
+    hi: 'लाइव आँकड़े और सीखने का असर',
+  },
+  insights_card_desc: {
+    en: 'The knowledge-behaviour gap, first-attempt vs re-try fall rates, and hesitation.',
+    hi: 'नियम जानने के बाद भी फँसने का अंतर, दोबारा करने पर सुधार और कीपैड पर सोच।',
+  },
+  check_card_title: {
+    en: 'Message Checker',
+    hi: 'मैसेज चेकर',
+  },
+  check_card_desc: {
+    en: 'Client-side red flag scanner checking suspicious messages against fraud archetypes.',
+    hi: 'संदिग्ध मैसेज में धोखाधड़ी के संकेतों की तुरंत पहचान करने वाला टूल।',
+  },
+  github_card_title: {
+    en: 'GitHub Repository',
+    hi: 'GitHub रिपॉजिटरी',
+  },
+  github_card_desc: {
+    en: 'Source code, deterministic engine, state machines, and Vitest test suite.',
+    hi: 'ओपन-सोर्स कोड, स्टेट मशीन, इंजन और टेस्ट सूट।',
+  },
 };
 
 export function t(key: string, lang: Lang = 'en', vars?: Record<string, string | number>): string {

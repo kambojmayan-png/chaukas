@@ -34,12 +34,12 @@ export function GlassBoxPanel({
   };
 
   return (
-    <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 font-mono text-xs w-full">
-      <div className="flex items-center justify-between border-b-2 border-[#111111] pb-2 mb-3">
-        <span className="font-bold uppercase tracking-wider text-xs text-[#111111]">
+    <div className="bg-white border border-[#1A1A1A]/15 rounded-[16px] shadow-[0_2px_12px_rgba(26,26,26,0.06)] p-5 text-sm w-full">
+      <div className="flex items-center justify-between border-b border-[#1A1A1A]/10 pb-3 mb-3">
+        <span className="font-bold text-sm text-[#1A1A1A]">
           {t('engine_recording_title', lang)}
         </span>
-        <span lang="en" className="text-[10px] bg-[#111111] text-white px-1.5 py-0.5 rounded font-bold">
+        <span lang="en" className="text-xs bg-[#1A1A1A] text-white px-2 py-0.5 rounded font-bold">
           GLASS BOX
         </span>
       </div>
@@ -103,14 +103,14 @@ export function GlassBox({ events, result, className = '' }: GlassBoxProps) {
         <button
           type="button"
           onClick={() => setMobileOpen(o => !o)}
-          className="w-full min-h-[40px] py-2 px-3 text-xs font-mono font-bold bg-white text-[#111111] border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-between cursor-pointer"
+          className="w-full min-h-[48px] py-2.5 px-4 text-sm font-bold bg-white text-[#1A1A1A] border border-[#1A1A1A]/15 rounded-[14px] shadow-[0_2px_8px_rgba(26,26,26,0.04)] hover:bg-[#FBF7F0] active:scale-[0.98] transition-all flex items-center justify-between cursor-pointer"
         >
           <span>
             {mobileOpen
               ? t('hide_engine_log', lang)
               : t('show_engine_log', lang)}
           </span>
-          <span className="text-[10px] text-[#111111]/60">
+          <span className="text-xs text-[#1A1A1A]/60 font-semibold">
             {events.length} {events.length === 1 ? t('event', lang) : t('events', lang)}
           </span>
         </button>

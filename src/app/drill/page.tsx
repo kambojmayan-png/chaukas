@@ -8,7 +8,7 @@ import { useReveal } from '@/lib/useReveal';
 import { useLang } from '@/lib/useLang';
 import { LangToggle } from '@/components/LangToggle';
 import { t } from '@/lib/i18n';
-import { spaceGrotesk } from '@/lib/fonts';
+import { TopBar, Card, Chip, Button } from '@/ui';
 import {
   speak,
   playLine,
@@ -376,35 +376,19 @@ export default function DrillPage() {
   const currentKnew = knewAnswers[scenario.id]?.knew ?? null;
 
   return (
-    <main className={`min-h-screen bg-[#F6F3EC] text-[#111111] p-3 md:p-8 flex flex-col items-center ${spaceGrotesk.variable}`}>
-      {/* Top Header Bar: below 480px row 1 = back + wallet + mute; row 2 = Lang toggle; row 3 = Voice */}
-      <div className="w-full max-w-[440px] flex flex-col gap-2 mb-3">
-        {/* Row 1: Back link + Wallet + Mute */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Link
-              href="/"
-              onClick={() => {
-                stopSpeaking();
-                stopRing();
-              }}
-              className="text-sm font-bold text-[#111111] hover:underline flex items-center gap-1 min-h-[36px] shrink-0"
-            >
-              <span>←</span>
-              <span>{t('home', lang)}</span>
-            </Link>
-            <Link
-              href="/about"
-              className="text-xs font-bold text-[#111111]/70 hover:underline"
-            >
-              {t('about_nav', lang)}
-            </Link>
-          </div>
+    <main className="min-h-screen bg-[#FBF7F0] text-[#1A1A1A] p-4 sm:p-6 md:p-8 flex flex-col items-center">
+      {/* TopBar on every page except Home */}
+      <div className="w-full max-w-4xl">
+        <TopBar />
+      </div>
 
-          {/* Wallet Balance in Header */}
-          <div className="flex items-center gap-1 px-2 py-1 bg-white border-2 border-[#111111] rounded-md shadow-hard-sm font-mono font-bold text-xs shrink-0">
-            <span className="text-[#111111]/70">{t('wallet', lang)}</span>
-            <span className="tabular-nums text-[#111111]">
+      {/* Drill Chrome Controls: Wallet, Mute, Voice */}
+      <div className="w-full max-w-[440px] flex flex-col gap-3 mb-6">
+        <Card className="p-3 sm:p-4 flex items-center justify-between gap-2">
+          {/* Wallet Balance */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#FBF7F0] border border-[#1A1A1A]/15 rounded-[12px] font-bold text-sm sm:text-base">
+            <span className="text-[#1A1A1A]/70">{t('wallet', lang)}</span>
+            <span className="tabular-nums text-[#1A1A1A]">
               ₹{animatedBalance.toLocaleString('en-IN')}
             </span>
           </div>
@@ -423,100 +407,91 @@ export default function DrillPage() {
               });
             }}
             aria-label={muted ? t('sound_muted', lang) : t('sound_on', lang)}
-            className="min-h-[36px] px-2.5 py-1 text-xs font-mono font-bold border-2 border-[#111111] rounded-md bg-white shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center gap-1 cursor-pointer shrink-0"
+            className="min-h-[48px] px-3.5 py-2 text-sm font-bold border border-[#1A1A1A]/15 rounded-[12px] bg-white hover:bg-[#FBF7F0] active:scale-[0.98] transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-[0_2px_6px_rgba(26,26,26,0.04)]"
           >
             <span>{muted ? '🔇' : '🔊'}</span>
+            <span className="text-xs">{muted ? t('sound_muted', lang) : t('sound_on', lang)}</span>
           </button>
-        </div>
+        </Card>
 
-        {/* Row 2 & Row 3 below 480px: Language toggle & Caller's voice */}
-        <div className="flex flex-col min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between gap-2 bg-white border-2 border-[#111111] rounded-md p-2 shadow-hard-sm">
-          {/* Row 2: Language Toggle */}
-          <div className="flex items-center justify-between min-[480px]:justify-start">
-            <LangToggle />
+        {/* Caller Voice Control */}
+        <Card className="p-3 sm:p-4 flex items-center justify-between gap-2">
+          <span className="text-sm font-bold text-[#1A1A1A]/80 whitespace-nowrap">
+            {t('caller_voice', lang)}
+          </span>
+          <div className="flex items-center border border-[#1A1A1A]/15 rounded-[12px] overflow-hidden">
+            <button
+              type="button"
+              onClick={() => handleVoiceChange('hi')}
+              lang="hi"
+              className={`min-h-[44px] px-3.5 py-2 text-sm font-bold transition-colors cursor-pointer leading-normal ${
+                voiceChoice === 'hi'
+                  ? 'bg-[#1A1A1A] text-white'
+                  : 'bg-white text-[#1A1A1A] hover:bg-[#FBF7F0]'
+              }`}
+            >
+              हिंदी
+            </button>
+            <button
+              type="button"
+              onClick={() => handleVoiceChange('en')}
+              lang="en"
+              className={`min-h-[44px] px-3.5 py-2 text-sm font-bold transition-colors cursor-pointer border-l border-r border-[#1A1A1A]/15 ${
+                voiceChoice === 'en'
+                  ? 'bg-[#1A1A1A] text-white'
+                  : 'bg-white text-[#1A1A1A] hover:bg-[#FBF7F0]'
+              }`}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              onClick={() => handleVoiceChange('off')}
+              className={`min-h-[44px] px-3.5 py-2 text-sm font-bold transition-colors cursor-pointer ${
+                voiceChoice === 'off'
+                  ? 'bg-[#1A1A1A] text-white'
+                  : 'bg-white text-[#1A1A1A] hover:bg-[#FBF7F0]'
+              }`}
+            >
+              {t('off', lang)}
+            </button>
           </div>
-
-          {/* Row 3: Caller Voice Control */}
-          <div className="flex items-center justify-between min-[480px]:justify-start gap-1.5 pt-1.5 border-t border-[#111111]/15 min-[480px]:border-t-0 min-[480px]:pt-0">
-            <span className="text-xs font-mono font-bold text-[#111111]/80 whitespace-nowrap">
-              {t('caller_voice', lang)}
-            </span>
-            <div className="flex items-center border-2 border-[#111111] rounded overflow-hidden">
-              <button
-                type="button"
-                onClick={() => handleVoiceChange('hi')}
-                lang="hi"
-                className={`px-2 py-1 text-xs font-bold transition-colors cursor-pointer leading-normal ${
-                  voiceChoice === 'hi'
-                    ? 'bg-[#111111] text-white'
-                    : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
-                }`}
-              >
-                हिंदी
-              </button>
-              <button
-                type="button"
-                onClick={() => handleVoiceChange('en')}
-                lang="en"
-                className={`px-2 py-1 text-xs font-bold transition-colors cursor-pointer border-l-2 border-r-2 border-[#111111] ${
-                  voiceChoice === 'en'
-                    ? 'bg-[#111111] text-white'
-                    : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
-                }`}
-              >
-                EN
-              </button>
-              <button
-                type="button"
-                onClick={() => handleVoiceChange('off')}
-                className={`px-2 py-1 text-xs font-bold transition-colors cursor-pointer ${
-                  voiceChoice === 'off'
-                    ? 'bg-[#111111] text-white'
-                    : 'bg-white text-[#111111] hover:bg-[#F6F3EC]'
-                }`}
-              >
-                {t('off', lang)}
-              </button>
-            </div>
-          </div>
-        </div>
+        </Card>
       </div>
 
       {/* SCREEN 1: PRE-CHECK UPFRONT */}
       {screen === 'precheck' && (
-        <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 min-[400px]:p-5 md:p-6 my-auto space-y-4 sm:space-y-5 text-center">
-          <div className="flex items-center justify-between border-b border-[#111111]/20 pb-2">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F] leading-normal">
-              {t('precheck_title', lang)}
-            </span>
-            <span className="text-xs font-mono font-bold text-[#111111]/70">
+        <Card className="w-full max-w-[420px] my-auto space-y-5 text-center p-6">
+          <div className="flex items-center justify-between border-b border-[#1A1A1A]/10 pb-3">
+            <Chip variant="saffron">{t('precheck_title', lang)}</Chip>
+            <span className="text-sm font-semibold text-[#1A1A1A]/70">
               {t('precheck_n_of_total', lang, { n: precheckIndex + 1, total: precheckScenarios.length })}
             </span>
           </div>
 
           <div className="py-2">
-            <p className="text-base md:text-lg font-bold text-[#111111] leading-snug">
+            <p className="text-lg sm:text-xl font-bold text-[#1A1A1A] leading-snug">
               {precheckScenarios[precheckIndex]?.precheck.q[lang] ||
                 precheckScenarios[precheckIndex]?.precheck.q.en}
             </p>
           </div>
 
-          {/* Two equal NEUTRAL buttons Yes / No (same style, no green/red, no hover colours) */}
+          {/* Two equal NEUTRAL buttons Yes / No */}
           <div className="grid grid-cols-2 gap-3 pt-2">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={() => handlePrecheckAnswer('yes')}
-              className="py-3 px-6 bg-white text-[#111111] border-2 border-[#111111] rounded shadow-hard-sm font-bold text-base hover:bg-neutral-100 active:bg-neutral-200 transition-colors cursor-pointer text-center"
             >
               {t('yes', lang)}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
               onClick={() => handlePrecheckAnswer('no')}
-              className="py-3 px-6 bg-white text-[#111111] border-2 border-[#111111] rounded shadow-hard-sm font-bold text-base hover:bg-neutral-100 active:bg-neutral-200 transition-colors cursor-pointer text-center"
             >
               {t('no', lang)}
-            </button>
+            </Button>
           </div>
 
           {/* Small text link "skip questions" */}
@@ -524,56 +499,56 @@ export default function DrillPage() {
             <button
               type="button"
               onClick={handleSkipPrecheck}
-              className="text-xs font-mono text-[#111111]/70 hover:text-[#111111] underline cursor-pointer"
+              className="text-sm text-[#1A1A1A]/70 hover:text-[#1A1A1A] underline cursor-pointer min-h-[48px] inline-flex items-center justify-center"
             >
               {t('skip_questions', lang)}
             </button>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* SCREEN 2: DRILL INTRO CARD */}
       {screen === 'intro' && (
-        <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 min-[400px]:p-5 md:p-6 my-auto space-y-4 sm:space-y-5">
+        <Card className="w-full max-w-[420px] my-auto space-y-5 p-6">
           <div className="flex items-center justify-between">
-            <div className="inline-block bg-[#FF5A1F] text-white text-xs font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded leading-normal">
+            <Chip variant="saffron">
               {onlyMode
                 ? t('targeted_practice', lang)
                 : t('drill_n_of_3', lang, {
                     n: scenarioIndex + 1,
                   })}
-            </div>
-            {/* Raw scenario.archetype REMOVED per constraint 5 */}
+            </Chip>
           </div>
 
-          <h1 className="text-xl min-[400px]:text-2xl font-bold tracking-tight text-[#111111]">
+          <h1 className="text-2xl font-bold tracking-tight text-[#1A1A1A]">
             {scenario.title[lang] || scenario.title.en}
           </h1>
 
-          <div className="bg-[#F6F3EC] border border-[#111111] p-3.5 rounded-md text-sm md:text-base text-[#111111] leading-relaxed">
+          <div className="bg-[#FBF7F0] border border-[#1A1A1A]/10 p-4 rounded-[14px] text-base sm:text-lg text-[#1A1A1A] leading-relaxed">
             {scenario.setup[lang] || scenario.setup.en}
           </div>
 
-          <div className="text-xs text-[#111111]/90 font-mono space-y-1 bg-neutral-100 p-3 rounded border border-[#111111]/30">
-            <p className="font-bold text-[#111111] leading-relaxed">
+          <div className="text-sm text-[#1A1A1A]/90 space-y-1 bg-[#FBF7F0] p-4 rounded-[14px] border border-[#1A1A1A]/10">
+            <p className="font-bold text-[#1A1A1A] leading-relaxed">
               {t('drill_safety_notice', lang)}
             </p>
           </div>
 
-          {/* ONE Start button (precheck removed; never sets knew_rule to null) */}
-          <button
+          {/* ONE Start button */}
+          <Button
             type="button"
+            variant="primary"
             onClick={handleStartDrill}
-            className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base min-[400px]:text-lg border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full text-lg"
           >
             <span>
               {onlyMode
                 ? t('start_drill', lang)
                 : t('start_drill_n', lang, { n: scenarioIndex + 1 })}
             </span>
-            <span>→</span>
-          </button>
-        </div>
+            <span className="ml-2">→</span>
+          </Button>
+        </Card>
       )}
 
       {/* SCREEN 3: ACTIVE DRILL RUNNER */}
@@ -1054,7 +1029,7 @@ function DrillRunner({
 
         {/* When UI is English and voice is Hindi, show small note under the phone */}
         {lang === 'en' && voiceChoice === 'hi' && (
-          <p className="mt-2 text-xs font-mono text-[#111111]/70 text-center">
+          <p className="mt-2 text-sm text-[#1A1A1A]/75 text-center">
             {t('caller_speaks_hindi_note', lang)}
           </p>
         )}

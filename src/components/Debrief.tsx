@@ -52,10 +52,10 @@ export function Debrief({
 
   return (
     <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-6 md:gap-8 w-full max-w-5xl my-auto">
-      <div className="w-full max-w-[440px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 min-[400px]:p-5 md:p-6 space-y-5 sm:space-y-6">
+      <div className="w-full max-w-[440px] bg-white border border-[#1A1A1A]/15 rounded-[16px] shadow-[0_2px_12px_rgba(26,26,26,0.06)] p-5 sm:p-6 space-y-5 sm:space-y-6">
         {/* 1. Headline and Amount */}
         <div className="space-y-2 text-center">
-          <div className="text-xs font-mono uppercase tracking-widest text-[#111111]/60">
+          <div className="text-sm font-semibold text-[#1A1A1A]/60">
             {isOnlyMode
               ? t('targeted_debrief', lang)
               : t('drill_debrief_n', lang, {
@@ -65,26 +65,26 @@ export function Debrief({
           </div>
           <div
             className={`text-4xl md:text-5xl font-extrabold tabular-nums tracking-tight ${
-              isLoss ? 'text-[#D92D20]' : 'text-[#12B76A]'
+              isLoss ? 'text-[#C92A2A]' : 'text-[#2B8A3E]'
             }`}
           >
             {isLoss
               ? `−₹${result.lossInr.toLocaleString('en-IN')}`
               : t('zero_lost', lang)}
           </div>
-          <p className="text-base font-semibold text-[#111111]">
+          <p className="text-lg font-bold text-[#1A1A1A] leading-snug">
             {result.headline[lang] || result.headline.en}
           </p>
         </div>
 
         {/* 2. "You answered this correctly N seconds/minutes ago: '<question>' — and still did it." */}
         {showKnewBox && (
-          <div className="border-2 border-[#D92D20] bg-red-50 p-4 rounded-md shadow-hard-sm space-y-1.5 text-left">
-            <div className="flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-[#D92D20]">
+          <div className="border border-[#C92A2A]/30 bg-[#FDF2F2] p-4 rounded-[14px] shadow-[0_2px_8px_rgba(201,42,42,0.06)] space-y-1.5 text-left">
+            <div className="flex items-center gap-1.5 text-sm font-bold text-[#C92A2A]">
               <span>⚠️</span>
               <span>{t('knowledge_behaviour_gap_label', lang)}</span>
             </div>
-            <p className="text-sm md:text-base font-bold text-[#D92D20] leading-snug">
+            <p className="text-base font-bold text-[#C92A2A] leading-snug">
               {t('you_answered_correctly', lang, {
                 t: timeStr,
                 q: scenario.precheck.q[lang] || scenario.precheck.q.en,
@@ -178,15 +178,15 @@ export function Debrief({
         </div>
 
         {/* 4. "Red flags you walked past: n of N" and keypad pause */}
-        <div className="bg-neutral-100 border border-[#111111]/30 rounded-md p-3 text-xs font-mono space-y-1 text-left">
-          <p className="font-bold text-[#111111]">
+        <div className="bg-[#FBF7F0] border border-[#1A1A1A]/15 rounded-[12px] p-3.5 text-sm space-y-1 text-left">
+          <p className="font-bold text-[#1A1A1A]">
             {t('red_flags_walked_past', lang, {
               n: result.flagsWalkedPast.length,
               total: result.flagsTotal,
             })}
           </p>
           {result.hesitationMs != null && (
-            <p className="text-[#111111]/80">
+            <p className="text-[#1A1A1A]/75">
               {t('you_paused_keypad', lang, {
                 x: (result.hesitationMs / 1000).toFixed(1),
               })}
@@ -195,26 +195,26 @@ export function Debrief({
         </div>
 
         {/* 5. The rule in a bordered box */}
-        <div className="border-2 border-[#111111] bg-[#F6F3EC] p-4 rounded-md shadow-hard-sm space-y-1.5 text-left">
-          <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F]">
+        <div className="border border-[#1A1A1A]/15 bg-[#FBF7F0] p-4 rounded-[14px] shadow-[0_2px_8px_rgba(26,26,26,0.04)] space-y-1.5 text-left">
+          <div className="text-sm font-bold text-[#E8590C]">
             {t('the_rule', lang)}
           </div>
-          <p className="text-sm md:text-base font-semibold text-[#111111] leading-snug">
+          <p className="text-base font-semibold text-[#1A1A1A] leading-snug">
             {scenario.rule[lang] || scenario.rule.en}
           </p>
         </div>
 
         {/* 6. Collapsible "If this happens for real" */}
-        <details className="border-2 border-[#111111] bg-white rounded-md p-3 text-left group">
-          <summary className="font-bold text-xs md:text-sm cursor-pointer flex items-center justify-between">
+        <details className="border border-[#1A1A1A]/15 bg-white rounded-[14px] p-4 text-left group">
+          <summary className="font-bold text-sm md:text-base cursor-pointer flex items-center justify-between">
             <span>{t('if_this_happens_for_real', lang)}:</span>
-            <span className="text-xs font-mono text-[#111111]/60 group-open:rotate-180 transition-transform">
+            <span className="text-xs text-[#1A1A1A]/60 group-open:rotate-180 transition-transform">
               ▼
             </span>
           </summary>
-          <ul className="mt-2.5 space-y-1.5 text-xs text-[#111111]/90 border-t border-[#111111]/10 pt-2 list-disc pl-4 font-medium">
+          <ul className="mt-2.5 space-y-1.5 text-sm text-[#1A1A1A]/90 border-t border-[#1A1A1A]/10 pt-2.5 list-disc pl-4 font-medium leading-relaxed">
             <li>
-              <span className="font-bold text-[#D92D20]">
+              <span className="font-bold text-[#C92A2A]">
                 {t('call_1930_immediately', lang)}
               </span>{' '}
               {t('call_1930_helpline_desc', lang)}
@@ -224,7 +224,7 @@ export function Debrief({
                 href="https://cybercrime.gov.in"
                 target="_blank"
                 rel="noreferrer"
-                className="underline font-bold hover:text-[#FF5A1F]"
+                className="underline font-bold text-[#0F6B4F] hover:text-[#1A1A1A]"
               >
                 {t('report_cybercrime', lang)}
               </a>
@@ -247,7 +247,7 @@ export function Debrief({
               <button
                 type="button"
                 onClick={onRestart}
-                className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full min-h-[48px] py-3 px-5 bg-[#E8590C] text-white font-bold text-base sm:text-lg rounded-[14px] shadow-[0_2px_10px_rgba(232,89,12,0.25)] hover:bg-[#D44F0A] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>{t('redrill_this_one', lang)}</span>
                 <span>↺</span>
@@ -255,7 +255,7 @@ export function Debrief({
 
               <Link
                 href="/check"
-                className="w-full min-h-[44px] py-2.5 bg-white text-[#111111] font-bold text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center justify-center gap-2"
+                className="w-full min-h-[48px] py-2.5 px-4 bg-white text-[#1A1A1A] font-bold text-base border-2 border-[#1A1A1A]/15 rounded-[14px] shadow-[0_2px_6px_rgba(26,26,26,0.04)] hover:bg-[#FBF7F0] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
                 <span>🔍</span>
                 <span>{t('check_suspicious_message', lang)}</span>
@@ -263,7 +263,7 @@ export function Debrief({
 
               <Link
                 href="/drill"
-                className="w-full min-h-[44px] py-2.5 bg-neutral-100 text-[#111111] font-bold text-sm border-2 border-[#111111]/30 rounded-md hover:bg-neutral-200 transition-all flex items-center justify-center gap-1.5"
+                className="w-full min-h-[48px] py-2.5 px-4 bg-[#FBF7F0] text-[#1A1A1A] font-bold text-base border border-[#1A1A1A]/15 rounded-[14px] hover:bg-[#F0EBE1] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
               >
                 <span>{t('play_full_drill_cta', lang)}</span>
               </Link>
@@ -274,7 +274,7 @@ export function Debrief({
                 <button
                   type="button"
                   onClick={onShowReport}
-                  className="w-full min-h-[48px] py-3.5 bg-[#12B76A] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full min-h-[48px] py-3 px-5 bg-[#0F6B4F] text-white font-bold text-base sm:text-lg rounded-[14px] shadow-[0_2px_10px_rgba(15,107,79,0.25)] hover:bg-[#0F6B4F]/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>{t('see_my_report', lang)}</span>
                   <span>→</span>
@@ -283,7 +283,7 @@ export function Debrief({
                 <button
                   type="button"
                   onClick={onNextDrill}
-                  className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full min-h-[48px] py-3 px-5 bg-[#E8590C] text-white font-bold text-base sm:text-lg rounded-[14px] shadow-[0_2px_10px_rgba(232,89,12,0.25)] hover:bg-[#D44F0A] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>
                     {t('next_drill_n', lang, {
@@ -298,7 +298,7 @@ export function Debrief({
               <button
                 type="button"
                 onClick={onRestart}
-                className="w-full min-h-[44px] py-2.5 bg-white text-[#111111] font-bold text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                className="w-full min-h-[48px] py-2.5 px-4 bg-white text-[#1A1A1A] font-bold text-base border-2 border-[#1A1A1A]/15 rounded-[14px] shadow-[0_2px_6px_rgba(26,26,26,0.04)] hover:bg-[#FBF7F0] active:scale-[0.98] transition-all cursor-pointer"
               >
                 {t('redrill_this_one', lang)}
               </button>

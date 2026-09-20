@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLang } from '@/lib/useLang';
-import { LangToggle } from '@/components/LangToggle';
 import { t } from '@/lib/i18n';
-import { spaceGrotesk } from '@/lib/fonts';
+import { AppShell, Card, Chip, Button, PageTitle } from '@/ui';
 import type { InsightsData } from '@/lib/supabaseAdmin';
 
 interface ProofData {
@@ -43,133 +42,229 @@ export default function AboutPage() {
   }, []);
 
   return (
-    <main className={`min-h-screen bg-[#F6F3EC] text-[#111111] flex flex-col justify-between p-4 min-[400px]:p-6 md:p-12 max-w-4xl mx-auto ${spaceGrotesk.variable}`}>
-      {/* Top Notice: Detailed view for judges and developers */}
-      <div className="w-full bg-[#E6F3EE] border-2 border-[#0F6B4F]/30 rounded-md p-2.5 text-center mb-4">
-        <p className="text-xs sm:text-sm font-bold text-[#0F6B4F]">
-          {t('detailed_view_banner', lang)}
-        </p>
-      </div>
+    <AppShell>
+      <div className="space-y-10 pb-12">
+        {/* 1. About Lead */}
+        <section className="bg-white rounded-[16px] border border-[#1A1A1A]/10 shadow-[0_2px_12px_rgba(26,26,26,0.06)] p-6 sm:p-8">
+          <p className="text-xl sm:text-2xl md:text-[26px] font-bold text-[#1A1A1A] leading-relaxed">
+            {t('about_lead', lang)}
+          </p>
+        </section>
 
-      {/* Brand Header */}
-      <header className="flex flex-wrap items-center justify-between border-b-2 border-[#111111] pb-4 gap-3">
-        <Link href="/" className="flex items-center space-x-2 min-w-0 hover:opacity-90">
-          <span lang="en" className="font-mono font-bold tracking-tight text-xl bg-[#111111] text-[#F6F3EC] px-2 py-0.5 rounded-sm">
-            CHAUKAS
-          </span>
-          <span lang="hi" className="font-hindi text-sm font-semibold text-[#111111]/70 leading-normal">
-            चौकस
-          </span>
-        </Link>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
-          <Link
-            href="/judge"
-            className="text-xs md:text-sm font-bold text-[#FF5A1F] hover:underline whitespace-nowrap"
-          >
-            {t('judging_nav_link', lang)}
-          </Link>
-          <LangToggle />
-          <Link
-            href="/check"
-            className="text-xs md:text-sm font-bold text-[#111111] hover:underline"
-          >
-            {t('check_message_nav', lang)}
-          </Link>
-          <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F] border border-[#FF5A1F] px-2 py-1 rounded leading-normal">
-            {t('fire_drill_1_badge', lang)}
-          </div>
-        </div>
-      </header>
+        {/* 2. How it works in three short steps */}
+        <section className="space-y-4">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] tracking-tight">
+            {t('how_it_works_title', lang)}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Step 1 */}
+            <Card className="flex flex-col justify-between space-y-3">
+              <div className="space-y-2">
+                <div className="w-10 h-10 rounded-full bg-[#E6F3EE] text-[#0F6B4F] font-bold text-lg flex items-center justify-center">
+                  1
+                </div>
+                <h3 className="text-lg font-bold text-[#1A1A1A] leading-snug">
+                  {t('how_it_works_step1_title', lang)}
+                </h3>
+                <p className="text-base text-[#1A1A1A]/80 leading-relaxed">
+                  {t('how_it_works_step1_desc', lang)}
+                </p>
+              </div>
+            </Card>
 
-      {/* Hero Section */}
-      <div className="my-auto py-8 min-[400px]:py-12 flex flex-col items-start space-y-6 min-[400px]:space-y-8 max-w-2xl">
-        <div className="space-y-3 min-[400px]:space-y-4">
-          <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-3 py-1 rounded-sm leading-normal">
-            {t('hero_tag', lang)}
-          </div>
-          <h1 className="text-3xl min-[400px]:text-4xl sm:text-6xl font-extrabold tracking-tight text-[#111111] leading-[1.1]">
-            {t('hero_title', lang)}
-          </h1>
-          {/* Stat line & Root-cause line */}
-          <div className="space-y-2 pt-1 max-w-xl">
-            <p className="text-xs min-[400px]:text-sm md:text-base font-semibold text-[#111111]/90 leading-snug">
-              {t('landing_stat_line', lang)}{' '}
-              <a
-                href="https://the420.in/india-upi-fraud-data-fy26-parliament-digital-payments/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-mono text-[#FF5A1F] underline hover:text-[#111111] inline"
-              >
-                ({t('landing_stat_source', lang)})
-              </a>
-            </p>
-            <p className="text-sm min-[400px]:text-base md:text-lg font-bold text-[#111111] leading-snug">
-              {t('landing_root_cause', lang)}
-            </p>
-          </div>
-        </div>
+            {/* Step 2 */}
+            <Card className="flex flex-col justify-between space-y-3">
+              <div className="space-y-2">
+                <div className="w-10 h-10 rounded-full bg-[#FFF2EB] text-[#E8590C] font-bold text-lg flex items-center justify-center">
+                  2
+                </div>
+                <h3 className="text-lg font-bold text-[#1A1A1A] leading-snug">
+                  {t('how_it_works_step2_title', lang)}
+                </h3>
+                <p className="text-base text-[#1A1A1A]/80 leading-relaxed">
+                  {t('how_it_works_step2_desc', lang)}
+                </p>
+              </div>
+            </Card>
 
-        {/* CTA Buttons & Live Proof Chip */}
-        <div className="space-y-3 w-full sm:w-auto">
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <Link
-              href="/drill"
-              className="w-full sm:w-auto inline-flex items-center justify-center min-h-[56px] px-8 py-4 bg-[#FF5A1F] text-white text-lg md:text-xl font-bold border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-center"
-            >
-              {t('start_3min_drill', lang)}
-            </Link>
-            <Link
-              href="/check"
-              className="w-full sm:w-auto inline-flex items-center justify-center min-h-[56px] px-6 py-4 bg-white text-[#111111] text-base md:text-lg font-bold border-2 border-[#111111] rounded-md shadow-hard hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-center"
-            >
-              {t('check_a_message', lang)}
-            </Link>
+            {/* Step 3 */}
+            <Card className="flex flex-col justify-between space-y-3">
+              <div className="space-y-2">
+                <div className="w-10 h-10 rounded-full bg-[#EBFBEE] text-[#2B8A3E] font-bold text-lg flex items-center justify-center">
+                  3
+                </div>
+                <h3 className="text-lg font-bold text-[#1A1A1A] leading-snug">
+                  {t('how_it_works_step3_title', lang)}
+                </h3>
+                <p className="text-base text-[#1A1A1A]/80 leading-relaxed">
+                  {t('how_it_works_step3_desc', lang)}
+                </p>
+              </div>
+            </Card>
           </div>
+        </section>
 
-          {/* Live proof chip under CTA */}
-          {proof && (
-            <div>
-              <Link
-                href="/insights"
-                className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border-2 border-[#111111] rounded-full text-xs font-mono font-bold text-[#111111] shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 transition-all max-w-full leading-normal"
-              >
-                <span className="w-2 h-2 rounded-full bg-[#12B76A] animate-pulse shrink-0" />
-                <span className="truncate">
-                  {proof.n > 0 && proof.gap !== null
-                    ? t('proof_gap_line', lang, {
-                        runs: proof.runs,
-                        gap: proof.gap,
-                        n: proof.n,
-                      })
-                    : t('proof_drills_played', lang, { runs: proof.runs })}
-                </span>
-              </Link>
+        {/* 3. Why practise */}
+        <section className="space-y-4">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] tracking-tight">
+            {t('why_practise_title', lang)}
+          </h2>
+          <Card className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-lg sm:text-xl font-bold text-[#C92A2A] leading-snug">
+                {t('landing_stat_line', lang)}{' '}
+                <a
+                  href="https://the420.in/india-upi-fraud-data-fy26-parliament-digital-payments/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-base text-[#0F6B4F] underline hover:text-[#1A1A1A] inline font-semibold"
+                >
+                  ({t('landing_stat_source', lang)})
+                </a>
+              </p>
+              <p className="text-lg sm:text-xl font-bold text-[#1A1A1A] leading-relaxed pt-1">
+                {t('landing_root_cause', lang)}
+              </p>
             </div>
-          )}
-        </div>
 
-        {/* Security / Privacy line */}
-        <p className="text-sm md:text-base text-[#111111]/80 font-medium max-w-lg border-l-2 border-[#111111] pl-3">
-          {t('hero_disclaimer', lang)}
-        </p>
+            {/* Live proof chip */}
+            {proof && (
+              <div className="pt-2">
+                <Link
+                  href="/insights"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#FBF7F0] border border-[#1A1A1A]/15 rounded-full text-sm font-bold text-[#1A1A1A] hover:bg-white shadow-[0_2px_8px_rgba(26,26,26,0.04)] active:scale-[0.98] transition-all min-h-[48px]"
+                >
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#2B8A3E] animate-pulse shrink-0" />
+                  <span>
+                    {proof.n > 0 && proof.gap !== null
+                      ? t('proof_gap_line', lang, {
+                          runs: proof.runs,
+                          gap: proof.gap,
+                          n: proof.n,
+                        })
+                      : t('proof_drills_played', lang, { runs: proof.runs })}
+                  </span>
+                </Link>
+              </div>
+            )}
+          </Card>
+        </section>
+
+        {/* 4. For judges & developers */}
+        <section className="space-y-4">
+          <div className="space-y-1">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] tracking-tight">
+              {t('for_judges_devs_title', lang)}
+            </h2>
+            <p className="text-base sm:text-lg text-[#1A1A1A]/75">
+              {t('for_judges_devs_desc', lang)}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Judge Link */}
+            <Card hoverEffect className="flex flex-col justify-between space-y-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-[#1A1A1A]">
+                    {t('judge_card_title', lang)}
+                  </h3>
+                  <Chip variant="guide">/judge</Chip>
+                </div>
+                <p className="text-base text-[#1A1A1A]/80">
+                  {t('judge_card_desc', lang)}
+                </p>
+              </div>
+              <Button href="/judge?lang=en" variant="secondary" className="w-full text-base">
+                {t('judging_link', lang)}
+              </Button>
+            </Card>
+
+            {/* Drill Link */}
+            <Card hoverEffect className="flex flex-col justify-between space-y-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-[#1A1A1A]">
+                    {t('drill_card_title', lang)}
+                  </h3>
+                  <Chip variant="saffron">/drill</Chip>
+                </div>
+                <p className="text-base text-[#1A1A1A]/80">
+                  {t('drill_card_desc', lang)}
+                </p>
+              </div>
+              <Button href="/drill" variant="secondary" className="w-full text-base">
+                {t('start_3min_drill', lang)} →
+              </Button>
+            </Card>
+
+            {/* Insights Link */}
+            <Card hoverEffect className="flex flex-col justify-between space-y-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-[#1A1A1A]">
+                    {t('insights_card_title', lang)}
+                  </h3>
+                  <Chip variant="amber">/insights</Chip>
+                </div>
+                <p className="text-base text-[#1A1A1A]/80">
+                  {t('insights_card_desc', lang)}
+                </p>
+              </div>
+              <Button href="/insights" variant="secondary" className="w-full text-base">
+                {t('live_insights_nav', lang)} →
+              </Button>
+            </Card>
+
+            {/* Check Link */}
+            <Card hoverEffect className="flex flex-col justify-between space-y-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-[#1A1A1A]">
+                    {t('check_card_title', lang)}
+                  </h3>
+                  <Chip variant="green">/check</Chip>
+                </div>
+                <p className="text-base text-[#1A1A1A]/80">
+                  {t('check_card_desc', lang)}
+                </p>
+              </div>
+              <Button href="/check" variant="secondary" className="w-full text-base">
+                {t('check_a_message', lang)}
+              </Button>
+            </Card>
+
+            {/* GitHub Link */}
+            <Card hoverEffect className="flex flex-col justify-between space-y-4 md:col-span-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="space-y-1">
+                  <h3 className="text-lg font-bold text-[#1A1A1A]">
+                    {t('github_card_title', lang)}
+                  </h3>
+                  <p className="text-base text-[#1A1A1A]/80">
+                    {t('github_card_desc', lang)}
+                  </p>
+                </div>
+                <a
+                  href="https://github.com/kambojmayan-png/chaukas"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center min-h-[48px] px-5 py-2.5 bg-[#1A1A1A] text-white font-bold text-base rounded-[14px] shadow-[0_2px_8px_rgba(26,26,26,0.15)] hover:bg-[#333333] active:scale-[0.98] transition-all shrink-0"
+                >
+                  <span>github.com/kambojmayan-png/chaukas</span>
+                  <span className="ml-2">↗</span>
+                </a>
+              </div>
+            </Card>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="border-t border-[#1A1A1A]/10 pt-6 flex flex-col sm:flex-row items-center justify-between text-base text-[#1A1A1A]/70 gap-3">
+          <span>{t('footer_copy', lang)}</span>
+          <span className="text-sm">{t('landing_footer', lang)}</span>
+        </footer>
       </div>
-
-      {/* Footer */}
-      <footer className="border-t-2 border-[#111111] pt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-[#111111]/70 font-mono gap-3">
-        <span>{t('footer_copy', lang)}</span>
-        <div className="flex flex-wrap items-center gap-4">
-          <Link href="/judge" className="hover:underline font-bold text-[#FF5A1F]">
-            {t('judging_link', lang)}
-          </Link>
-          <Link href="/check" className="hover:underline font-bold">
-            {t('message_checker_nav', lang)}
-          </Link>
-          <Link href="/insights" className="hover:underline font-bold">
-            {t('live_insights_nav', lang)}
-          </Link>
-          <span>{t('landing_footer', lang)}</span>
-        </div>
-      </footer>
-    </main>
+    </AppShell>
   );
 }

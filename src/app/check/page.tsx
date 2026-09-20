@@ -4,9 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { checkMessage, type CheckResult, type Flag, type Finding } from '@/check/rules';
 import { useLang } from '@/lib/useLang';
-import { LangToggle } from '@/components/LangToggle';
 import { t, getFlagLabel } from '@/lib/i18n';
-import { spaceGrotesk } from '@/lib/fonts';
+import { AppShell, Card, Chip, Button, PageTitle } from '@/ui';
 import type { Lang } from '@/engine/engine';
 
 function getAdvice(result: CheckResult, lang: Lang): string | null {
@@ -113,10 +112,10 @@ export default function CheckPage() {
       parts.push(
         <mark
           key={`mark-${i}`}
-          className="bg-[#FF5A1F]/20 text-[#111111] border-b-2 border-[#FF5A1F] px-1 py-0.5 rounded-xs font-semibold inline"
+          className="bg-[#FFF2EB] text-[#E8590C] border-b-2 border-[#E8590C] px-1.5 py-0.5 rounded font-semibold inline"
         >
           {highlighted}
-          <span className="ml-1.5 text-[10px] font-mono font-bold uppercase bg-[#FF5A1F] text-white px-1.5 py-1 rounded tracking-wider inline-block align-middle leading-normal">
+          <span className="ml-1.5 text-xs font-semibold bg-[#E8590C] text-white px-2 py-0.5 rounded-full inline-block align-middle leading-normal">
             {span.flags.map(f => getFlagLabel(f, lang)).join(', ')}
           </span>
         </mark>
@@ -132,64 +131,27 @@ export default function CheckPage() {
   };
 
   return (
-    <main className={`min-h-screen bg-[#F6F3EC] text-[#111111] p-3 min-[400px]:p-4 md:p-10 flex flex-col justify-between max-w-3xl mx-auto ${spaceGrotesk.variable}`}>
-      {/* Header */}
-      <header className="flex flex-wrap items-center justify-between border-b-2 border-[#111111] pb-4 mb-6 gap-3">
-        <div className="flex items-center space-x-2 min-w-0">
-          <Link
-            href="/"
-            className="font-mono font-bold tracking-tight text-xl bg-[#111111] text-[#F6F3EC] px-2 py-0.5 rounded-sm hover:opacity-90"
-          >
-            <span lang="en">CHAUKAS</span>
-          </Link>
-          <span lang="en" className="font-mono text-sm text-[#111111]/70 font-semibold">
-            / CHECK
-          </span>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
-          <Link
-            href="/about"
-            className="text-xs md:text-sm font-bold text-[#111111] hover:underline"
-          >
-            {t('about_nav', lang)}
-          </Link>
-          <LangToggle />
-          <Link
-            href="/drill"
-            className="text-sm font-bold text-[#111111] hover:underline"
-          >
-            {t('start_3min_drill', lang)} →
-          </Link>
-        </div>
-      </header>
-
-      {/* Main Container */}
-      <div className="my-auto py-4 space-y-6">
-        {/* Title */}
-        <div className="space-y-1">
-          <div className="inline-block bg-[#111111] text-[#F6F3EC] text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm leading-normal">
-            {t('message_inspector_tag', lang)}
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#111111]">
-            {t('check_page_title', lang)}
-          </h1>
-          <p className="text-sm text-[#111111]/70">
-            {t('check_page_desc', lang)}
-          </p>
-        </div>
+    <AppShell>
+      <div className="space-y-8 pb-12">
+        {/* Page Title */}
+        <PageTitle
+          tag={<Chip variant="green">/check</Chip>}
+          title={t('check_page_title', lang)}
+          subtitle={t('check_page_desc', lang)}
+        />
 
         {/* Try an Example Chips */}
-        <div className="space-y-2">
-          <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#111111]/70 block">
+        <div className="space-y-2.5">
+          <span className="text-sm font-bold text-[#1A1A1A]/75 block">
             {t('try_an_example', lang)}:
           </span>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             {EXAMPLES.map((ex, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => handleExampleClick(ex.text)}
-                className="text-xs font-semibold bg-white text-[#111111] border-2 border-[#111111] rounded-md shadow-hard-sm px-3 py-1.5 hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer text-left"
+                className="text-sm font-semibold bg-white text-[#1A1A1A] border border-[#1A1A1A]/15 rounded-[12px] shadow-[0_2px_6px_rgba(26,26,26,0.04)] px-4 py-2.5 min-h-[48px] hover:bg-[#FBF7F0] hover:border-[#1A1A1A]/30 active:scale-[0.98] transition-all cursor-pointer text-left"
               >
                 {t(ex.labelKey, lang)}
               </button>
@@ -209,112 +171,111 @@ export default function CheckPage() {
               }}
               placeholder={t('paste_message_placeholder', lang)}
               rows={5}
-              className="w-full bg-white text-[#111111] border-2 border-[#111111] rounded-md shadow-hard p-4 text-sm md:text-base font-mono resize-y focus:outline-hidden"
+              className="w-full bg-white text-[#1A1A1A] border border-[#1A1A1A]/20 rounded-[16px] shadow-[0_2px_10px_rgba(26,26,26,0.04)] p-4 sm:p-5 text-base sm:text-lg resize-y focus:outline-hidden focus:border-[#0F6B4F] focus:ring-2 focus:ring-[#0F6B4F]/20 transition-all"
             />
-            <div className="absolute bottom-3 right-3 text-xs font-mono text-[#111111]/60 bg-white/90 px-1 rounded">
+            <div className="absolute bottom-3 right-3 text-xs text-[#1A1A1A]/50 bg-white/90 px-2 py-0.5 rounded-md">
               {text.length}/1000
             </div>
           </div>
 
           {/* Privacy Notice under the box */}
-          <p className="text-xs text-[#111111]/70 font-mono">
+          <p className="text-sm text-[#1A1A1A]/70">
             {t('check_privacy_notice', lang)}
           </p>
         </div>
 
         {/* Check Button */}
         <div>
-          <button
+          <Button
             type="button"
             onClick={handleCheck}
             disabled={!text.trim()}
-            className={`w-full min-h-[48px] py-3 px-6 text-base font-bold border-2 border-[#111111] rounded-md shadow-hard flex items-center justify-center gap-2 transition-all ${
-              text.trim()
-                ? 'bg-[#FF5A1F] text-white hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer'
-                : 'bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
-            }`}
+            variant="primary"
+            className="w-full text-lg"
           >
             <span>{t('check_message_button', lang)}</span>
-            <span>🔍</span>
-          </button>
+            <span className="ml-2">🔍</span>
+          </Button>
         </div>
 
         {/* Results Section */}
         {result && (
-          <div className="bg-white border-2 border-[#111111] rounded-md shadow-hard p-4 sm:p-6 space-y-4 sm:space-y-5 animate-in fade-in duration-300">
-            {/* Verdict Chip */}
+          <Card className="space-y-5 animate-in fade-in duration-300">
+            {/* Verdict */}
             <div className="space-y-2">
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#111111]/70 block">
+              <span className="text-sm font-bold text-[#1A1A1A]/75 block">
                 {t('verdict', lang)}
               </span>
 
               {result.verdict === 'likely_scam' && (
-                <div className="inline-block bg-[#D92D20] text-white font-bold text-sm md:text-base px-3.5 py-1.5 rounded-md border-2 border-[#111111] shadow-hard-sm leading-normal">
+                <Chip variant="red" className="text-base sm:text-lg px-4 py-1.5 font-bold">
                   {t('likely_scam', lang)}
-                </div>
+                </Chip>
               )}
 
               {result.verdict === 'suspicious' && (
-                <div className="inline-block bg-[#FF5A1F] text-white font-bold text-sm md:text-base px-3.5 py-1.5 rounded-md border-2 border-[#111111] shadow-hard-sm leading-normal">
+                <Chip variant="saffron" className="text-base sm:text-lg px-4 py-1.5 font-bold">
                   {t('suspicious', lang)}
-                </div>
+                </Chip>
               )}
 
               {result.verdict === 'no_red_flags_found' && (
-                <div className="inline-block bg-neutral-200 text-[#111111] font-bold text-sm md:text-base px-3.5 py-1.5 rounded-md border-2 border-[#111111] shadow-hard-sm leading-normal">
+                <Chip variant="guide" className="text-base sm:text-lg px-4 py-1.5 font-bold">
                   {t('no_red_flags_found', lang)}
-                </div>
+                </Chip>
               )}
 
               {/* Advice Line by Archetype */}
               {advice && (
-                <p className="text-sm md:text-base font-semibold text-[#111111] bg-[#F6F3EC] border-2 border-[#111111] p-3 rounded-md shadow-hard-sm mt-2">
+                <p className="text-base sm:text-lg font-semibold text-[#1A1A1A] bg-[#FBF7F0] border border-[#1A1A1A]/10 p-4 rounded-[14px] mt-3 leading-relaxed">
                   {advice}
                 </p>
               )}
             </div>
 
             {/* Highlighted Findings in Text */}
-            <div className="space-y-1.5">
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#111111]/70 block">
+            <div className="space-y-2">
+              <span className="text-sm font-bold text-[#1A1A1A]/75 block">
                 {t('analysis_red_flags', lang)}
               </span>
-              <div className="bg-[#F6F3EC] border-2 border-[#111111] p-4 rounded-md text-sm md:text-base font-mono leading-relaxed break-words whitespace-pre-wrap">
+              <div className="bg-[#FBF7F0] border border-[#1A1A1A]/10 p-4 sm:p-5 rounded-[14px] text-base leading-relaxed break-words whitespace-pre-wrap">
                 {renderHighlightedText()}
               </div>
             </div>
 
             {/* Drill Action Button */}
-            <div className="pt-2 border-t-2 border-[#111111]/10">
+            <div className="pt-3 border-t border-[#1A1A1A]/10">
               {result.drillId ? (
-                <Link
+                <Button
                   href={`/drill?only=${result.drillId}`}
-                  className="w-full min-h-[48px] py-3 px-4 bg-[#111111] text-[#F6F3EC] font-bold text-sm md:text-base border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#222222] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                  variant="secondary"
+                  className="w-full text-base sm:text-lg"
                 >
                   <span>{t('practise_exact_scam', lang)}</span>
-                  <span>→</span>
-                </Link>
+                  <span className="ml-2">→</span>
+                </Button>
               ) : (
-                <Link
+                <Button
                   href="/drill"
-                  className="w-full min-h-[48px] py-3 px-4 bg-[#FF5A1F] text-white font-bold text-sm md:text-base border-2 border-[#111111] rounded-md shadow-hard-sm hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                  variant="primary"
+                  className="w-full text-base sm:text-lg"
                 >
                   <span>{t('try_full_3min_drill', lang)}</span>
-                  <span>→</span>
-                </Link>
+                  <span className="ml-2">→</span>
+                </Button>
               )}
             </div>
-          </div>
+          </Card>
         )}
-      </div>
 
-      {/* Footer */}
-      <footer className="border-t-2 border-[#111111] pt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-[#111111]/70 font-mono gap-2">
-        <span>{t('check_footer_rules', lang)}</span>
-        <Link href="/" className="hover:underline font-bold">
-          {t('back_to_home', lang)}
-        </Link>
-      </footer>
-    </main>
+        {/* Footer */}
+        <footer className="border-t border-[#1A1A1A]/10 pt-6 flex flex-col sm:flex-row items-center justify-between text-base text-[#1A1A1A]/70 gap-3">
+          <span>{t('check_footer_rules', lang)}</span>
+          <Link href="/" className="hover:underline font-bold text-[#0F6B4F]">
+            {t('back_to_practice', lang)}
+          </Link>
+        </footer>
+      </div>
+    </AppShell>
   );
 }
