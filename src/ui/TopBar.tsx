@@ -18,17 +18,19 @@ export function TopBar() {
         aria-label="Chaukas Home"
       >
         <span
-          lang="hi"
-          className="text-2xl sm:text-3xl font-black text-[#1A1A1A] tracking-tight font-hindi"
+          lang={lang}
+          className={`text-2xl sm:text-3xl font-black text-[#1A1A1A] tracking-tight ${lang === 'hi' ? 'font-hindi' : ''}`}
         >
-          चौकस
+          {t('brand_word', lang)}
         </span>
-        <span
-          lang="en"
-          className="text-xs sm:text-sm font-bold text-[#1A1A1A]/60 px-2 py-0.5 bg-[#1A1A1A]/5 rounded-md"
-        >
-          CHAUKAS
-        </span>
+        {lang === 'hi' && (
+          <span
+            lang="en"
+            className="text-xs sm:text-sm font-bold text-[#1A1A1A]/60 px-2 py-0.5 bg-[#1A1A1A]/5 rounded-md"
+          >
+            CHAUKAS
+          </span>
+        )}
       </Link>
 
       {/* Actions: Large back_to_practice button + LangToggle */}

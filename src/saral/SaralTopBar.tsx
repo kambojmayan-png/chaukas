@@ -29,10 +29,10 @@ export function SaralTopBar({
         {/* Row 1 Left: Brand */}
         <div className="order-1 flex items-center shrink-0 min-w-0">
           <span
-            lang="hi"
+            lang={lang}
             className="text-xl sm:text-2xl font-black text-[#1A1A1A] tracking-normal"
           >
-            चौकस
+            {t('brand_word', lang)}
           </span>
         </div>
 

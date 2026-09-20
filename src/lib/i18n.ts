@@ -73,6 +73,9 @@ export function getFlagLabel(flag: string, lang: Lang = 'en'): string {
 export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   // Brand & Common UI
   brand: { en: 'CHAUKAS', hi: 'CHAUKAS' },
+  brand_word: { en: 'Chaukas', hi: 'चौकस' },
+  brand_meaning: { en: 'चौकस (chaukas) means alert, watchful.', hi: '' },
+  guide_name: { en: 'Chaukas Didi', hi: 'चौकस दीदी' },
   brand_hindi: { en: 'चौकस', hi: 'चौकस' },
   home: { en: 'Home', hi: 'होम' },
   simulation: { en: 'SIMULATION', hi: 'सिमुलेशन' },

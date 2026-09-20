@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useLang } from '@/lib/useLang';
+import { t } from '@/lib/i18n';
 
 interface SaralGuideBubbleProps {
   text: string;
@@ -10,7 +11,7 @@ interface SaralGuideBubbleProps {
 
 export function SaralGuideBubble({ text, className = '' }: SaralGuideBubbleProps) {
   const [lang] = useLang();
-  const guideName = lang === 'en' ? 'Chaukas Didi' : 'चौकस दीदी';
+  const guideName = t('guide_name', lang);
 
   return (
     <div

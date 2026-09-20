@@ -121,13 +121,20 @@ export function SaralApp() {
 
         {/* Home Content (P2 2.3 - strictly ordered top to bottom) */}
         <div className="flex-1 flex flex-col justify-center items-center py-6 text-center space-y-6 w-full max-w-[480px] mx-auto min-w-0 my-auto">
-          {/* 1. The word "चौकस" */}
+          {/* 1. The brand word */}
           <h1
-            lang="hi"
+            lang={lang}
             className="text-6xl sm:text-7xl font-black tracking-tight text-[#1A1A1A]"
           >
-            चौकस
+            {t('brand_word', lang)}
           </h1>
+
+          {/* In English mode only: brand meaning */}
+          {lang === 'en' && (
+            <p className="text-sm sm:text-base font-semibold text-[#1A1A1A]/75 -mt-2">
+              <span lang="hi">चौकस</span> (chaukas) means alert, watchful.
+            </p>
+          )}
 
           {/* 2. home_tagline */}
           <p className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] leading-[1.6]">
