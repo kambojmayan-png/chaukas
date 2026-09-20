@@ -85,9 +85,9 @@ export default function JudgePage() {
             href="/"
             className="font-mono font-bold tracking-tight text-xl bg-[#111111] text-[#F6F3EC] px-2 py-0.5 rounded-sm hover:opacity-90"
           >
-            CHAUKAS
+            <span lang="en">CHAUKAS</span>
           </Link>
-          <span className="font-mono text-sm text-[#111111]/70 font-semibold">
+          <span lang="en" className="font-mono text-sm text-[#111111]/70 font-semibold">
             / JUDGE
           </span>
         </div>
@@ -268,7 +268,7 @@ export default function JudgePage() {
         </div>
 
         {/* Reality Ledger Table */}
-        <div className="overflow-x-auto border-2 border-[#111111] rounded-md">
+        <div lang="en" className="overflow-x-auto border-2 border-[#111111] rounded-md">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-[#111111] text-[#F6F3EC] font-mono uppercase tracking-wider">

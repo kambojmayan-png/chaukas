@@ -54,7 +54,7 @@ export default function AboutPage() {
       {/* Brand Header */}
       <header className="flex flex-wrap items-center justify-between border-b-2 border-[#111111] pb-4 gap-3">
         <Link href="/" className="flex items-center space-x-2 min-w-0 hover:opacity-90">
-          <span className="font-mono font-bold tracking-tight text-xl bg-[#111111] text-[#F6F3EC] px-2 py-0.5 rounded-sm">
+          <span lang="en" className="font-mono font-bold tracking-tight text-xl bg-[#111111] text-[#F6F3EC] px-2 py-0.5 rounded-sm">
             CHAUKAS
           </span>
           <span lang="hi" className="font-hindi text-sm font-semibold text-[#111111]/70 leading-normal">

@@ -3,10 +3,11 @@
 import React from 'react';
 import type { Lang } from '@/engine/engine';
 import { t } from '@/lib/i18n';
+import { LangToggle } from '@/components/LangToggle';
 
 interface SaralTopBarProps {
   lang: Lang;
-  onToggleLang: () => void;
+  onToggleLang?: () => void;
   soundOn: boolean;
   onToggleSound: () => void;
   practiceNumber?: number | null;
@@ -15,7 +16,6 @@ interface SaralTopBarProps {
 
 export function SaralTopBar({
   lang,
-  onToggleLang,
   soundOn,
   onToggleSound,
   practiceNumber,
@@ -41,17 +41,9 @@ export function SaralTopBar({
           </span>
         </div>
 
-        {/* Right Controls: Language pill + Sound toggle (56px) */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          {/* Language Pill: Shows "English" while in Hindi, and "हिंदी" while in English */}
-          <button
-            type="button"
-            onClick={onToggleLang}
-            className="min-h-[44px] px-3 py-1 rounded-full border-2 border-[#1A1A1A] bg-white text-xs sm:text-sm font-bold text-[#1A1A1A] hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer leading-normal"
-            aria-label="Toggle language"
-          >
-            {lang === 'hi' ? 'English' : 'हिंदी'}
-          </button>
+        {/* Right Controls: LangToggle + Sound toggle (56px) */}
+        <div className="flex items-center gap-2 shrink-0">
+          <LangToggle />
 
           {/* Sound Button: 56px tap target, 🔊 / 🔇 */}
           <button

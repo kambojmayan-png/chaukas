@@ -39,7 +39,7 @@ export function GlassBoxPanel({
         <span className="font-bold uppercase tracking-wider text-xs text-[#111111]">
           {t('engine_recording_title', lang)}
         </span>
-        <span className="text-[10px] bg-[#111111] text-white px-1.5 py-0.5 rounded font-bold">
+        <span lang="en" className="text-[10px] bg-[#111111] text-white px-1.5 py-0.5 rounded font-bold">
           GLASS BOX
         </span>
       </div>
@@ -54,6 +54,7 @@ export function GlassBoxPanel({
           events.map((e, idx) => (
             <div
               key={idx}
+              lang="en"
               className="text-xs leading-relaxed text-[#111111] flex items-center gap-1.5 flex-wrap keep-mono font-mono"
             >
               <span>t={(e.t / 1000).toFixed(1)}s</span>
@@ -69,10 +70,10 @@ export function GlassBoxPanel({
       {/* Formatted RunResult JSON on finish */}
       {result && (
         <div className="mt-4 pt-3 border-t-2 border-[#111111]/10">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#111111]/70 mb-1.5">
+          <div lang="en" className="text-[11px] font-bold uppercase tracking-wider text-[#111111]/70 mb-1.5">
             RunResult
           </div>
-          <pre className="bg-[#111111] text-[#F6F3EC] p-3 rounded text-[11px] max-w-full overflow-x-auto leading-tight keep-mono font-mono">
+          <pre lang="en" className="bg-[#111111] text-[#F6F3EC] p-3 rounded text-[11px] max-w-full overflow-x-auto leading-tight keep-mono font-mono">
             {JSON.stringify(result, null, 2)}
           </pre>
         </div>

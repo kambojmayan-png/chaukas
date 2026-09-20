@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { SCENARIOS } from '@/scenarios';
-import type { Lang } from '@/engine/engine';
+import { useLang } from '@/lib/useLang';
+import { LangToggle } from '@/components/LangToggle';
 import { t } from '@/lib/i18n';
 import { unlockAudio } from '@/lib/speak';
 import { SaralErrorBoundary } from './SaralErrorBoundary';
@@ -33,9 +34,7 @@ function getDonePractices(): string[] {
 }
 
 export function SaralApp() {
-  // P2 2.1: The initial language on both server and client is 'hi'
-  // Read ?lang= / storage in useEffect only (no hydration mismatch)
-  const [lang, setLang] = useState<Lang>('hi');
+  const [lang] = useLang();
   const [screen, setScreen] = useState<'home' | 'flow'>('home');
   const [practiceIdx, setPracticeIdx] = useState<number>(0);
   const [donePractices, setDonePractices] = useState<string[]>([]);
@@ -48,21 +47,9 @@ export function SaralApp() {
     navLockUntilRef.current = Date.now() + 600;
   };
 
-  // Sync lang from URL or storage in useEffect only
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      const urlLang = params.get('lang');
-      if (urlLang === 'en' || urlLang === 'hi') {
-        setLang(urlLang);
-        sessionStorage.setItem('chaukas_saral_lang', urlLang);
-      } else {
-        const saved = sessionStorage.getItem('chaukas_saral_lang');
-        if (saved === 'en' || saved === 'hi') {
-          setLang(saved);
-        }
-      }
-
       if (params.get('src') === 'family') {
         setIsFamily(true);
       }
@@ -80,22 +67,6 @@ export function SaralApp() {
       }
     }
   }, []);
-
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = lang;
-    }
-  }, [lang]);
-
-  const toggleLang = () => {
-    const nextLang = lang === 'hi' ? 'en' : 'hi';
-    setLang(nextLang);
-    try {
-      sessionStorage.setItem('chaukas_saral_lang', nextLang);
-    } catch {
-      /* ignore */
-    }
-  };
 
   const handleStartHome = () => {
     if (isNavLocked()) return;
@@ -117,7 +88,6 @@ export function SaralApp() {
     return (
       <SaralFlow
         initialPracticeIdx={practiceIdx}
-        initialLang={lang}
         initialSoundOn={true}
         isFamily={isFamily}
         onReturnHome={() => setScreen('home')}
@@ -130,13 +100,7 @@ export function SaralApp() {
       <main className="min-h-screen bg-[#FBF7F0] text-[#1A1A1A] flex flex-col justify-between p-4 sm:p-6 max-w-xl mx-auto antialiased">
         {/* Top-Right Language Toggle */}
         <div className="w-full flex justify-end">
-          <button
-            type="button"
-            onClick={toggleLang}
-            className="min-h-[48px] px-4 py-2 rounded-full border-2 border-[#1A1A1A] bg-white text-sm font-bold text-[#1A1A1A] hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer leading-normal"
-          >
-            {lang === 'hi' ? 'English' : 'हिंदी'}
-          </button>
+          <LangToggle />
         </div>
 
         {/* Home Content (P2 2.3 - strictly ordered top to bottom) */}
@@ -220,6 +184,7 @@ export function SaralApp() {
         <div className="w-full flex justify-center pt-4">
           <Link
             href="/about?lang=en"
+            lang="en"
             className="min-h-[48px] inline-flex items-center justify-center text-sm font-medium text-[#1A1A1A]/60 hover:text-[#1A1A1A] hover:underline"
           >
             {t('home_dev_link', 'en')}

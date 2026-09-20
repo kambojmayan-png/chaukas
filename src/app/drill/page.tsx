@@ -457,6 +457,7 @@ export default function DrillPage() {
               <button
                 type="button"
                 onClick={() => handleVoiceChange('en')}
+                lang="en"
                 className={`px-2 py-1 text-xs font-bold transition-colors cursor-pointer border-l-2 border-r-2 border-[#111111] ${
                   voiceChoice === 'en'
                     ? 'bg-[#111111] text-white'

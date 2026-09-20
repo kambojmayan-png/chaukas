@@ -15,6 +15,7 @@ import {
   type Action,
 } from '@/engine/engine';
 import { t } from '@/lib/i18n';
+import { useLang } from '@/lib/useLang';
 import {
   playClip,
   stopSpeaking,
@@ -84,12 +85,11 @@ function getSessionId(): string {
 
 export function SaralFlow({
   initialPracticeIdx = 0,
-  initialLang = 'hi',
   initialSoundOn = true,
   isFamily = false,
   onReturnHome,
 }: SaralFlowProps) {
-  const [lang, setLang] = useState<Lang>(initialLang);
+  const [lang] = useLang();
   const [soundOn, setSoundOn] = useState<boolean>(initialSoundOn);
   const [screen, setScreen] = useState<FlowScreen>('soundcheck');
   const [practiceIdx, setPracticeIdx] = useState<number>(initialPracticeIdx);
@@ -172,23 +172,6 @@ export function SaralFlow({
       setOrigin(window.location.origin);
     }
   }, []);
-
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = lang;
-    }
-  }, [lang]);
-
-  const toggleLang = () => {
-    stopSpeaking();
-    const nextLang = lang === 'hi' ? 'en' : 'hi';
-    setLang(nextLang);
-    try {
-      sessionStorage.setItem('chaukas_saral_lang', nextLang);
-    } catch {
-      /* ignore */
-    }
-  };
 
   const toggleSound = () => {
     const next = !soundOn;
@@ -766,7 +749,6 @@ export function SaralFlow({
         {/* Top Bar on all screens */}
         <SaralTopBar
           lang={lang}
-          onToggleLang={toggleLang}
           soundOn={soundOn}
           onToggleSound={toggleSound}
           practiceNumber={
@@ -1321,19 +1303,19 @@ export function SaralFlow({
                   </div>
 
                   <div className="pt-4 border-t border-[#1A1A1A]/10 flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm font-bold text-[#1A1A1A]/70">
-                    <Link href="/drill" className="hover:underline">
+                    <Link href="/drill?lang=en" className="hover:underline">
                       {t('detailed_view', lang)}
                     </Link>
                     <span>·</span>
-                    <Link href="/check" className="hover:underline">
+                    <Link href="/check?lang=en" className="hover:underline">
                       {t('check_msg_link', lang)}
                     </Link>
                     <span>·</span>
-                    <Link href="/about" className="hover:underline">
+                    <Link href="/about?lang=en" className="hover:underline">
                       {t('about_project', lang)}
                     </Link>
                     <span>·</span>
-                    <Link href="/judge" className="hover:underline">
+                    <Link href="/judge?lang=en" className="hover:underline">
                       {t('for_judges', lang)}
                     </Link>
                   </div>

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_Devanagari } from "next/font/google";
+import { LangProvider } from "@/lib/useLang";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -44,7 +45,9 @@ export default function RootLayout({
       className={`${notoDevanagari.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#F6F3EC] text-[#111111]">
-        {children}
+        <LangProvider>
+          {children}
+        </LangProvider>
       </body>
     </html>
   );
