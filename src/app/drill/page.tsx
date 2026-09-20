@@ -6,6 +6,8 @@ import { SCENARIOS, PRACTICE_PIN } from '@/scenarios';
 import { useDrill } from '@/lib/useDrill';
 import { useReveal } from '@/lib/useReveal';
 import { speak, stopSpeaking, playRingtone, stopRing } from '@/lib/speak';
+import { sendRun } from '@/lib/telemetry';
+import { step, result as computeResult } from '@/engine/engine';
 import { PhoneFrame } from '@/components/phone/PhoneFrame';
 import { MessageList } from '@/components/phone/MessageList';
 import { ChoiceBar } from '@/components/phone/ChoiceBar';
@@ -14,14 +16,61 @@ import { PressureTimer } from '@/components/phone/PressureTimer';
 import { SystemDialog } from '@/components/phone/SystemDialog';
 import type { Lang, Scenario, Message, Surface, Action } from '@/engine/engine';
 
+function getSessionId(): string {
+  if (typeof window === 'undefined') return '';
+  try {
+    let id = sessionStorage.getItem('chaukas_session_id');
+    if (!id) {
+      id = crypto.randomUUID();
+      sessionStorage.setItem('chaukas_session_id', id);
+    }
+    return id;
+  } catch {
+    return 'anon-' + Math.random().toString(36).slice(2);
+  }
+}
+
+function getAttempt(scenarioId: string): number {
+  if (typeof window === 'undefined') return 1;
+  try {
+    const val = sessionStorage.getItem(`chaukas_attempt_${scenarioId}`);
+    return val ? parseInt(val, 10) : 1;
+  } catch {
+    return 1;
+  }
+}
+
+function incrementAttempt(scenarioId: string): number {
+  if (typeof window === 'undefined') return 2;
+  try {
+    const next = getAttempt(scenarioId) + 1;
+    sessionStorage.setItem(`chaukas_attempt_${scenarioId}`, String(next));
+    return next;
+  } catch {
+    return 2;
+  }
+}
+
 export default function DrillPage() {
   const [scenarioIndex, setScenarioIndex] = useState<number>(0);
   const [lang, setLang] = useState<Lang>('en');
   const [muted, setMuted] = useState<boolean>(false);
   const [started, setStarted] = useState<boolean>(false);
   const [runKey, setRunKey] = useState<number>(0);
+  const [knewRule, setKnewRule] = useState<boolean | null>(null);
+  const [source, setSource] = useState<string>('direct');
 
   const scenario = SCENARIOS[scenarioIndex];
+
+  // Detect ?src=family
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('src') === 'family') {
+        setSource('family_link');
+      }
+    }
+  }, []);
 
   if (!scenario) {
     return (
@@ -38,6 +87,7 @@ export default function DrillPage() {
   const handleRestart = () => {
     stopSpeaking();
     stopRing();
+    incrementAttempt(scenario.id);
     setRunKey(k => k + 1);
     setStarted(true);
   };
@@ -45,6 +95,7 @@ export default function DrillPage() {
   const handleNextDrill = () => {
     stopSpeaking();
     stopRing();
+    setKnewRule(null);
     if (scenarioIndex < SCENARIOS.length - 1) {
       setScenarioIndex(i => i + 1);
       setStarted(false); // Shows interstitial for next drill
@@ -56,6 +107,8 @@ export default function DrillPage() {
       setRunKey(k => k + 1);
     }
   };
+
+  const currentAttempt = getAttempt(scenario.id);
 
   return (
     <main className="min-h-screen bg-[#F6F3EC] text-[#111111] p-4 md:p-8 flex flex-col items-center">
@@ -142,6 +195,51 @@ export default function DrillPage() {
             {scenario.setup[lang] || scenario.setup.en}
           </div>
 
+          {/* Pre-Check Question Card */}
+          <div className="bg-[#F6F3EC] border-2 border-[#111111] p-4 rounded-md shadow-hard-sm space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F]">
+                Quick Pre-Check
+              </span>
+              <span className="text-[10px] font-mono text-[#111111]/60">1 of 1</span>
+            </div>
+            <p className="text-sm md:text-base font-semibold text-[#111111] leading-snug">
+              {scenario.precheck.q[lang] || scenario.precheck.q.en}
+            </p>
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setKnewRule(scenario.precheck.correct === 'yes');
+                  handleStartDrill();
+                }}
+                className="py-2.5 px-3 bg-white text-[#111111] border-2 border-[#111111] rounded shadow-hard-sm font-bold text-sm hover:bg-[#12B76A] hover:text-white transition-all cursor-pointer text-center"
+              >
+                Yes
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setKnewRule(scenario.precheck.correct === 'no');
+                  handleStartDrill();
+                }}
+                className="py-2.5 px-3 bg-white text-[#111111] border-2 border-[#111111] rounded shadow-hard-sm font-bold text-sm hover:bg-[#D92D20] hover:text-white transition-all cursor-pointer text-center"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setKnewRule(null);
+                  handleStartDrill();
+                }}
+                className="py-2.5 px-3 bg-neutral-100 text-[#111111]/70 border-2 border-[#111111]/30 rounded font-medium text-sm hover:bg-neutral-200 transition-all cursor-pointer text-center"
+              >
+                Skip
+              </button>
+            </div>
+          </div>
+
           <div className="text-xs text-[#111111]/70 font-mono space-y-1 bg-neutral-100 p-3 rounded border border-neutral-300">
             <p className="font-bold text-[#111111]">Safety Reminders:</p>
             <p>• Practice money: ₹60,000</p>
@@ -151,7 +249,10 @@ export default function DrillPage() {
 
           <button
             type="button"
-            onClick={handleStartDrill}
+            onClick={() => {
+              setKnewRule(null);
+              handleStartDrill();
+            }}
             className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-lg border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>Start Drill {scenarioIndex + 1}</span>
@@ -167,6 +268,9 @@ export default function DrillPage() {
           totalScenarios={SCENARIOS.length}
           lang={lang}
           muted={muted}
+          knewRule={knewRule}
+          attempt={currentAttempt}
+          source={source}
           onRestart={handleRestart}
           onNextDrill={handleNextDrill}
         />
@@ -181,6 +285,9 @@ interface DrillRunnerProps {
   totalScenarios: number;
   lang: Lang;
   muted: boolean;
+  knewRule: boolean | null;
+  attempt: number;
+  source: string;
   onRestart: () => void;
   onNextDrill: () => void;
 }
@@ -191,19 +298,53 @@ function DrillRunner({
   totalScenarios,
   lang,
   muted,
+  knewRule,
+  attempt,
+  source,
   onRestart,
   onNextDrill,
 }: DrillRunnerProps) {
   const { node, state, act, result } = useDrill(scenario);
+  const telemetrySentRef = useRef<boolean>(false);
 
-  // Safe action wrapper: stops speech & ring BEFORE dispatching any action
+  // Safe action wrapper: stops speech & ring BEFORE dispatching,
+  // and dispatches telemetry beacon at the exact moment a step finishes the run (StrictMode-safe)
   const safeAct = useCallback(
     (action: Action) => {
       stopSpeaking();
       stopRing();
+
+      if (!state.done && !telemetrySentRef.current) {
+        try {
+          const now = Date.now();
+          const nextSt = step(scenario, state, action, now);
+          if (nextSt.done) {
+            telemetrySentRef.current = true;
+            const res = computeResult(scenario, nextSt, now);
+            sendRun({
+              session_id: getSessionId(),
+              scenario_id: scenario.id,
+              lang,
+              outcome: res.outcome,
+              loss_inr: res.lossInr,
+              knew_rule: knewRule,
+              risky_actions: res.riskyActions,
+              flags_walked_past: res.flagsWalkedPast.length,
+              flags_total: res.flagsTotal,
+              duration_ms: Math.max(5000, res.durationMs),
+              hesitation_ms: res.hesitationMs,
+              attempt,
+              source,
+            });
+          }
+        } catch {
+          /* never block the drill */
+        }
+      }
+
       act(action);
     },
-    [act]
+    [act, state, scenario, lang, knewRule, attempt, source]
   );
 
   const isCallNode = node.surface === 'call' || node.surface === 'videocall';
@@ -450,6 +591,14 @@ function DrillRunner({
           >
             Replay this drill
           </button>
+
+          <Link
+            href="/insights"
+            className="w-full min-h-[44px] py-2.5 bg-neutral-100 text-[#111111] font-bold text-sm border-2 border-[#111111]/30 rounded-md hover:bg-neutral-200 transition-all flex items-center justify-center gap-1.5"
+          >
+            <span>📊</span>
+            <span>View Live Insights</span>
+          </Link>
         </div>
       </div>
     );
