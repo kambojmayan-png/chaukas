@@ -43,7 +43,7 @@ export function PressureTimer({ seconds, lang = 'en', onTimeout }: PressureTimer
   const percentage = Math.max(0, Math.min(100, (timeLeft / seconds) * 100));
 
   return (
-    <div className="w-full bg-[#FF5A1F] text-white border-b-2 border-[#111111] px-3 py-1.5 flex items-center justify-between text-xs font-mono font-bold shadow-sm select-none">
+    <div className="w-full bg-[#FF5A1F] text-white border-b-2 border-[#111111] px-3 py-1.5 flex items-center justify-between text-xs font-mono font-bold shadow-sm">
       <div className="flex items-center space-x-1.5">
         <span className="animate-pulse">⏱</span>
         <span className="uppercase tracking-wider">{t('hurry', lang)}</span>

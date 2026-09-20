@@ -56,7 +56,7 @@
  "hi/bijli-remote__n2c__choices": 5.59,
  "hi/bijli-remote__n3__0": 7.48,
  "hi/bijli-remote__n3__choices": 5.21,
- "hi/bijli-remote__n5__0": 15.29,
+ "hi/bijli-remote__n5__0": 15.12,
  "hi/bijli-remote__end_scammed": 11.29,
  "hi/bijli-remote__end_escaped": 5.61,
  "hi/bijli-remote__end_late": 10.82,
@@ -89,5 +89,16 @@
  "hi/flag__remote_app": 5.32,
  "hi/flag__unofficial_contact": 7.9,
  "hi/flag__pay_to_verify": 5.62,
- "hi/flag__screen_says_pay": 4.74
+ "hi/flag__screen_says_pay": 4.74,
+ "hi/narr__error_restart": 8.05,
+ "hi/check__intro": 11.22,
+ "hi/check__empty": 5.91,
+ "hi/check__likely_scam": 7.77,
+ "hi/check__suspicious": 5.67,
+ "hi/check__none": 11.06,
+ "hi/check__advice_money_request": 10.46,
+ "hi/check__advice_digital_arrest": 8.17,
+ "hi/check__advice_utility_kyc_remote": 11.39,
+ "hi/check__advice_receive_money_pin": 6.39,
+ "hi/check__advice_other": 6.42
 }

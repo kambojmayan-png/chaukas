@@ -32,7 +32,7 @@ export function PhoneFrame({ from, surface, lang = 'en', children }: PhoneFrameP
         {/* Inner Phone Screen */}
         <div className="relative bg-[#F6F3EC] text-[#111111] rounded-md min-[480px]:rounded-[24px] overflow-hidden flex flex-col flex-1 min-h-0 border-2 border-[#111111] min-[480px]:border-black/30 min-[480px]:aspect-[9/19] min-[480px]:min-h-[600px] shadow-hard-sm min-[480px]:shadow-none">
           {/* Status Bar (shown only from 480px up) */}
-          <div className="hidden min-[480px]:flex h-7 bg-[#0E0E10] text-[#F6F3EC] px-4 items-center justify-between text-xs font-mono select-none shrink-0">
+          <div className="hidden min-[480px]:flex h-7 bg-[#0E0E10] text-[#F6F3EC] px-4 items-center justify-between text-xs font-mono shrink-0">
             <span>9:41</span>
             <div className="flex items-center space-x-1.5">
               <span>5G</span>

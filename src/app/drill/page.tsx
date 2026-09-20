@@ -943,7 +943,7 @@ function DrillRunner({
 
           {/* Incoming Call Screen (Non-call to Call transition) */}
           {isCallNode && !callAccepted ? (
-            <div className="flex-1 flex flex-col justify-between p-4 min-[480px]:p-6 bg-[#0E0E10] text-[#F6F3EC] select-none text-center">
+            <div className="flex-1 flex flex-col justify-between p-4 min-[480px]:p-6 bg-[#0E0E10] text-[#F6F3EC] text-center">
               <div className="pt-4 min-[480px]:pt-8 space-y-2">
                 <span className="text-xs font-mono text-[#FF5A1F] uppercase tracking-widest block animate-pulse">
                   {node.surface === 'videocall'

@@ -45,7 +45,7 @@
       "input": { "kind": "pin", "prompt": { "en": "Enter UPI PIN", "hi": "UPI PIN डालें" }, "detail": { "en": "Paying ₹10 to BILL UPDATE DESK (billdesk.help@okbank)", "hi": "₹10 का भुगतान — BILL UPDATE DESK (billdesk.help@okbank) को" }, "flags": ["screen_says_pay"], "onSubmit": "n5", "onCancel": "end_escaped" } },
     "n5": { "id": "n5", "surface": "call", "from": "Electricity Officer",
       "messages": [
-        { "text": { "en": "OTP 482913 for debit of ₹24,990 from your a/c. NEVER share this OTP with anyone. — Your Bank", "hi": "OTP 482913 — आपके खाते से ₹24,990 की निकासी के लिए। यह OTP किसी को भी न बताएं। — आपका बैंक" }, "via": "sms" },
+        { "text": { "en": "OTP 739165 for debit of ₹24,990 from your a/c. NEVER share this OTP with anyone. — Your Bank", "hi": "OTP 739165 — आपके खाते से ₹24,990 की निकासी के लिए। यह OTP किसी को भी न बताएं। — आपका बैंक" }, "via": "sms" },
         { "text": { "en": "You must have received a code. Read it out to me quickly so your bill gets updated.", "hi": "आपके पास एक कोड आया होगा। जल्दी से पढ़कर बताइए, तभी बिल अपडेट होगा।" }, "flags": ["otp_request", "urgency"], "speak": true, "delayMs": 1500 }
       ],
       "input": { "kind": "otp", "prompt": { "en": "Type the OTP to read it out to him", "hi": "OTP बताने के लिए यहाँ टाइप करें" }, "detail": { "en": "He is waiting on the call…", "hi": "वह कॉल पर इंतज़ार कर रहा है…" }, "onSubmit": "end_scammed", "onCancel": "end_escaped" } },

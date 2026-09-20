@@ -15,17 +15,19 @@ export interface DisplayMessage {
 }
 
 interface SaralConversationProps {
+  visitKey: string;
   pastMessages: DisplayMessage[];
   currentMessage: DisplayMessage | null;
   showingChoices: boolean;
   choices?: Choice[];
   lang: Lang;
-  onChoose: (choiceId: string) => void;
+  onChoose: (choiceId: string, visitKey: string) => void;
   onSkipMessage?: () => void;
   canSkip?: boolean;
 }
 
 export function SaralConversation({
+  visitKey,
   pastMessages,
   currentMessage,
   showingChoices,
@@ -134,7 +136,7 @@ export function SaralConversation({
                 <button
                   key={c.id}
                   type="button"
-                  onClick={() => onChoose(c.id)}
+                  onClick={() => onChoose(c.id, visitKey)}
                   className="w-full min-h-[64px] py-3.5 px-4 bg-white text-[#1A1A1A] border-2 border-[#1A1A1A] rounded-[16px] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer flex items-center gap-3.5 text-left"
                 >
                   <span className="w-11 h-11 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xl font-black shrink-0">

@@ -28,7 +28,7 @@ export function SaralTopBar({
         <div className="flex items-center shrink-0">
           <span
             lang="hi"
-            className="text-2xl font-black text-[#1A1A1A] tracking-normal select-none"
+            className="text-2xl font-black text-[#1A1A1A] tracking-normal"
           >
             चौकस
           </span>

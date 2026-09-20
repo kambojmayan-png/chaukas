@@ -788,6 +788,14 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
     en: 'For judges',
     hi: 'जजों के लिए',
   },
+  error_text: {
+    en: 'Something went wrong. Nothing was lost. Please start again.',
+    hi: 'कुछ गड़बड़ हो गई। आपका कोई नुक़सान नहीं हुआ। कृपया फिर से शुरू करें।',
+  },
+  error_restart: {
+    en: 'Start again',
+    hi: 'फिर से शुरू करें',
+  },
   flag_explain_urgency: {
     en: 'Here the scammer rushed you, so that you could not think.',
     hi: 'यहाँ ठग ने जल्दी मचाई, ताकि आप सोच न पाएँ।',

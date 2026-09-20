@@ -30,6 +30,7 @@ import { SaralKeypad } from './SaralKeypad';
 import { SaralCallScreen } from './SaralCallScreen';
 import { SaralConversation, type DisplayMessage } from './SaralConversation';
 import { SaralLessonCards, extractTrickCards } from './SaralLessonCards';
+import { SaralErrorBoundary } from './SaralErrorBoundary';
 
 type SaralScreen =
   | 'home' // 0
@@ -108,10 +109,28 @@ export function SaralApp() {
   const [isFamily, setIsFamily] = useState<boolean>(false);
   const [origin, setOrigin] = useState<string>('');
 
+  // Global navigation lock (600 ms after any screen or node change)
+  const navLockUntilRef = useRef<number>(0);
+  const isNavLocked = () => Date.now() < navLockUntilRef.current;
+  const lockNav = () => {
+    navLockUntilRef.current = Date.now() + 600;
+  };
+
+  // Node entered timestamp & 30s timer ref
+  const nodeEnteredAtRef = useRef<number>(0);
+  const timerSecRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearTimerSec = () => {
+    if (timerSecRef.current) {
+      clearTimeout(timerSecRef.current);
+      timerSecRef.current = null;
+    }
+  };
+
   // Audio / Narration state
   const [speaking, setSpeaking] = useState<boolean>(false);
   const [currentCaption, setCurrentCaption] = useState<string>('');
   const playSeqIdRef = useRef<number>(0);
+  const playbackTokenRef = useRef<number>(0);
 
   // Sound check help card visibility
   const [showSoundHelp, setShowSoundHelp] = useState<boolean>(false);
@@ -128,9 +147,31 @@ export function SaralApp() {
   // Active conversation state (Screen 7)
   const [drillState, setDrillState] = useState<RunState | null>(null);
   const [callPickedUp, setCallPickedUp] = useState<boolean>(false);
-  const [revealedMsgIndex, setRevealedMsgIndex] = useState<number>(0);
+  const [convPhase, setConvPhase] = useState<'messages' | 'choices' | 'input'>('messages');
+  const [msgIndex, setMsgIndex] = useState<number>(0);
   const [pastMessages, setPastMessages] = useState<DisplayMessage[]>([]);
-  const [showingChoices, setShowingChoices] = useState<boolean>(false);
+
+  // Current scenario
+  const currentScenario: Scenario | undefined = SCENARIOS[practiceIdx];
+  const sid = currentScenario?.id || 'olx-qr';
+
+  // VisitKey & node change synchronization
+  const currentVisitKey = drillState ? `${drillState.path.length}:${drillState.nodeId}` : '0:none';
+  const [prevVisitKey, setPrevVisitKey] = useState<string>(currentVisitKey);
+  if (prevVisitKey !== currentVisitKey) {
+    setPrevVisitKey(currentVisitKey);
+    nodeEnteredAtRef.current = Date.now();
+    clearTimerSec();
+    const currNodeForInit = currentScenario && drillState ? currentScenario.nodes[drillState.nodeId] : null;
+    const msgsForInit = currNodeForInit?.messages ?? [];
+    const initialPhase = msgsForInit.length > 0
+      ? 'messages'
+      : currNodeForInit?.choices && currNodeForInit.choices.length > 0
+      ? 'choices'
+      : 'input';
+    setConvPhase(initialPhase);
+    setMsgIndex(0);
+  }
 
   // Lesson cards state (Screen 9)
   const [activeTrickIndex, setActiveTrickIndex] = useState<number | null>(null);
@@ -195,10 +236,6 @@ export function SaralApp() {
     [lang, soundOn]
   );
 
-  // Current scenario
-  const currentScenario: Scenario | undefined = SCENARIOS[practiceIdx];
-  const sid = currentScenario?.id || 'olx-qr';
-
   // Preload clips on scenario change
   useEffect(() => {
     if (currentScenario && soundOn) {
@@ -206,11 +243,12 @@ export function SaralApp() {
     }
   }, [currentScenario, soundOn]);
 
-  // Clean up speech and ring on unmount or screen transition
+  // Clean up speech, ring, and timer on unmount or screen transition
   useEffect(() => {
     return () => {
       stopSpeaking();
       stopRing();
+      clearTimerSec();
     };
   }, [screen, practiceIdx]);
 
@@ -254,12 +292,15 @@ export function SaralApp() {
   useEffect(() => {
     if (screen === 'precheck' && currentScenario) {
       const qText = currentScenario.precheck.q[lang] || currentScenario.precheck.q.en;
-      playSequence([
-        { key: 'narr__one_question', text: qText },
-        { key: `${sid}__precheck`, text: qText },
-      ]);
+      const items: { key: string; text: string }[] = [];
+      if (practiceIdx > 0) {
+        items.push({ key: 'narr__next_drill', text: t('another_yes', lang) });
+      }
+      items.push({ key: 'narr__one_question', text: qText });
+      items.push({ key: `${sid}__precheck`, text: qText });
+      playSequence(items);
     }
-  }, [screen, currentScenario, sid, lang, playSequence]);
+  }, [screen, currentScenario, sid, practiceIdx, lang, playSequence]);
 
   // SCREEN 6: Situation (setup) narration
   useEffect(() => {
@@ -373,12 +414,16 @@ export function SaralApp() {
 
   // SCREEN 7: Active Conversation runner logic
   const startConversation = () => {
+    if (isNavLocked()) return;
+    lockNav();
     if (!currentScenario) return;
+    stopSpeaking();
+    stopRing();
+    clearTimerSec();
+
     const initialSt = engineStart(currentScenario, Date.now());
     setDrillState(initialSt);
     setPastMessages([]);
-    setRevealedMsgIndex(0);
-    setShowingChoices(false);
 
     const firstNode = currentScenario.nodes[initialSt.nodeId];
     const isCall = firstNode?.surface === 'call' || firstNode?.surface === 'videocall';
@@ -393,83 +438,86 @@ export function SaralApp() {
     setScreen('conversation');
   };
 
-  // When call is picked up or non-call node starts: sequence through messages
+  // SCREEN 7: Deterministic conversation audio player
+  // ONE effect keyed on [currentVisitKey, convPhase, msgIndex, lang, soundOn, screen, callPickedUp]
   useEffect(() => {
     if (screen !== 'conversation' || !drillState || !currentScenario) return;
 
-    const currNode = currentScenario.nodes[drillState.nodeId];
-    if (!currNode) return;
+    const node = currentScenario.nodes[drillState.nodeId];
+    if (!node) return;
 
-    const isCall = currNode.surface === 'call' || currNode.surface === 'videocall';
+    const isCall = node.surface === 'call' || node.surface === 'videocall';
     if (isCall && !callPickedUp) return;
 
-    const msgs = currNode.messages ?? [];
-
+    playbackTokenRef.current += 1;
+    const token = playbackTokenRef.current;
     let active = true;
 
-    async function runMessages() {
-      for (let i = revealedMsgIndex; i < msgs.length; i++) {
-        if (!active) break;
-        setRevealedMsgIndex(i);
-        setShowingChoices(false);
+    async function stepPlayer() {
+      if (convPhase === 'messages') {
+        const msgs = node.messages ?? [];
+        if (msgIndex < msgs.length) {
+          const msg = msgs[msgIndex];
+          const clipKey = `${sid}__${node.id}__${msgIndex}`;
+          const msgText = msg.text[lang] || msg.text.en;
 
-        const msg = msgs[i];
-        const msgText = msg.text[lang] || msg.text.en;
-        const clipKey = `${sid}__${currNode.id}__${i}`;
+          await playClip(clipKey, msgText, lang, soundOn);
 
-        await playClip(clipKey, msgText, lang, soundOn);
+          // Guard against stale continuation
+          if (!active || playbackTokenRef.current !== token) return;
 
-        if (!active) break;
-        // Add to past messages before moving forward
-        if (i < msgs.length - 1) {
-          const displayLabel = getMessageLabel(msg, currNode.surface, currNode.from, lang);
-          setPastMessages(prev => [
-            ...prev,
-            {
-              from: currNode.from || 'Scammer',
-              text: msgText,
-              label: displayLabel,
-              surface: currNode.surface,
-              via: msg.via,
-              isOnCall: isCall,
-            },
-          ]);
+          // Advance once
+          if (msgIndex < msgs.length - 1) {
+            setMsgIndex(msgIndex + 1);
+          } else {
+            // Last message finished
+            if (node.choices && node.choices.length > 0) {
+              setConvPhase('choices');
+            } else if (node.input) {
+              setConvPhase('input');
+            }
+          }
         }
-      }
+      } else if (convPhase === 'choices') {
+        // The options clip <sid>__<nodeId>__choices plays after the last message ends
+        if (node.choices && node.choices.length > 0) {
+          const choicesClip = `${sid}__${node.id}__choices`;
+          const choicesText = node.choices
+            .map((c, idx) => `${idx + 1}. ${c.label[lang] || c.label.en}`)
+            .join('. ');
 
-      if (active) {
-        // All messages revealed
-        setShowingChoices(true);
-
-        // If choices exist, read them aloud
-        if (currNode.choices && currNode.choices.length > 0) {
-          const choicesClip = `${sid}__${currNode.id}__choices`;
-          const choicesText = currNode.choices.map((c, idx) => `${idx + 1}. ${c.label[lang] || c.label.en}`).join('. ');
           await playClip(choicesClip, choicesText, lang, soundOn);
 
-          // If node has timerSec: after audio ends, 30s with no tap -> dispatch timeout
-          if (currNode.timerSec) {
-            const timer = setTimeout(() => {
-              if (active) {
+          if (!active || playbackTokenRef.current !== token) return;
+
+          // If node has timerSec: start 30s timer after choices clip ends
+          if (node.timerSec) {
+            clearTimerSec();
+            timerSecRef.current = setTimeout(() => {
+              if (playbackTokenRef.current === token) {
                 dispatchAction({ type: 'timeout' });
               }
             }, 30000);
-            return () => clearTimeout(timer);
           }
-        } else if (currNode.input) {
-          // Play keypad guide clip once
-          const keypadClip = currNode.input.kind === 'pin' ? 'narr__keypad_pin' : 'narr__keypad_otp';
-          playClip(keypadClip, currNode.input.prompt[lang] || currNode.input.prompt.en, lang, soundOn);
+        }
+      } else if (convPhase === 'input') {
+        if (node.input) {
+          const keypadClip = node.input.kind === 'pin' ? 'narr__keypad_pin' : 'narr__keypad_otp';
+          const keypadText = node.input.prompt[lang] || node.input.prompt.en;
+
+          await playClip(keypadClip, keypadText, lang, soundOn);
+
+          if (!active || playbackTokenRef.current !== token) return;
         }
       }
     }
 
-    runMessages();
+    stepPlayer();
 
     return () => {
       active = false;
     };
-  }, [screen, drillState?.nodeId, callPickedUp, currentScenario, sid, lang, soundOn]);
+  }, [currentVisitKey, convPhase, msgIndex, lang, soundOn, screen, callPickedUp]);
 
   const getMessageLabel = (msg: any, surface: any, from: string | undefined, currentLang: Lang): string => {
     if (surface === 'call' || surface === 'videocall') {
@@ -487,10 +535,16 @@ export function SaralApp() {
     return from || 'Chat';
   };
 
-  const dispatchAction = (action: Action) => {
+  const dispatchAction = (action: Action, actionVisitKey?: string) => {
     if (!currentScenario || !drillState) return;
+    if (isNavLocked()) return;
+    if (actionVisitKey && actionVisitKey !== currentVisitKey) return;
+    if (Date.now() - nodeEnteredAtRef.current < 600) return;
+
+    lockNav();
     stopSpeaking();
     stopRing();
+    clearTimerSec();
 
     const now = Date.now();
     const nextSt = engineStep(currentScenario, drillState, action, now);
@@ -548,25 +602,19 @@ export function SaralApp() {
       setCallPickedUp(true);
     }
 
-    // Add previous current message to past messages
-    const currMsg = prevNode?.messages?.[revealedMsgIndex];
-    if (currMsg) {
-      const displayLabel = getMessageLabel(currMsg, prevNode.surface, prevNode.from, lang);
-      setPastMessages(prev => [
-        ...prev,
-        {
-          from: prevNode.from || 'Scammer',
-          text: currMsg.text[lang] || currMsg.text.en,
-          label: displayLabel,
-          surface: prevNode.surface,
-          via: currMsg.via,
-          isOnCall: prevWasCall,
-        },
-      ]);
+    // Append previous node's messages to past messages
+    const prevMsgs = prevNode?.messages ?? [];
+    if (prevMsgs.length > 0) {
+      const formatted = prevMsgs.map(m => ({
+        from: prevNode.from || 'Scammer',
+        text: m.text[lang] || m.text.en,
+        label: getMessageLabel(m, prevNode.surface, prevNode.from, lang),
+        surface: prevNode.surface,
+        via: m.via,
+        isOnCall: prevWasCall,
+      }));
+      setPastMessages(prev => [...prev, ...formatted]);
     }
-
-    setRevealedMsgIndex(0);
-    setShowingChoices(false);
   };
 
   // Expected code for keypad in Screen 7
@@ -594,20 +642,30 @@ export function SaralApp() {
 
   // Navigation handlers
   const handleStartHome = () => {
+    if (isNavLocked()) return;
+    lockNav();
     unlockAudio();
     stopSpeaking();
-    // Find first unfinished practice or 0
-    const done = getDonePractices();
-    let startIdx = 0;
-    const nextUnfinished = SCENARIOS.findIndex(s => !done.includes(s.id));
-    if (nextUnfinished !== -1) {
-      startIdx = nextUnfinished;
-    }
-    setPracticeIdx(startIdx);
+    stopRing();
+    clearTimerSec();
+    setPracticeIdx(0); // ALWAYS begins with practice 1
+    setScreen('soundcheck');
+  };
+
+  const handleStartPracticeDirect = (idx: number) => {
+    if (isNavLocked()) return;
+    lockNav();
+    unlockAudio();
+    stopSpeaking();
+    stopRing();
+    clearTimerSec();
+    setPracticeIdx(idx);
     setScreen('soundcheck');
   };
 
   const handlePrecheckAnswer = (answer: 'yes' | 'no') => {
+    if (isNavLocked()) return;
+    lockNav();
     if (!currentScenario) return;
     stopSpeaking();
     const isCorrect = answer === currentScenario.precheck.correct;
@@ -625,6 +683,8 @@ export function SaralApp() {
   };
 
   const handleSkipPrecheck = () => {
+    if (isNavLocked()) return;
+    lockNav();
     if (!currentScenario) return;
     stopSpeaking();
     const updated = {
@@ -641,13 +701,18 @@ export function SaralApp() {
   };
 
   const handleLeaveConfirm = () => {
+    if (isNavLocked()) return;
+    lockNav();
     stopSpeaking();
     stopRing();
+    clearTimerSec();
     setShowLeaveConfirm(false);
     setScreen('home');
   };
 
   const handleNextFromLesson = () => {
+    if (isNavLocked()) return;
+    lockNav();
     stopSpeaking();
     if (practiceIdx < SCENARIOS.length - 1) {
       setScreen('another');
@@ -656,14 +721,18 @@ export function SaralApp() {
     }
   };
 
-  const handleAnotherYes = async () => {
+  const handleAnotherYes = () => {
+    if (isNavLocked()) return;
+    lockNav();
     stopSpeaking();
-    await playClip('narr__next_drill', t('another_yes', lang), lang, soundOn);
-    setPracticeIdx(i => i + 1);
+    const next = practiceIdx + 1;
+    setPracticeIdx(next);
     setScreen('precheck');
   };
 
   const handleAnotherNo = () => {
+    if (isNavLocked()) return;
+    lockNav();
     stopSpeaking();
     setUserStoppedEarly(true);
     setScreen('final');
@@ -671,673 +740,746 @@ export function SaralApp() {
 
   const currNode = currentScenario && drillState ? currentScenario.nodes[drillState.nodeId] : null;
   const isCallNode = currNode?.surface === 'call' || currNode?.surface === 'videocall';
-  const currMsg = currNode?.messages?.[revealedMsgIndex];
-  const currMsgText = currMsg ? (currMsg.text[lang] || currMsg.text.en) : '';
+  const nodeMsgs = currNode?.messages ?? [];
+  const activeCurrentMessage =
+    convPhase === 'messages' && nodeMsgs[msgIndex]
+      ? {
+          from: currNode?.from || 'Scammer',
+          text: nodeMsgs[msgIndex].text[lang] || nodeMsgs[msgIndex].text.en,
+          label: getMessageLabel(nodeMsgs[msgIndex], currNode?.surface, currNode?.from, lang),
+          surface: currNode?.surface,
+          via: nodeMsgs[msgIndex].via,
+          isOnCall: isCallNode,
+        }
+      : convPhase === 'choices' && nodeMsgs.length > 0
+      ? {
+          from: currNode?.from || 'Scammer',
+          text: nodeMsgs[nodeMsgs.length - 1].text[lang] || nodeMsgs[nodeMsgs.length - 1].text.en,
+          label: getMessageLabel(nodeMsgs[nodeMsgs.length - 1], currNode?.surface, currNode?.from, lang),
+          surface: currNode?.surface,
+          via: nodeMsgs[nodeMsgs.length - 1].via,
+          isOnCall: isCallNode,
+        }
+      : null;
+
+  const activePastMessages =
+    convPhase === 'messages'
+      ? [
+          ...pastMessages,
+          ...nodeMsgs.slice(0, msgIndex).map(m => ({
+            from: currNode?.from || 'Scammer',
+            text: m.text[lang] || m.text.en,
+            label: getMessageLabel(m, currNode?.surface, currNode?.from, lang),
+            surface: currNode?.surface,
+            via: m.via,
+            isOnCall: isCallNode,
+          })),
+        ]
+      : convPhase === 'choices'
+      ? [
+          ...pastMessages,
+          ...nodeMsgs.slice(0, Math.max(0, nodeMsgs.length - 1)).map(m => ({
+            from: currNode?.from || 'Scammer',
+            text: m.text[lang] || m.text.en,
+            label: getMessageLabel(m, currNode?.surface, currNode?.from, lang),
+            surface: currNode?.surface,
+            via: m.via,
+            isOnCall: isCallNode,
+          })),
+        ]
+      : pastMessages;
+
+  const showingChoices = Boolean(
+    currNode?.choices &&
+    currNode.choices.length > 0 &&
+    (convPhase === 'choices' || (convPhase === 'messages' && msgIndex === nodeMsgs.length - 1))
+  );
 
   return (
-    <main className="min-h-screen bg-[#FBF7F0] text-[#1A1A1A] flex flex-col justify-between p-3 sm:p-5 max-w-xl mx-auto select-none antialiased">
-      {/* Top Bar on all screens except Home */}
-      {screen !== 'home' && (
-        <SaralTopBar
-          lang={lang}
-          onToggleLang={toggleLang}
-          soundOn={soundOn}
-          onToggleSound={toggleSound}
-          practiceNumber={
-            ['precheck', 'setup', 'conversation', 'result', 'lesson'].includes(screen)
-              ? practiceIdx + 1
-              : null
-          }
-          onLeavePractice={() => setShowLeaveConfirm(true)}
-        />
-      )}
+    <SaralErrorBoundary lang={lang} soundOn={soundOn}>
+      <main className="min-h-screen bg-[#FBF7F0] text-[#1A1A1A] flex flex-col justify-between p-3 sm:p-5 max-w-xl mx-auto antialiased">
+        {/* Top Bar on all screens except Home */}
+        {screen !== 'home' && (
+          <SaralTopBar
+            lang={lang}
+            onToggleLang={toggleLang}
+            soundOn={soundOn}
+            onToggleSound={toggleSound}
+            practiceNumber={
+              ['precheck', 'setup', 'conversation', 'result', 'lesson'].includes(screen)
+                ? practiceIdx + 1
+                : null
+            }
+            onLeavePractice={() => setShowLeaveConfirm(true)}
+          />
+        )}
 
-      {/* Leave Confirmation Dialog */}
-      {showLeaveConfirm && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white border-2 border-[#1A1A1A] rounded-[16px] p-6 max-w-sm w-full space-y-4 text-center shadow-xl">
-            <h3 className="text-xl font-bold text-[#1A1A1A]">
-              {t('leave_confirm', lang)}
-            </h3>
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowLeaveConfirm(false)}
-                className="min-h-[56px] py-2 px-4 bg-[#FBF7F0] text-[#1A1A1A] border-2 border-[#1A1A1A] rounded-[14px] text-lg font-bold hover:bg-neutral-100 cursor-pointer"
-              >
-                {t('no', lang)}
-              </button>
-              <button
-                type="button"
-                onClick={handleLeaveConfirm}
-                className="min-h-[56px] py-2 px-4 bg-[#C92A2A] text-white border-2 border-[#1A1A1A] rounded-[14px] text-lg font-bold hover:opacity-95 cursor-pointer"
-              >
-                {t('yes', lang)}
-              </button>
+        {/* Leave Confirmation Dialog */}
+        {showLeaveConfirm && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+            <div className="bg-white border-2 border-[#1A1A1A] rounded-[16px] p-6 max-w-sm w-full space-y-4 text-center shadow-xl">
+              <h3 className="text-xl font-bold text-[#1A1A1A]">
+                {t('leave_confirm', lang)}
+              </h3>
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowLeaveConfirm(false)}
+                  className="min-h-[56px] py-2 px-4 bg-[#FBF7F0] text-[#1A1A1A] border-2 border-[#1A1A1A] rounded-[14px] text-lg font-bold hover:bg-neutral-100 cursor-pointer"
+                >
+                  {t('no', lang)}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLeaveConfirm}
+                  className="min-h-[56px] py-2 px-4 bg-[#C92A2A] text-white border-2 border-[#1A1A1A] rounded-[14px] text-lg font-bold hover:opacity-95 cursor-pointer"
+                >
+                  {t('yes', lang)}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* SCREEN 0: HOME */}
-      {screen === 'home' && (
-        <div className="flex-1 flex flex-col justify-between items-center py-8 sm:py-12 text-center space-y-8 my-auto">
-          {/* Top Brand & Language Pill */}
-          <div className="w-full flex items-center justify-between border-b-2 border-[#1A1A1A]/15 pb-3">
-            <span lang="hi" className="text-3xl sm:text-4xl font-black text-[#1A1A1A]">
-              चौकस
-            </span>
-            <button
-              type="button"
-              onClick={toggleLang}
-              className="min-h-[44px] px-4 py-1 rounded-full border-2 border-[#1A1A1A] bg-white text-sm font-bold text-[#1A1A1A] hover:bg-neutral-100 active:scale-95 cursor-pointer leading-normal"
-            >
-              {lang === 'hi' ? 'English' : 'हिंदी'}
-            </button>
+        {/* SCREEN 0: HOME */}
+        {screen === 'home' && (
+          <div className="flex-1 flex flex-col justify-between items-center py-8 sm:py-12 text-center space-y-8 my-auto">
+            {/* Top Brand & Language Pill */}
+            <div className="w-full flex items-center justify-between border-b-2 border-[#1A1A1A]/15 pb-3">
+              <span lang="hi" className="text-3xl sm:text-4xl font-black text-[#1A1A1A]">
+                चौकस
+              </span>
+              <button
+                type="button"
+                onClick={toggleLang}
+                className="min-h-[44px] px-4 py-1 rounded-full border-2 border-[#1A1A1A] bg-white text-sm font-bold text-[#1A1A1A] hover:bg-neutral-100 active:scale-95 cursor-pointer leading-normal"
+              >
+                {lang === 'hi' ? 'English' : 'हिंदी'}
+              </button>
+            </div>
+
+            {/* Main Title & Tagline */}
+            <div className="my-auto space-y-5 max-w-md">
+              <h1
+                lang="hi"
+                className="text-6xl sm:text-7xl font-black tracking-tight text-[#1A1A1A]"
+              >
+                चौकस
+              </h1>
+              <p className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] leading-[1.6]">
+                {t('home_tagline', lang)}
+              </p>
+            </div>
+
+            {/* Huge Saffron Button & Hint */}
+            <div className="w-full max-w-md space-y-4 pt-2">
+              <button
+                type="button"
+                onClick={handleStartHome}
+                className="w-full min-h-[68px] py-4 px-6 bg-[#E8590C] text-white text-2xl sm:text-3xl font-extrabold rounded-[16px] border-2 border-[#1A1A1A] shadow-md hover:opacity-95 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>{t('home_start', lang)}</span>
+              </button>
+              <p className="text-base sm:text-lg font-bold text-[#1A1A1A]/80 leading-snug">
+                {t('home_hint', lang)}
+              </p>
+
+              {/* Returning visitor 3 rows: large tappable rows */}
+              {donePractices.length > 0 && (
+                <div className="w-full space-y-2.5 mt-4">
+                  {SCENARIOS.map((s, idx) => {
+                    const isDone = donePractices.includes(s.id);
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => handleStartPracticeDirect(idx)}
+                        className="w-full min-h-[58px] py-3 px-4 bg-white border-2 border-[#1A1A1A] rounded-[14px] shadow-2xs hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer flex items-center justify-between text-left"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                          <span className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xs font-bold shrink-0">
+                            {idx + 1}
+                          </span>
+                          <span className={`text-base sm:text-lg font-bold truncate ${isDone ? 'text-[#0F6B4F]' : 'text-[#1A1A1A]'}`}>
+                            {s.title[lang] || s.title.en}
+                          </span>
+                        </div>
+                        <span className={`text-lg font-black shrink-0 ${isDone ? 'text-[#0F6B4F]' : 'text-[#1A1A1A]/40'}`}>
+                          {isDone ? '✓' : '→'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Tiny Links at the Very Bottom */}
+            <div className="w-full pt-6 border-t-2 border-[#1A1A1A]/15 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm font-bold text-[#1A1A1A]/70">
+              <Link href="/judge" className="hover:underline">
+                {t('for_judges', lang)}
+              </Link>
+              <Link href="/drill" className="hover:underline">
+                {t('detailed_view', lang)}
+              </Link>
+              <Link href="/about" className="hover:underline">
+                {t('about_project', lang)}
+              </Link>
+            </div>
           </div>
+        )}
 
-          {/* Main Title & Tagline */}
-          <div className="my-auto space-y-5 max-w-md">
-            <h1
-              lang="hi"
-              className="text-6xl sm:text-7xl font-black tracking-tight text-[#1A1A1A]"
-            >
-              चौकस
-            </h1>
-            <p className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] leading-[1.6]">
-              {t('home_tagline', lang)}
-            </p>
-          </div>
+        {/* SCREEN 1: SOUND CHECK */}
+        {screen === 'soundcheck' && (
+          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
+            <SaralGuideBubble text={t('soundcheck_text', lang)} />
 
-          {/* Huge Saffron Button & Hint */}
-          <div className="w-full max-w-md space-y-4 pt-2">
-            <button
-              type="button"
-              onClick={handleStartHome}
-              className="w-full min-h-[68px] py-4 px-6 bg-[#E8590C] text-white text-2xl sm:text-3xl font-extrabold rounded-[16px] border-2 border-[#1A1A1A] shadow-md hover:opacity-95 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
-            >
-              <span>{t('home_start', lang)}</span>
-            </button>
-            <p className="text-base sm:text-lg font-bold text-[#1A1A1A]/80 leading-snug">
-              {t('home_hint', lang)}
-            </p>
-
-            {/* Returning visitor 3 rows */}
-            {donePractices.length > 0 && (
-              <div className="bg-white border-2 border-[#1A1A1A] rounded-[16px] p-3 text-left space-y-1.5 shadow-2xs mt-4">
-                {SCENARIOS.map((s, idx) => {
-                  const isDone = donePractices.includes(s.id);
-                  return (
-                    <div
-                      key={s.id}
-                      className="flex items-center justify-between text-sm sm:text-base font-bold py-1 border-b border-[#1A1A1A]/10 last:border-none"
-                    >
-                      <span className={isDone ? 'text-[#0F6B4F]' : 'text-[#1A1A1A]/70'}>
-                        {t('practice_n', lang, { n: idx + 1 })}: {s.title[lang] || s.title.en}
-                      </span>
-                      <span>{isDone ? '✓' : '—'}</span>
-                    </div>
-                  );
-                })}
+            {!showSoundHelp ? (
+              <div className="w-full space-y-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isNavLocked()) return;
+                    lockNav();
+                    stopSpeaking();
+                    setScreen('welcome');
+                  }}
+                  className="w-full min-h-[64px] py-3.5 px-4 bg-[#2B8A3E] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+                >
+                  {t('sound_yes', lang)}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isNavLocked()) return;
+                    lockNav();
+                    stopSpeaking();
+                    setShowSoundHelp(true);
+                  }}
+                  className="w-full min-h-[64px] py-3.5 px-4 bg-white text-[#1A1A1A] text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                >
+                  {t('sound_no', lang)}
+                </button>
+              </div>
+            ) : (
+              <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-5 space-y-4 text-center shadow-sm">
+                <p className="text-xl font-bold text-[#1A1A1A] leading-relaxed">
+                  {t('sound_help', lang)}
+                </p>
+                <div className="space-y-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playSequence([
+                        { key: 'narr__soundcheck', text: t('soundcheck_text', lang) },
+                      ]);
+                    }}
+                    className="w-full min-h-[64px] py-3.5 px-4 bg-white text-[#1A1A1A] text-xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                  >
+                    {t('replay', lang)}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isNavLocked()) return;
+                      lockNav();
+                      stopSpeaking();
+                      setSoundOn(false);
+                      setScreen('welcome');
+                    }}
+                    className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+                  >
+                    {t('continue_without_sound', lang)}
+                  </button>
+                </div>
               </div>
             )}
           </div>
+        )}
 
-          {/* Tiny Links at the Very Bottom */}
-          <div className="w-full pt-6 border-t-2 border-[#1A1A1A]/15 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm font-bold text-[#1A1A1A]/70">
-            <Link href="/judge" className="hover:underline">
-              {t('for_judges', lang)}
-            </Link>
-            <Link href="/drill" className="hover:underline">
-              {t('detailed_view', lang)}
-            </Link>
-            <Link href="/about" className="hover:underline">
-              {t('about_project', lang)}
-            </Link>
-          </div>
-        </div>
-      )}
+        {/* SCREEN 2: WHAT THIS IS */}
+        {screen === 'welcome' && (
+          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
+            <SaralGuideBubble text={t('welcome_text', lang)} />
 
-      {/* SCREEN 1: SOUND CHECK */}
-      {screen === 'soundcheck' && (
-        <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-          <SaralGuideBubble text={t('soundcheck_text', lang)} />
-
-          {!showSoundHelp ? (
             <div className="w-full space-y-3 pt-4">
               <button
                 type="button"
                 onClick={() => {
+                  if (isNavLocked()) return;
+                  lockNav();
                   stopSpeaking();
-                  setScreen('welcome');
+                  setScreen('howto');
                 }}
-                className="w-full min-h-[64px] py-3.5 px-4 bg-[#2B8A3E] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
               >
-                {t('sound_yes', lang)}
+                {t('next', lang)}
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  stopSpeaking();
-                  setShowSoundHelp(true);
+                  playSequence([{ key: 'narr__welcome', text: t('welcome_text', lang) }]);
                 }}
-                className="w-full min-h-[64px] py-3.5 px-4 bg-white text-[#1A1A1A] text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
-                {t('sound_no', lang)}
+                {t('replay', lang)}
               </button>
             </div>
-          ) : (
-            <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-5 space-y-4 text-center shadow-sm">
-              <p className="text-xl font-bold text-[#1A1A1A] leading-relaxed">
-                {t('sound_help', lang)}
+          </div>
+        )}
+
+        {/* SCREEN 3: HOW IT WORKS */}
+        {screen === 'howto' && (
+          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
+            <SaralGuideBubble text={t('howto_text', lang)} />
+
+            {/* Tiny static illustration of two numbered buttons & hear again */}
+            <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-4 space-y-2.5 shadow-2xs">
+              <div className="w-full p-2.5 bg-white border-2 border-[#1A1A1A] rounded-[12px] flex items-center gap-3 text-sm font-bold">
+                <span className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xs font-black">
+                  1
+                </span>
+                <span>{lang === 'hi' ? 'पहला विकल्प' : 'First option'}</span>
+              </div>
+              <div className="w-full p-2.5 bg-white border-2 border-[#1A1A1A] rounded-[12px] flex items-center gap-3 text-sm font-bold">
+                <span className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xs font-black">
+                  2
+                </span>
+                <span>{lang === 'hi' ? 'दूसरा विकल्प' : 'Second option'}</span>
+              </div>
+              <div className="w-full p-2 bg-[#FBF7F0] border border-[#1A1A1A]/30 rounded-[12px] text-center text-xs font-bold text-[#1A1A1A]/80">
+                {t('replay', lang)}
+              </div>
+            </div>
+
+            <div className="w-full space-y-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (isNavLocked()) return;
+                  lockNav();
+                  stopSpeaking();
+                  setScreen('practice_pin');
+                }}
+                className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+              >
+                {t('next', lang)}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  playSequence([{ key: 'narr__howto', text: t('howto_text', lang) }]);
+                }}
+                className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+              >
+                {t('replay', lang)}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* SCREEN 4: PRACTICE PIN */}
+        {screen === 'practice_pin' && (
+          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
+            <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-6 sm:p-8 text-center space-y-4 shadow-sm my-auto">
+              <span className="text-xl sm:text-2xl font-bold text-[#1A1A1A]/80 block">
+                {t('practice_pin_title', lang)}
+              </span>
+              <div className="text-6xl sm:text-7xl font-black tracking-widest text-[#E8590C] py-2">
+                {PRACTICE_PIN.split('').join(' ')}
+              </div>
+            </div>
+
+            <div className="w-full space-y-3 pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  if (isNavLocked()) return;
+                  lockNav();
+                  stopSpeaking();
+                  setScreen('precheck');
+                }}
+                className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+              >
+                {t('next', lang)}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  playSequence([{ key: 'narr__practice_pin', text: `${t('practice_pin_title', lang)}: ${PRACTICE_PIN}` }]);
+                }}
+                className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+              >
+                {t('replay', lang)}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* SCREEN 5: ONE QUESTION (Pre-check) */}
+        {screen === 'precheck' && currentScenario && (
+          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
+            <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-5 sm:p-7 text-center shadow-sm space-y-3 my-auto">
+              <p className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] leading-[1.6]">
+                {currentScenario.precheck.q[lang] || currentScenario.precheck.q.en}
               </p>
-              <div className="space-y-3 pt-2">
+            </div>
+
+            {/* Two Equal Neutral Buttons: हाँ / नहीं (min-height 72px) */}
+            <div className="w-full space-y-3 pt-2">
+              <div className="grid grid-cols-2 gap-3 w-full">
                 <button
                   type="button"
-                  onClick={() => {
-                    playSequence([
-                      { key: 'narr__soundcheck', text: t('soundcheck_text', lang) },
-                    ]);
-                  }}
-                  className="w-full min-h-[64px] py-3.5 px-4 bg-white text-[#1A1A1A] text-xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                  onClick={() => handlePrecheckAnswer('yes')}
+                  className="min-h-[72px] py-4 px-4 bg-white text-[#1A1A1A] text-2xl sm:text-3xl font-black rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer text-center"
                 >
-                  {t('replay', lang)}
+                  {t('yes', lang)}
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    stopSpeaking();
-                    setSoundOn(false);
-                    setScreen('welcome');
-                  }}
-                  className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+                  onClick={() => handlePrecheckAnswer('no')}
+                  className="min-h-[72px] py-4 px-4 bg-white text-[#1A1A1A] text-2xl sm:text-3xl font-black rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer text-center"
                 >
-                  {t('continue_without_sound', lang)}
+                  {t('no', lang)}
+                </button>
+              </div>
+
+              {/* Tiny link: skip_question */}
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={handleSkipPrecheck}
+                  className="text-sm font-bold text-[#1A1A1A]/70 hover:underline cursor-pointer py-1"
+                >
+                  {t('skip_question', lang)}
                 </button>
               </div>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* SCREEN 2: WHAT THIS IS */}
-      {screen === 'welcome' && (
-        <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-          <SaralGuideBubble text={t('welcome_text', lang)} />
-
-          <div className="w-full space-y-3 pt-4">
-            <button
-              type="button"
-              onClick={() => {
-                stopSpeaking();
-                setScreen('howto');
-              }}
-              className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('next', lang)}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                playSequence([{ key: 'narr__welcome', text: t('welcome_text', lang) }]);
-              }}
-              className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('replay', lang)}
-            </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* SCREEN 3: HOW IT WORKS */}
-      {screen === 'howto' && (
-        <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-          <SaralGuideBubble text={t('howto_text', lang)} />
-
-          {/* Tiny static illustration of two numbered buttons & hear again */}
-          <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-4 space-y-2.5 shadow-2xs">
-            <div className="w-full p-2.5 bg-white border-2 border-[#1A1A1A] rounded-[12px] flex items-center gap-3 text-sm font-bold">
-              <span className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xs font-black">
-                1
-              </span>
-              <span>{lang === 'hi' ? 'पहला विकल्प' : 'First option'}</span>
-            </div>
-            <div className="w-full p-2.5 bg-white border-2 border-[#1A1A1A] rounded-[12px] flex items-center gap-3 text-sm font-bold">
-              <span className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xs font-black">
-                2
-              </span>
-              <span>{lang === 'hi' ? 'दूसरा विकल्प' : 'Second option'}</span>
-            </div>
-            <div className="w-full p-2 bg-[#FBF7F0] border border-[#1A1A1A]/30 rounded-[12px] text-center text-xs font-bold text-[#1A1A1A]/80">
-              {t('replay', lang)}
-            </div>
-          </div>
-
-          <div className="w-full space-y-3 pt-2">
-            <button
-              type="button"
-              onClick={() => {
-                stopSpeaking();
-                setScreen('practice_pin');
-              }}
-              className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('next', lang)}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                playSequence([{ key: 'narr__howto', text: t('howto_text', lang) }]);
-              }}
-              className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('replay', lang)}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* SCREEN 4: PRACTICE PIN */}
-      {screen === 'practice_pin' && (
-        <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-          <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-6 sm:p-8 text-center space-y-4 shadow-sm my-auto">
-            <span className="text-xl sm:text-2xl font-bold text-[#1A1A1A]/80 block">
-              {t('practice_pin_title', lang)}
-            </span>
-            <div className="text-6xl sm:text-7xl font-black tracking-widest text-[#E8590C] py-2">
-              4 8 2 7
-            </div>
-          </div>
-
-          <div className="w-full space-y-3 pt-4">
-            <button
-              type="button"
-              onClick={() => {
-                stopSpeaking();
-                setScreen('precheck');
-              }}
-              className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('next', lang)}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                playSequence([{ key: 'narr__practice_pin', text: `${t('practice_pin_title', lang)}: ${PRACTICE_PIN}` }]);
-              }}
-              className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('replay', lang)}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* SCREEN 5: ONE QUESTION (Pre-check) */}
-      {screen === 'precheck' && currentScenario && (
-        <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-          <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-5 sm:p-7 text-center shadow-sm space-y-3 my-auto">
-            <p className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] leading-[1.6]">
-              {currentScenario.precheck.q[lang] || currentScenario.precheck.q.en}
-            </p>
-          </div>
-
-          {/* Two Equal Neutral Buttons: हाँ / नहीं (min-height 72px) */}
-          <div className="w-full space-y-3 pt-2">
-            <div className="grid grid-cols-2 gap-3 w-full">
-              <button
-                type="button"
-                onClick={() => handlePrecheckAnswer('yes')}
-                className="min-h-[72px] py-4 px-4 bg-white text-[#1A1A1A] text-2xl sm:text-3xl font-black rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer text-center"
-              >
-                {t('yes', lang)}
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePrecheckAnswer('no')}
-                className="min-h-[72px] py-4 px-4 bg-white text-[#1A1A1A] text-2xl sm:text-3xl font-black rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer text-center"
-              >
-                {t('no', lang)}
-              </button>
-            </div>
-
-            {/* Tiny link: skip_question */}
-            <div className="text-center pt-2">
-              <button
-                type="button"
-                onClick={handleSkipPrecheck}
-                className="text-sm font-bold text-[#1A1A1A]/70 hover:underline cursor-pointer py-1"
-              >
-                {t('skip_question', lang)}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* SCREEN 6: THE SITUATION (Setup) */}
-      {screen === 'setup' && currentScenario && (
-        <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-          <SaralGuideBubble
-            text={currentScenario.setup[lang] || currentScenario.setup.en}
-          />
-
-          <div className="w-full space-y-3 pt-4">
-            <button
-              type="button"
-              onClick={startConversation}
-              className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('next', lang)}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const setupText = currentScenario.setup[lang] || currentScenario.setup.en;
-                playSequence([{ key: `${sid}__setup`, text: setupText }]);
-              }}
-              className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('replay', lang)}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* SCREEN 7: THE CONVERSATION */}
-      {screen === 'conversation' && currentScenario && drillState && (
-        <div className="flex-1 flex flex-col justify-between w-full max-w-md mx-auto min-h-0 overflow-hidden py-2 space-y-4">
-          {isCallNode && !callPickedUp ? (
-            /* Incoming Call Screen */
-            <SaralCallScreen
-              callerName={currNode?.from || 'Unknown Caller'}
-              lang={lang}
-              onPickUp={() => {
-                stopRing();
-                stopSpeaking();
-                setCallPickedUp(true);
-              }}
+        {/* SCREEN 6: THE SITUATION (Setup) */}
+        {screen === 'setup' && currentScenario && (
+          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
+            <SaralGuideBubble
+              text={currentScenario.setup[lang] || currentScenario.setup.en}
             />
-          ) : currNode?.input ? (
-            /* Keypad Input Node */
-            <div className="my-auto w-full">
-              <SaralKeypad
-                kind={currNode.input.kind}
-                prompt={currNode.input.prompt[lang] || currNode.input.prompt.en}
-                detail={currNode.input.detail[lang] || currNode.input.detail.en}
-                practicePin={PRACTICE_PIN}
-                expectedCode={currentExpectedCode()}
+
+            <div className="w-full space-y-3 pt-4">
+              <button
+                type="button"
+                onClick={startConversation}
+                className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+              >
+                {t('next', lang)}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const setupText = currentScenario.setup[lang] || currentScenario.setup.en;
+                  playSequence([{ key: `${sid}__setup`, text: setupText }]);
+                }}
+                className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+              >
+                {t('replay', lang)}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* SCREEN 7: THE CONVERSATION */}
+        {screen === 'conversation' && currentScenario && drillState && (
+          <div className="flex-1 flex flex-col justify-between w-full max-w-md mx-auto min-h-0 overflow-hidden py-2 space-y-4">
+            {isCallNode && !callPickedUp ? (
+              /* Incoming Call Screen */
+              <SaralCallScreen
+                callerName={currNode?.from || 'Unknown Caller'}
                 lang={lang}
-                onSubmit={(len, hesitationMs) =>
-                  dispatchAction({ type: 'input_submit', len, hesitationMs })
-                }
-                onCancel={() => dispatchAction({ type: 'input_cancel' })}
-                onWrongEntry={() => {
-                  playClip('narr__wrong_pin', t('wrong_pin_text', lang), lang, soundOn);
+                onPickUp={() => {
+                  if (isNavLocked()) return;
+                  lockNav();
+                  stopRing();
+                  stopSpeaking();
+                  setCallPickedUp(true);
                 }}
               />
-            </div>
-          ) : (
-            /* Chat / SMS / Active Call Conversation */
-            <SaralConversation
-              pastMessages={pastMessages}
-              currentMessage={
-                currMsg
-                  ? {
-                      from: currNode?.from || 'Scammer',
-                      text: currMsgText,
-                      label: getMessageLabel(currMsg, currNode?.surface, currNode?.from, lang),
-                      surface: currNode?.surface,
-                      via: currMsg.via,
-                      isOnCall: isCallNode,
-                    }
-                  : null
+            ) : currNode?.input && (convPhase === 'input' || (currNode.messages?.length ?? 0) === 0) ? (
+              /* Keypad Input Node */
+              <div className="my-auto w-full">
+                <SaralKeypad
+                  kind={currNode.input.kind}
+                  prompt={currNode.input.prompt[lang] || currNode.input.prompt.en}
+                  detail={currNode.input.detail[lang] || currNode.input.detail.en}
+                  practicePin={PRACTICE_PIN}
+                  expectedCode={currentExpectedCode()}
+                  lang={lang}
+                  onSubmit={(len, hesitationMs) =>
+                    dispatchAction({ type: 'input_submit', len, hesitationMs }, currentVisitKey)
+                  }
+                  onCancel={() => dispatchAction({ type: 'input_cancel' }, currentVisitKey)}
+                  onWrongEntry={() => {
+                    stopSpeaking();
+                    playClip('narr__wrong_pin', t('wrong_pin_text', lang), lang, soundOn);
+                  }}
+                />
+              </div>
+            ) : (
+              /* Chat / SMS / Active Call Conversation */
+              <SaralConversation
+                visitKey={currentVisitKey}
+                pastMessages={activePastMessages}
+                currentMessage={activeCurrentMessage}
+                showingChoices={showingChoices}
+                choices={currNode?.choices}
+                lang={lang}
+                onChoose={(choiceId, vKey) =>
+                  dispatchAction({ type: 'choose', choiceId }, vKey)
+                }
+                canSkip={!showingChoices && activeCurrentMessage != null}
+                onSkipMessage={() => {
+                  stopSpeaking();
+                }}
+              />
+            )}
+          </div>
+        )}
+
+        {/* SCREEN 8: RESULT */}
+        {screen === 'result' && currentScenario && (
+          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6 text-center">
+            {(() => {
+              const res = runResults[sid];
+              const isScammed = res?.outcome === 'scammed';
+              const isLate = res?.outcome === 'escaped_late';
+
+              let bgClass = 'bg-[#2B8A3E] text-white';
+              let icon = '✓';
+              let titleText = t('result_escaped', lang);
+
+              if (isScammed) {
+                bgClass = 'bg-[#C92A2A] text-white';
+                icon = '⚠️';
+                titleText = t('result_scammed', lang);
+              } else if (isLate) {
+                bgClass = 'bg-[#E67700] text-white';
+                icon = '⏱';
+                titleText = t('result_late', lang);
               }
-              showingChoices={showingChoices}
-              choices={currNode?.choices}
-              lang={lang}
-              onChoose={choiceId => dispatchAction({ type: 'choose', choiceId })}
-              canSkip={!showingChoices && currMsg != null}
-              onSkipMessage={() => {
-                stopSpeaking();
-                setRevealedMsgIndex(i => i + 1);
-              }}
-            />
-          )}
-        </div>
-      )}
 
-      {/* SCREEN 8: RESULT */}
-      {screen === 'result' && currentScenario && (
-        <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6 text-center">
-          {(() => {
-            const res = runResults[sid];
-            const isScammed = res?.outcome === 'scammed';
-            const isLate = res?.outcome === 'escaped_late';
+              return (
+                <div className="w-full space-y-5 my-auto">
+                  {/* Full-width colour band */}
+                  <div
+                    className={`w-full ${bgClass} rounded-[16px] p-6 sm:p-8 shadow-md space-y-3`}
+                  >
+                    <div className="text-6xl sm:text-7xl font-black">{icon}</div>
+                    <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+                      {titleText}
+                    </h2>
+                    {isScammed && res.lossInr > 0 && (
+                      <div className="text-2xl sm:text-3xl font-extrabold bg-white/20 px-4 py-2 rounded-full inline-block">
+                        {t('lost_amount', lang, { x: res.lossInr })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
-            let bgClass = 'bg-[#2B8A3E] text-white';
-            let icon = '✓';
-            let titleText = t('result_escaped', lang);
+            {/* Button: see_how */}
+            <div className="w-full pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  if (isNavLocked()) return;
+                  lockNav();
+                  stopSpeaking();
+                  setScreen('lesson');
+                }}
+                className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+              >
+                {t('see_how', lang)}
+              </button>
+            </div>
+          </div>
+        )}
 
-            if (isScammed) {
-              bgClass = 'bg-[#C92A2A] text-white';
-              icon = '⚠️';
-              titleText = t('result_scammed', lang);
-            } else if (isLate) {
-              bgClass = 'bg-[#E67700] text-white';
-              icon = '⏱';
-              titleText = t('result_late', lang);
-            }
+        {/* SCREEN 9: THE LESSON, EXPLAINED */}
+        {screen === 'lesson' && currentScenario && drillState && (
+          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
+            <div className="w-full space-y-4">
+              <h2 className="text-2xl sm:text-3xl font-black text-[#1A1A1A] text-center">
+                {runResults[sid]?.outcome === 'scammed' ? t('lesson_fell', lang) : t('lesson_safe', lang)}
+              </h2>
 
-            return (
-              <div className="w-full space-y-5 my-auto">
-                {/* Full-width colour band */}
-                <div
-                  className={`w-full ${bgClass} rounded-[16px] p-6 sm:p-8 shadow-md space-y-3`}
-                >
-                  <div className="text-6xl sm:text-7xl font-black">{icon}</div>
-                  <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-                    {titleText}
-                  </h2>
-                  {isScammed && res.lossInr > 0 && (
-                    <div className="text-2xl sm:text-3xl font-extrabold bg-white/20 px-4 py-2 rounded-full inline-block">
-                      {t('lost_amount', lang, { x: res.lossInr })}
+              <SaralLessonCards
+                scenario={currentScenario}
+                cards={extractTrickCards(currentScenario, drillState, lang)}
+                activeCardIndex={activeTrickIndex}
+                showSummaryFallback={extractTrickCards(currentScenario, drillState, lang).length < 2}
+                showHelpline={runResults[sid]?.outcome === 'scammed' && !hasEverBeenScammed}
+                lang={lang}
+              />
+            </div>
+
+            <div className="w-full space-y-3 pt-4">
+              <button
+                type="button"
+                onClick={handleNextFromLesson}
+                className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+              >
+                {t('next', lang)}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  // Replay lesson narration
+                  const isScammed = runResults[sid]?.outcome === 'scammed';
+                  const cards = extractTrickCards(currentScenario, drillState, lang);
+                  const items: { key: string; text: string }[] = [];
+                  items.push({
+                    key: isScammed ? 'narr__lesson_fell' : 'narr__lesson_safe',
+                    text: isScammed ? t('lesson_fell', lang) : t('lesson_safe', lang),
+                  });
+                  if (cards.length >= 2) {
+                    cards.forEach(c => items.push({ key: c.audioKey, text: c.explanation }));
+                  } else {
+                    items.push({
+                      key: `${sid}__flags`,
+                      text: t(`flags_summary_${sid.replace(/-/g, '_')}`, lang),
+                    });
+                  }
+                  items.push({
+                    key: `${sid}__rule`,
+                    text: `${t('remember', lang)}: ${currentScenario.rule[lang] || currentScenario.rule.en}`,
+                  });
+                  playSequence(items);
+                }}
+                className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+              >
+                {t('replay', lang)}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* SCREEN 10: ANOTHER ONE? */}
+        {screen === 'another' && (
+          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6 text-center">
+            <SaralGuideBubble text={t('another_yes', lang)} />
+
+            <div className="w-full space-y-3 pt-6">
+              <button
+                type="button"
+                onClick={handleAnotherYes}
+                className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+              >
+                {t('another_yes', lang)}
+              </button>
+              <button
+                type="button"
+                onClick={handleAnotherNo}
+                className="w-full min-h-[64px] py-3.5 px-4 bg-white text-[#1A1A1A] text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+              >
+                {t('another_no', lang)}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* SCREEN 11: THE END */}
+        {screen === 'final' && (
+          <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6 text-center">
+            {(() => {
+              const totalDone = Object.keys(runResults).length;
+              const notScammed = Object.values(runResults).filter(r => r.outcome !== 'scammed').length;
+              const knewArray = SCENARIOS.slice(0, totalDone).map(s => knewAnswers[s.id]?.knew === true);
+              const resultsArray = SCENARIOS.slice(0, totalDone).map(s => runResults[s.id]).filter(Boolean);
+              const gap = knowledgeBehaviourGap(knewArray, resultsArray);
+
+              const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
+                `${t('share_text', lang)} ${origin}/?src=family`
+              )}`;
+
+              return (
+                <div className="w-full space-y-5 my-auto">
+                  <h1 className="text-3xl sm:text-4xl font-black text-[#1A1A1A] leading-snug">
+                    {t('final_title', lang, { x: notScammed, y: totalDone })}
+                  </h1>
+
+                  {/* You knew the rule callout if gap > 0 */}
+                  {gap.knewButFell > 0 && (
+                    <div className="bg-red-50 border-2 border-[#C92A2A] rounded-[16px] p-4 text-left space-y-2 shadow-sm">
+                      <h3 className="text-xl font-black text-[#C92A2A]">
+                        {t('you_knew_the_rule', lang)}
+                      </h3>
+                      <p className="text-base font-bold text-[#1A1A1A]/80">
+                        {t('rules_you_knew_broke', lang)}
+                      </p>
                     </div>
                   )}
-                </div>
-              </div>
-            );
-          })()}
 
-          {/* Button: see_how */}
-          <div className="w-full pt-4">
-            <button
-              type="button"
-              onClick={() => {
-                stopSpeaking();
-                setScreen('lesson');
-              }}
-              className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('see_how', lang)}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* SCREEN 9: THE LESSON, EXPLAINED */}
-      {screen === 'lesson' && currentScenario && drillState && (
-        <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-          <div className="w-full space-y-4">
-            <h2 className="text-2xl sm:text-3xl font-black text-[#1A1A1A] text-center">
-              {runResults[sid]?.outcome === 'scammed' ? t('lesson_fell', lang) : t('lesson_safe', lang)}
-            </h2>
-
-            <SaralLessonCards
-              scenario={currentScenario}
-              cards={extractTrickCards(currentScenario, drillState, lang)}
-              activeCardIndex={activeTrickIndex}
-              showSummaryFallback={extractTrickCards(currentScenario, drillState, lang).length < 2}
-              showHelpline={runResults[sid]?.outcome === 'scammed' && !hasEverBeenScammed}
-              lang={lang}
-            />
-          </div>
-
-          <div className="w-full space-y-3 pt-4">
-            <button
-              type="button"
-              onClick={handleNextFromLesson}
-              className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('next', lang)}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                // Replay lesson narration
-                const isScammed = runResults[sid]?.outcome === 'scammed';
-                const cards = extractTrickCards(currentScenario, drillState, lang);
-                const items: { key: string; text: string }[] = [];
-                items.push({
-                  key: isScammed ? 'narr__lesson_fell' : 'narr__lesson_safe',
-                  text: isScammed ? t('lesson_fell', lang) : t('lesson_safe', lang),
-                });
-                if (cards.length >= 2) {
-                  cards.forEach(c => items.push({ key: c.audioKey, text: c.explanation }));
-                } else {
-                  items.push({
-                    key: `${sid}__flags`,
-                    text: t(`flags_summary_${sid.replace(/-/g, '_')}`, lang),
-                  });
-                }
-                items.push({
-                  key: `${sid}__rule`,
-                  text: `${t('remember', lang)}: ${currentScenario.rule[lang] || currentScenario.rule.en}`,
-                });
-                playSequence(items);
-              }}
-              className="w-full min-h-[56px] py-2 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('replay', lang)}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* SCREEN 10: ANOTHER ONE? */}
-      {screen === 'another' && (
-        <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6 text-center">
-          <SaralGuideBubble text={t('another_yes', lang)} />
-
-          <div className="w-full space-y-3 pt-6">
-            <button
-              type="button"
-              onClick={handleAnotherYes}
-              className="w-full min-h-[64px] py-3.5 px-4 bg-[#E8590C] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:opacity-95 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('another_yes', lang)}
-            </button>
-            <button
-              type="button"
-              onClick={handleAnotherNo}
-              className="w-full min-h-[64px] py-3.5 px-4 bg-white text-[#1A1A1A] text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('another_no', lang)}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* SCREEN 11: THE END */}
-      {screen === 'final' && (
-        <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6 text-center">
-          {(() => {
-            const totalDone = Object.keys(runResults).length;
-            const notScammed = Object.values(runResults).filter(r => r.outcome !== 'scammed').length;
-            const knewArray = SCENARIOS.slice(0, totalDone).map(s => knewAnswers[s.id]?.knew === true);
-            const resultsArray = SCENARIOS.slice(0, totalDone).map(s => runResults[s.id]).filter(Boolean);
-            const gap = knowledgeBehaviourGap(knewArray, resultsArray);
-
-            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
-              `${t('share_text', lang)} ${origin}/?src=family`
-            )}`;
-
-            return (
-              <div className="w-full space-y-5 my-auto">
-                <h1 className="text-3xl sm:text-4xl font-black text-[#1A1A1A] leading-snug">
-                  {t('final_title', lang, { x: notScammed, y: totalDone })}
-                </h1>
-
-                {/* You knew the rule callout if gap > 0 */}
-                {gap.knewButFell > 0 && (
-                  <div className="bg-red-50 border-2 border-[#C92A2A] rounded-[16px] p-4 text-left space-y-2 shadow-sm">
-                    <h3 className="text-xl font-black text-[#C92A2A]">
-                      {t('you_knew_the_rule', lang)}
-                    </h3>
-                    <p className="text-base font-bold text-[#1A1A1A]/80">
-                      {t('rules_you_knew_broke', lang)}
+                  {/* Always show Helpline Card (NO tel: link per spec!) */}
+                  <div className="bg-amber-50 border-2 border-[#E67700] rounded-[16px] p-4 text-left space-y-1.5 shadow-sm">
+                    <div className="flex items-center gap-2 text-[#E67700] font-bold text-base">
+                      <span>🚨</span>
+                      <span>1930</span>
+                    </div>
+                    <p className="text-lg sm:text-xl font-bold text-[#1A1A1A] leading-relaxed">
+                      {t('helpline_card', lang)}
                     </p>
                   </div>
-                )}
 
-                {/* Always show Helpline Card (NO tel: link per spec!) */}
-                <div className="bg-amber-50 border-2 border-[#E67700] rounded-[16px] p-4 text-left space-y-1.5 shadow-sm">
-                  <div className="flex items-center gap-2 text-[#E67700] font-bold text-base">
-                    <span>🚨</span>
-                    <span>1930</span>
+                  {/* Buttons: Send to Family on WhatsApp & Practise Again */}
+                  <div className="space-y-3 pt-3">
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full min-h-[64px] py-3.5 px-4 bg-[#2B8A3E] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-md hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
+                    >
+                      <span>📲</span>
+                      <span>{t('send_family', lang)}</span>
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isNavLocked()) return;
+                        lockNav();
+                        stopSpeaking();
+                        setScreen('home');
+                      }}
+                      className="w-full min-h-[64px] py-3.5 px-4 bg-white text-[#1A1A1A] text-xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+                    >
+                      {t('practice_again', lang)}
+                    </button>
                   </div>
-                  <p className="text-lg sm:text-xl font-bold text-[#1A1A1A] leading-relaxed">
-                    {t('helpline_card', lang)}
-                  </p>
-                </div>
 
-                {/* Buttons: Send to Family on WhatsApp & Practise Again */}
-                <div className="space-y-3 pt-3">
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full min-h-[64px] py-3.5 px-4 bg-[#2B8A3E] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-md hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
-                  >
-                    <span>📲</span>
-                    <span>{t('send_family', lang)}</span>
-                  </a>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      stopSpeaking();
-                      setScreen('home');
-                    }}
-                    className="w-full min-h-[64px] py-3.5 px-4 bg-white text-[#1A1A1A] text-xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
-                  >
-                    {t('practice_again', lang)}
-                  </button>
+                  {/* Small links at bottom */}
+                  <div className="pt-4 border-t border-[#1A1A1A]/10 flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm font-bold text-[#1A1A1A]/70">
+                    <Link href="/drill" className="hover:underline">
+                      {t('detailed_view', lang)}
+                    </Link>
+                    <span>·</span>
+                    <Link href="/check" className="hover:underline">
+                      {t('check_msg_link', lang)}
+                    </Link>
+                    <span>·</span>
+                    <Link href="/about" className="hover:underline">
+                      {t('about_project', lang)}
+                    </Link>
+                    <span>·</span>
+                    <Link href="/judge" className="hover:underline">
+                      {t('for_judges', lang)}
+                    </Link>
+                  </div>
                 </div>
-
-                {/* Small links at bottom */}
-                <div className="pt-4 border-t border-[#1A1A1A]/10 flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm font-bold text-[#1A1A1A]/70">
-                  <Link href="/drill" className="hover:underline">
-                    {t('detailed_view', lang)}
-                  </Link>
-                  <span>·</span>
-                  <Link href="/check" className="hover:underline">
-                    {t('check_msg_link', lang)}
-                  </Link>
-                  <span>·</span>
-                  <Link href="/about" className="hover:underline">
-                    {t('about_project', lang)}
-                  </Link>
-                  <span>·</span>
-                  <Link href="/judge" className="hover:underline">
-                    {t('for_judges', lang)}
-                  </Link>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      )}
-    </main>
+              );
+            })()}
+          </div>
+        )}
+      </main>
+    </SaralErrorBoundary>
   );
 }

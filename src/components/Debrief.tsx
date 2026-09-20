@@ -206,7 +206,7 @@ export function Debrief({
 
         {/* 6. Collapsible "If this happens for real" */}
         <details className="border-2 border-[#111111] bg-white rounded-md p-3 text-left group">
-          <summary className="font-bold text-xs md:text-sm cursor-pointer select-none flex items-center justify-between">
+          <summary className="font-bold text-xs md:text-sm cursor-pointer flex items-center justify-between">
             <span>{t('if_this_happens_for_real', lang)}:</span>
             <span className="text-xs font-mono text-[#111111]/60 group-open:rotate-180 transition-transform">
               ▼

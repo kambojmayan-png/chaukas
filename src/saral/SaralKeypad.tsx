@@ -133,7 +133,7 @@ export function SaralKeypad({
             key={d}
             type="button"
             onClick={() => handleDigit(d)}
-            className="min-h-[64px] h-16 bg-[#FBF7F0] text-[#1A1A1A] border-2 border-[#1A1A1A] rounded-[14px] text-2xl sm:text-3xl font-bold flex items-center justify-center hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer select-none"
+            className="min-h-[64px] h-16 bg-[#FBF7F0] text-[#1A1A1A] border-2 border-[#1A1A1A] rounded-[14px] text-2xl sm:text-3xl font-bold flex items-center justify-center hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer"
           >
             {d}
           </button>
@@ -144,7 +144,7 @@ export function SaralKeypad({
           type="button"
           onClick={handleBackspace}
           aria-label="Backspace"
-          className="min-h-[64px] h-16 bg-[#FBF7F0] text-[#1A1A1A] border-2 border-[#1A1A1A] rounded-[14px] text-2xl font-bold flex items-center justify-center hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer select-none"
+          className="min-h-[64px] h-16 bg-[#FBF7F0] text-[#1A1A1A] border-2 border-[#1A1A1A] rounded-[14px] text-2xl font-bold flex items-center justify-center hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer"
         >
           ⌫
         </button>
@@ -153,7 +153,7 @@ export function SaralKeypad({
         <button
           type="button"
           onClick={() => handleDigit('0')}
-          className="min-h-[64px] h-16 bg-[#FBF7F0] text-[#1A1A1A] border-2 border-[#1A1A1A] rounded-[14px] text-2xl sm:text-3xl font-bold flex items-center justify-center hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer select-none"
+          className="min-h-[64px] h-16 bg-[#FBF7F0] text-[#1A1A1A] border-2 border-[#1A1A1A] rounded-[14px] text-2xl sm:text-3xl font-bold flex items-center justify-center hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer"
         >
           0
         </button>
@@ -165,7 +165,7 @@ export function SaralKeypad({
             if (errorMsg) setErrorMsg(null);
             setDigits('');
           }}
-          className="min-h-[64px] h-16 bg-[#FBF7F0] text-[#1A1A1A]/70 border-2 border-[#1A1A1A] rounded-[14px] text-base font-bold flex items-center justify-center hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer select-none"
+          className="min-h-[64px] h-16 bg-[#FBF7F0] text-[#1A1A1A]/70 border-2 border-[#1A1A1A] rounded-[14px] text-base font-bold flex items-center justify-center hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer"
         >
           C
         </button>

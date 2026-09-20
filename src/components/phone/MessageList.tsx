@@ -80,7 +80,7 @@ export function MessageList({
 
       {/* Surface 2: CALL (Dark screen, caller name, pulsing avatar, elapsed timer, captions) */}
       {skin === 'call' && (
-        <div className="flex-1 flex flex-col justify-between p-4 bg-[#0E0E10] text-[#F6F3EC] select-none">
+        <div className="flex-1 flex flex-col justify-between p-4 bg-[#0E0E10] text-[#F6F3EC]">
           {/* Top: Caller Info & Timer */}
           <div className="text-center space-y-1 pt-2">
             <h2 className="text-xl font-bold tracking-tight text-white">
@@ -132,7 +132,7 @@ export function MessageList({
 
       {/* Surface 3: VIDEOCALL (Same as call + CSS camera tile with uniform avatar + small 'you' tile) */}
       {skin === 'videocall' && (
-        <div className="flex-1 flex flex-col justify-between p-3 bg-[#0E0E10] text-[#F6F3EC] select-none space-y-3">
+        <div className="flex-1 flex flex-col justify-between p-3 bg-[#0E0E10] text-[#F6F3EC] space-y-3">
           {/* Main Video Camera Tile */}
           <div className="relative bg-slate-900 border-2 border-[#111111] rounded-md overflow-hidden flex-1 min-h-[220px] flex flex-col items-center justify-center shadow-inner">
             {/* Top Bar inside Camera */}
