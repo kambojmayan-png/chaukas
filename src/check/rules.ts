@@ -4,8 +4,9 @@
 
 export type Flag =
   | 'urgency' | 'fear' | 'authority' | 'secrecy' | 'too_good' | 'pin_to_receive'
-  | 'otp_request' | 'remote_app' | 'unofficial_contact' | 'pay_to_verify' | 'bad_link';
-export type Archetype = 'receive_money_pin' | 'utility_kyc_remote' | 'digital_arrest' | 'reward_refund' | 'job_task' | 'unknown';
+  | 'otp_request' | 'remote_app' | 'unofficial_contact' | 'pay_to_verify' | 'bad_link'
+  | 'money_request' | 'new_number';
+export type Archetype = 'receive_money_pin' | 'utility_kyc_remote' | 'digital_arrest' | 'reward_refund' | 'job_task' | 'money_request' | 'unknown';
 export interface Finding { flag: Flag; start: number; end: number; match: string }
 export interface CheckResult {
   verdict: 'likely_scam' | 'suspicious' | 'no_red_flags_found';
@@ -14,7 +15,7 @@ export interface CheckResult {
 
 const W: Record<Flag, number> = {
   otp_request: 4, pin_to_receive: 4, remote_app: 4, pay_to_verify: 4, secrecy: 3, bad_link: 3,
-  unofficial_contact: 2, fear: 2, urgency: 1, authority: 1, too_good: 3,
+  unofficial_contact: 2, fear: 2, urgency: 1, authority: 1, too_good: 3, money_request: 3, new_number: 2,
 };
 
 // English + Hinglish + Devanagari. No \b around Devanagari (JS \b is ASCII-only).
@@ -30,6 +31,13 @@ const P: [Flag, RegExp][] = [
   ['pin_to_receive', /(पैसा|पैसे|रक़म|रकम|रिफंड)[^।.!?\n]{0,40}(पाने|लेने|आने)[^।.!?\n]{0,40}(PIN|पिन|QR|स्कैन)/gi],
   ['remote_app', /\b(any ?desk|team ?viewer|quick ?support|rust ?desk|screen ?shar(e|ing)|remote (access|support) app|install (the |this |an? )?(apk|app from (this|the) link))\b|स्क्रीन शेयर/gi],
   ['pay_to_verify', /\b(test|token|verification|refundable|security) (payment|deposit|amount|fee)\b|\b(pay|transfer|send)\b[^.!?\n]{0,30}\b(to verify|for verification|safe account|secure account|rbi account)\b|टेस्ट पेमेंट|वेरिफिकेशन (के लिए|अकाउंट)/gi],
+  // Someone asking YOU to send money. Alone = "suspicious" (verify on a number you already know), never "likely scam".
+  ['money_request', /\b(send|transfer|pay|deposit|gpay|paytm|phonepe|lend|give)\s+(me|us|him|her)\b[^.!?\n]{0,40}(₹|rs\.?|inr|\$|usd|rupees?|rupaye|paise|paisa|money|amount|cash|\d{3,})/gi],
+  ['money_request', /\b(send|transfer|deposit|pay)\b[^.!?\n]{0,30}(₹|rs\.?\s?|inr\s?|\$)\s?\d[\d,]*[^.!?\n]{0,40}\b(to|on|at|in)\b[^.!?\n]{0,25}\b(number|no\.?|upi|account|a\/c|qr|wallet|id)\b/gi],
+  ['money_request', /\b(paise|paisa|rupaye|rupay|amount|payment)\b[^.!?\n]{0,30}\b(bhej\w*|daal\w*|transfer kar\w*|send kar\w*|de do|dedo)\b/gi],
+  ['money_request', /(पैसे|पैसा|रुपये|रुपए|रक़म|रकम)[^।.!?\n]{0,30}(भेज|ट्रांसफर|डाल|दे दो)/g],
+  // "Hi mum, this is my new number" impersonation opener.
+  ['new_number', /\b(this is my new (number|no\.?)|my new (number|no\.?)|new (number|no\.?) (hai|he)|changed my (number|no\.?)|(my )?phone (is |got )?(broken|lost|damaged|stolen|dead)|lost my phone|naya (number|no\.?)|mera phone (kharab|toot\w*|kho\w*))\b|नया नंबर|फ़ोन (ख़राब|खराब|टूट|खो)/gi],
   ['unofficial_contact', /\b(call|contact|whats ?app|sampark)\b[^.!?\n]{0,40}(\+?91[\s-]?)?[6-9]\d[\d•xX*\s-]{7,11}\d|संपर्क करें[^।\n]{0,30}[6-9]\d[\d•xX*\s-]{7,11}\d/gi],
 ];
 const OTP_ASK = /\b(share|send|tell|give|provide|read out|forward|bata\w*|bhej\w*)\b[^.!?\n]{0,40}\b(otp|pin|cvv|password|code)\b|\b(otp|pin|cvv|code)\b[^.!?\n]{0,30}\b(share|send|tell|batao|bataiye|bata do|bhejo|bhejiye)\b|(OTP|ओटीपी|पिन|कोड)[^।.!?\n]{0,30}(बताइए|बताओ|बता दीजिए|भेजिए|भेजो)/gi;
@@ -46,6 +54,7 @@ const ARCH: [Archetype, RegExp, string | null][] = [
   ['receive_money_pin', /olx|buyer|army|qr|scan|collect request|receive (the )?(money|payment)|refund.*pin|approve.*request|क्यूआर|स्कैन/i, 'olx-qr'],
   ['reward_refund', /lottery|lucky draw|kbc|cashback|prize|winner|लॉटरी|इनाम/i, 'olx-qr'],
   ['job_task', /part.?time|work from home|per day|daily (income|earning)|telegram|like (and|&) (earn|subscribe)|task|घर बैठे/i, null],
+  ['money_request', /\b(send|transfer|lend|give)\s+(me|us)\b|new number|naya number|paise bhej|पैसे भेज|नया नंबर/i, null],
 ];
 
 export function checkMessage(text: string): CheckResult {
@@ -80,6 +89,7 @@ export function checkMessage(text: string): CheckResult {
   const score = flags.reduce((a, f) => a + W[f], 0);
   let archetype: Archetype = 'unknown'; let drillId: string | null = null;
   for (const [a, re, d] of ARCH) if (re.test(text)) { archetype = a; drillId = d; break; }
+  if (archetype === 'unknown' && flags.includes('money_request')) archetype = 'money_request';
   const hard = flags.some(f => W[f] >= 4); // one hard flag (OTP ask, PIN-to-receive, remote app, pay-to-verify) is enough
   const verdict = score >= 5 || hard ? 'likely_scam' : score >= 3 ? 'suspicious' : 'no_red_flags_found';
   if (verdict === 'no_red_flags_found') { archetype = 'unknown'; drillId = null; }

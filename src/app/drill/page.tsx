@@ -53,6 +53,7 @@ function incrementAttempt(scenarioId: string): number {
 
 export default function DrillPage() {
   const [scenarioIndex, setScenarioIndex] = useState<number>(0);
+  const [onlyMode, setOnlyMode] = useState<boolean>(false);
   const [lang, setLang] = useState<Lang>('en');
   const [muted, setMuted] = useState<boolean>(false);
   const [started, setStarted] = useState<boolean>(false);
@@ -62,12 +63,20 @@ export default function DrillPage() {
 
   const scenario = SCENARIOS[scenarioIndex];
 
-  // Detect ?src=family
+  // Detect ?src=family and ?only=<scenarioId>
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       if (params.get('src') === 'family') {
         setSource('family_link');
+      }
+      const only = params.get('only');
+      if (only) {
+        const idx = SCENARIOS.findIndex(s => s.id === only);
+        if (idx !== -1) {
+          setScenarioIndex(idx);
+          setOnlyMode(true);
+        }
       }
     }
   }, []);
@@ -96,6 +105,11 @@ export default function DrillPage() {
     stopSpeaking();
     stopRing();
     setKnewRule(null);
+    if (onlyMode) {
+      setStarted(false);
+      setRunKey(k => k + 1);
+      return;
+    }
     if (scenarioIndex < SCENARIOS.length - 1) {
       setScenarioIndex(i => i + 1);
       setStarted(false); // Shows interstitial for next drill
@@ -180,7 +194,7 @@ export default function DrillPage() {
         <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 my-auto space-y-5">
           <div className="flex items-center justify-between">
             <div className="inline-block bg-[#FF5A1F] text-white text-xs font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded">
-              Drill {scenarioIndex + 1} of {SCENARIOS.length}
+              {onlyMode ? 'Targeted Practice' : `Drill ${scenarioIndex + 1} of ${SCENARIOS.length}`}
             </div>
             <span className="text-xs font-mono text-[#111111]/70 font-semibold">
               {scenario.archetype}
@@ -255,7 +269,7 @@ export default function DrillPage() {
             }}
             className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-lg border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>Start Drill {scenarioIndex + 1}</span>
+            <span>{onlyMode ? 'Start Drill' : `Start Drill ${scenarioIndex + 1}`}</span>
             <span>→</span>
           </button>
         </div>
@@ -266,6 +280,7 @@ export default function DrillPage() {
           scenario={scenario}
           scenarioIndex={scenarioIndex}
           totalScenarios={SCENARIOS.length}
+          isOnlyMode={onlyMode}
           lang={lang}
           muted={muted}
           knewRule={knewRule}
@@ -283,6 +298,7 @@ interface DrillRunnerProps {
   scenario: Scenario;
   scenarioIndex: number;
   totalScenarios: number;
+  isOnlyMode: boolean;
   lang: Lang;
   muted: boolean;
   knewRule: boolean | null;
@@ -296,6 +312,7 @@ function DrillRunner({
   scenario,
   scenarioIndex,
   totalScenarios,
+  isOnlyMode,
   lang,
   muted,
   knewRule,
@@ -543,7 +560,7 @@ function DrillRunner({
       <div className="w-full max-w-[400px] bg-white border-2 border-[#111111] rounded-md shadow-hard p-6 my-auto space-y-6">
         <div className="space-y-2 text-center">
           <div className="text-xs font-mono uppercase tracking-widest text-[#111111]/60">
-            Drill {scenarioIndex + 1} Outcome
+            {isOnlyMode ? 'Practice Drill Outcome' : `Drill ${scenarioIndex + 1} Outcome`}
           </div>
           <div
             className={`text-4xl md:text-5xl font-extrabold tabular-nums tracking-tight ${
@@ -571,26 +588,64 @@ function DrillRunner({
 
         {/* Action Buttons */}
         <div className="space-y-3 pt-2">
-          <button
-            type="button"
-            onClick={onNextDrill}
-            className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>
-              {isLastDrill
-                ? 'All 3 Completed · Start Over'
-                : `Continue to Drill ${scenarioIndex + 2} of ${totalScenarios}`}
-            </span>
-            <span>→</span>
-          </button>
+          {isOnlyMode ? (
+            <>
+              <button
+                type="button"
+                onClick={onRestart}
+                className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Replay this drill</span>
+                <span>↺</span>
+              </button>
 
-          <button
-            type="button"
-            onClick={onRestart}
-            className="w-full min-h-[48px] py-3 bg-white text-[#111111] font-bold text-base border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
-          >
-            Replay this drill
-          </button>
+              <Link
+                href="/check"
+                className="w-full min-h-[48px] py-3 bg-white text-[#111111] font-bold text-base border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2"
+              >
+                <span>🔍</span>
+                <span>Check another message</span>
+              </Link>
+
+              <Link
+                href="/drill"
+                className="w-full min-h-[44px] py-2.5 bg-neutral-100 text-[#111111] font-bold text-sm border-2 border-[#111111]/30 rounded-md hover:bg-neutral-200 transition-all flex items-center justify-center gap-1.5"
+              >
+                <span>Play full 3-drill simulation →</span>
+              </Link>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={onNextDrill}
+                className="w-full min-h-[48px] py-3.5 bg-[#FF5A1F] text-white font-bold text-base border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>
+                  {isLastDrill
+                    ? 'All 3 Completed · Start Over'
+                    : `Continue to Drill ${scenarioIndex + 2} of ${totalScenarios}`}
+                </span>
+                <span>→</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onRestart}
+                className="w-full min-h-[48px] py-3 bg-white text-[#111111] font-bold text-base border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+              >
+                Replay this drill
+              </button>
+
+              <Link
+                href="/check"
+                className="w-full min-h-[44px] py-2.5 bg-white text-[#111111] font-bold text-sm border-2 border-[#111111] rounded-md shadow-hard-sm hover:bg-[#F6F3EC] transition-all flex items-center justify-center gap-1.5"
+              >
+                <span>🔍</span>
+                <span>Check a suspicious message</span>
+              </Link>
+            </>
+          )}
 
           <Link
             href="/insights"

@@ -9,6 +9,10 @@ export const SCAM = [
   "Your refund of Rs 2,999 is pending. Install QuickSupport app and share the OTP with our executive to get the refund.",
   "प्रिय उपभोक्ता, आपकी बिजली आज रात 9:30 बजे काट दी जाएगी। तुरंत संपर्क करें 8240471159",
   "For account verification please transfer a refundable security deposit to the RBI secure account. Do not inform anyone.",
+  "send me $400 on the provided no",
+  "Hi mum, this is my new number, my phone is broken. Please send Rs 20,000 to this number urgently, I will explain later.",
+  "bhai urgent hai 5000 rupaye bhej do is number pe, kal wapas kar dunga",
+  "Please transfer ₹15,000 to this UPI id today itself: helpdesk.refund@okbank",
 ];
 export const GENUINE = [
   "482913 is your OTP for txn of INR 1,250.00 at AMAZON. Do not share it with anyone. -HDFC Bank",
@@ -19,4 +23,8 @@ export const GENUINE = [
   "OTP for login is 771204. Valid for 10 minutes. Never share your OTP with anyone, even bank staff.",
   "Reminder: Your appointment with Dr. Mehta is scheduled for 22 Sep at 5:30 PM.",
   "आपका OTP 552310 है। इसे किसी को न बताएं। - आपका बैंक",
+  "Your SIP of Rs 2,000 has been processed successfully. Units will be allotted in 2 working days.",
+  "Salary of INR 45,000.00 credited to your A/c XX9921 on 20-09-26. Avl bal INR 61,204.55 -ICICI Bank",
+  "Lunch at 1? I will pay today, you paid last time.",
+  "Your Amazon order of Rs 1,299 is out for delivery. Pay on delivery or pay online in the app.",
 ];

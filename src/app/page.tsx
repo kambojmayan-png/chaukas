@@ -13,8 +13,16 @@ export default function Home() {
             चौकस
           </span>
         </div>
-        <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F] border border-[#FF5A1F] px-2 py-1 rounded">
-          FIRE-DRILL 1.0
+        <div className="flex items-center space-x-3">
+          <Link
+            href="/check"
+            className="text-xs md:text-sm font-bold text-[#111111] hover:underline"
+          >
+            Check a Message →
+          </Link>
+          <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF5A1F] border border-[#FF5A1F] px-2 py-1 rounded">
+            FIRE-DRILL 1.0
+          </div>
         </div>
       </header>
 
@@ -29,13 +37,19 @@ export default function Home() {
           </h1>
         </div>
 
-        {/* CTA Button */}
-        <div>
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <Link
             href="/drill"
             className="inline-flex items-center justify-center min-h-[56px] px-8 py-4 bg-[#FF5A1F] text-white text-lg md:text-xl font-bold border-2 border-[#111111] rounded-md shadow-hard hover:opacity-95 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
           >
             Start the 3-minute drill
+          </Link>
+          <Link
+            href="/check"
+            className="inline-flex items-center justify-center min-h-[56px] px-6 py-4 bg-white text-[#111111] text-base md:text-lg font-bold border-2 border-[#111111] rounded-md shadow-hard hover:bg-[#F6F3EC] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+          >
+            Check a message →
           </Link>
         </div>
 
@@ -48,7 +62,15 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t-2 border-[#111111] pt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-[#111111]/70 font-mono gap-2">
         <span>© 2026 Chaukas · Tech for a Better Tomorrow</span>
-        <span>100% Client-Side Simulation</span>
+        <div className="flex items-center space-x-4">
+          <Link href="/check" className="hover:underline font-bold">
+            Message Checker
+          </Link>
+          <Link href="/insights" className="hover:underline font-bold">
+            Live Insights
+          </Link>
+          <span>100% Client-Side Simulation</span>
+        </div>
       </footer>
     </main>
   );
