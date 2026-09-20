@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useLang } from '@/lib/useLang';
 
 interface SaralGuideBubbleProps {
   text: string;
@@ -8,6 +9,9 @@ interface SaralGuideBubbleProps {
 }
 
 export function SaralGuideBubble({ text, className = '' }: SaralGuideBubbleProps) {
+  const [lang] = useLang();
+  const guideName = lang === 'en' ? 'Chaukas Didi' : 'चौकस दीदी';
+
   return (
     <div
       className={`w-full bg-[#E6F3EE] border-2 border-[#0F6B4F]/30 rounded-[16px] p-4 sm:p-5 shadow-sm text-left ${className}`}
@@ -17,12 +21,12 @@ export function SaralGuideBubble({ text, className = '' }: SaralGuideBubbleProps
           👩
         </div>
         <div className="min-w-0">
-          <span lang="hi" className="font-bold text-base sm:text-lg text-[#0F6B4F] leading-tight block">
-            चौकस दीदी
+          <span lang={lang} className="font-bold text-base sm:text-lg text-[#0F6B4F] leading-tight block">
+            {guideName}
           </span>
         </div>
       </div>
-      <p className="text-lg sm:text-xl md:text-2xl font-semibold text-[#1A1A1A] leading-[1.7]" aria-live="polite">
+      <p className="text-lg sm:text-xl md:text-2xl font-semibold text-[#1A1A1A] leading-[1.7] break-words" aria-live="polite">
         {text}
       </p>
     </div>

@@ -24,6 +24,25 @@ interface SaralConversationProps {
   onChoose: (choiceId: string, visitKey: string) => void;
   onSkipMessage?: () => void;
   canSkip?: boolean;
+  onReplay?: () => void;
+}
+
+function getHeaderContent(msg: DisplayMessage, lang: Lang): { kind: 'call'; label: string; caller: string } | { kind: 'single'; text: string } {
+  const isSmsDuringCall = msg.via === 'sms' && (msg.isOnCall || msg.surface === 'call' || msg.surface === 'videocall');
+  if (isSmsDuringCall) {
+    return { kind: 'single', text: t('label_bank_sms', lang) };
+  }
+  if (msg.surface === 'call' || msg.surface === 'videocall' || (msg.isOnCall && msg.via !== 'sms')) {
+    return { kind: 'call', label: t('label_call', lang), caller: msg.from || 'Caller' };
+  }
+  if (msg.surface === 'sms' || msg.via === 'sms') {
+    return { kind: 'single', text: t('label_sms', lang) };
+  }
+  if (msg.surface === 'system') {
+    return { kind: 'single', text: t('label_system', lang) };
+  }
+  // For chat: sender name (node.from)
+  return { kind: 'single', text: msg.from || 'Chat' };
 }
 
 export function SaralConversation({
@@ -36,6 +55,7 @@ export function SaralConversation({
   onChoose,
   onSkipMessage,
   canSkip = false,
+  onReplay,
 }: SaralConversationProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -56,58 +76,93 @@ export function SaralConversation({
         className="flex-1 overflow-y-auto space-y-3.5 pr-1 min-h-0 scroll-smooth"
       >
         {/* Past Messages: Smaller and greyed out */}
-        {pastMessages.map((msg, i) => (
-          <div
-            key={i}
-            className="w-full bg-white/70 border border-[#1A1A1A]/30 rounded-[12px] p-3 text-left space-y-1 shadow-2xs"
-          >
-            <div className="flex items-center justify-between text-xs font-bold text-[#1A1A1A]/60 pb-1 border-b border-[#1A1A1A]/10">
-              <span>{msg.label}</span>
-              <span>{msg.from}</span>
+        {pastMessages.map((msg, i) => {
+          const header = getHeaderContent(msg, lang);
+          return (
+            <div
+              key={i}
+              className="w-full bg-white/70 border border-[#1A1A1A]/30 rounded-[12px] p-3 text-left space-y-1 shadow-2xs"
+            >
+              <div className="text-xs font-bold text-[#1A1A1A]/60 pb-1 border-b border-[#1A1A1A]/10 min-w-0 break-words">
+                {header.kind === 'call' ? (
+                  <div>
+                    <span className="block">{header.label}</span>
+                    <span className="block text-[#1A1A1A]/80 font-bold">{header.caller}</span>
+                  </div>
+                ) : (
+                  <span className="block">{header.text}</span>
+                )}
+              </div>
+              <p className="text-base text-[#1A1A1A]/75 leading-relaxed font-medium break-words">
+                {msg.text}
+              </p>
             </div>
-            <p className="text-base text-[#1A1A1A]/75 leading-relaxed font-medium">
-              {msg.text}
-            </p>
-          </div>
-        ))}
+          );
+        })}
 
         {/* Current Active Message: Large and prominent */}
         {currentMessage && (
           <div className="space-y-3 animate-in fade-in duration-200">
-            {currentMessage.isOnCall ? (
-              /* On a call: caller avatar with live captions */
-              <div className="bg-white border-2 border-[#1A1A1A] rounded-[16px] p-4 sm:p-5 shadow-sm text-center space-y-3">
-                <div className="flex items-center justify-center gap-3 pb-2 border-b border-[#1A1A1A]/10">
-                  <div className="w-12 h-12 rounded-full bg-[#E6F3EE] border-2 border-[#0F6B4F] text-[#0F6B4F] flex items-center justify-center text-xl font-black">
-                    {callerInitial}
+            {(() => {
+              const header = getHeaderContent(currentMessage, lang);
+
+              if (currentMessage.isOnCall) {
+                return (
+                  /* On a call: caller avatar with live captions */
+                  <div className="bg-white border-2 border-[#1A1A1A] rounded-[16px] p-4 sm:p-5 shadow-sm text-center space-y-3">
+                    <div className="flex items-center justify-center gap-3 pb-2 border-b border-[#1A1A1A]/10 min-w-0 break-words">
+                      <div className="w-12 h-12 rounded-full bg-[#E6F3EE] border-2 border-[#0F6B4F] text-[#0F6B4F] flex items-center justify-center text-xl font-black shrink-0">
+                        {callerInitial}
+                      </div>
+                      <div className="text-left min-w-0 break-words">
+                        {header.kind === 'call' ? (
+                          <>
+                            <span className="text-xs font-bold uppercase tracking-wider text-[#E8590C] block break-words">
+                              {header.label}
+                            </span>
+                            <span className="text-lg font-bold text-[#1A1A1A] block break-words">
+                              {header.caller}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-xs font-bold uppercase tracking-wider text-[#E8590C] block break-words">
+                            {header.text}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-xl sm:text-2xl font-bold text-[#1A1A1A] leading-[1.7] break-words" aria-live="polite">
+                      "{currentMessage.text}"
+                    </p>
                   </div>
-                  <div className="text-left">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#E8590C] block">
-                      {currentMessage.label}
-                    </span>
-                    <span className="text-lg font-bold text-[#1A1A1A]">
-                      {currentMessage.from}
-                    </span>
+                );
+              }
+
+              return (
+                /* Regular Message: Chat, SMS, Bank SMS, or System */
+                <div className="bg-white border-2 border-[#1A1A1A] rounded-[16px] p-4 sm:p-5 shadow-sm text-left space-y-2">
+                  <div className="text-sm font-bold text-[#1A1A1A]/70 pb-1.5 border-b border-[#1A1A1A]/10 min-w-0 break-words">
+                    {header.kind === 'call' ? (
+                      <div>
+                        <span className="text-[#E8590C] font-extrabold block break-words">
+                          {header.label}
+                        </span>
+                        <span className="text-[#1A1A1A] font-bold block break-words">
+                          {header.caller}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-[#E8590C] font-extrabold block break-words">
+                        {header.text}
+                      </span>
+                    )}
                   </div>
+                  <p className="text-xl sm:text-2xl font-bold text-[#1A1A1A] leading-[1.7] break-words" aria-live="polite">
+                    {currentMessage.text}
+                  </p>
                 </div>
-                <p className="text-xl sm:text-2xl font-bold text-[#1A1A1A] leading-[1.7]" aria-live="polite">
-                  "{currentMessage.text}"
-                </p>
-              </div>
-            ) : (
-              /* Regular Message: Chat, SMS, Bank SMS, or System */
-              <div className="bg-white border-2 border-[#1A1A1A] rounded-[16px] p-4 sm:p-5 shadow-sm text-left space-y-2">
-                <div className="flex items-center justify-between text-sm font-bold text-[#1A1A1A]/70 pb-1.5 border-b border-[#1A1A1A]/10">
-                  <span className="text-[#E8590C] font-extrabold">
-                    {currentMessage.label}
-                  </span>
-                  <span>{currentMessage.from}</span>
-                </div>
-                <p className="text-xl sm:text-2xl font-bold text-[#1A1A1A] leading-[1.7]" aria-live="polite">
-                  {currentMessage.text}
-                </p>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Small Next button to skip ahead */}
             {canSkip && !showingChoices && onSkipMessage && (
@@ -142,12 +197,38 @@ export function SaralConversation({
                   <span className="w-11 h-11 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xl font-black shrink-0">
                     {idx + 1}
                   </span>
-                  <span className="text-lg sm:text-xl font-bold text-[#1A1A1A] leading-snug">
+                  <span className="text-lg sm:text-xl font-bold text-[#1A1A1A] leading-snug break-words">
                     {c.label[lang] || c.label.en}
                   </span>
                 </button>
               ))}
             </div>
+
+            {/* Replay button under choices */}
+            {onReplay && (
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={onReplay}
+                  className="w-full min-h-[56px] py-3 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer text-center"
+                >
+                  {t('replay', lang)}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Replay button while messages are being read */}
+        {!showingChoices && onReplay && (
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={onReplay}
+              className="w-full min-h-[56px] py-3 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer text-center"
+            >
+              {t('replay', lang)}
+            </button>
           </div>
         )}
       </div>

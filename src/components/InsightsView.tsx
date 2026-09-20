@@ -56,7 +56,7 @@ export function InsightsView({ data }: InsightsViewProps) {
               <span className="text-base font-bold text-[#1A1A1A]/75">
                 {t('total_runs_recorded', lang)}
               </span>
-              <span className="text-xl sm:text-2xl font-extrabold text-[#1A1A1A] tabular-nums">
+              <span className="text-lg sm:text-2xl font-extrabold text-[#1A1A1A] tabular-nums break-words">
                 {t('runs_stat_label', lang, {
                   runs: totals!.total_runs,
                   first_runs: totals!.first_runs,

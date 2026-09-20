@@ -20,7 +20,7 @@ export function SaralCallScreen({ callerName, lang, onPickUp }: SaralCallScreenP
         <span className="inline-block text-lg sm:text-xl font-bold text-[#E8590C] animate-pulse">
           {t('incoming_call', lang)}
         </span>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] leading-tight">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] leading-tight break-words min-w-0">
           {callerName}
         </h2>
       </div>

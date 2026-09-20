@@ -18,6 +18,140 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   };
 }
 
+export type VoiceRole = 'guide' | 'scammer' | 'ivr';
+
+export function inferRoleFromKey(key: string): VoiceRole {
+  const cleanKey = key.replace(/^(en|hi)\//, '');
+
+  if (
+    cleanKey.startsWith('narr__') ||
+    cleanKey.startsWith('flag__') ||
+    cleanKey.startsWith('check__') ||
+    cleanKey.endsWith('__setup') ||
+    cleanKey.endsWith('__precheck') ||
+    cleanKey.endsWith('__rule') ||
+    cleanKey.endsWith('__flags') ||
+    cleanKey.endsWith('__choices') ||
+    cleanKey.includes('__end_')
+  ) {
+    return 'guide';
+  }
+
+  // bijli-remote n1#0, n3#0 and n5#0 = 'guide', other messages = 'scammer'
+  if (/bijli[-_]remote[_-]+n[135][#_]+0\b/.test(cleanKey)) {
+    return 'guide';
+  }
+  if (cleanKey.includes('bijli-remote') || cleanKey.includes('bijli_remote')) {
+    return 'scammer';
+  }
+
+  // digital-arrest n1#0 = 'ivr', other messages = 'scammer'
+  if (/digital[-_]arrest[_-]+n1[#_]+0\b/.test(cleanKey)) {
+    return 'ivr';
+  }
+  if (cleanKey.includes('digital-arrest') || cleanKey.includes('digital_arrest')) {
+    return 'scammer';
+  }
+
+  // olx-qr messages = 'scammer'
+  if (cleanKey.includes('olx-qr') || cleanKey.includes('olx_qr')) {
+    return 'scammer';
+  }
+
+  return 'guide';
+}
+
+const FEMALE_VOICE_REGEX = /female|neerja|heera|swara|aditi|raveena|zira|hazel|susan|libby|sonia|samantha|karen|moira|tessa|veena/i;
+const MALE_VOICE_REGEX = /(^|[^e])male|ravi|prabhat|hemant|david|mark|george|ryan|thomas|daniel|rishi/i;
+
+interface VoiceSettings {
+  voice: SpeechSynthesisVoice | null;
+  pitch: number;
+  rate: number;
+}
+
+export function getVoiceAndSettings(lang: 'en' | 'hi', role: VoiceRole = 'guide'): VoiceSettings {
+  loadVoices();
+  if (!cachedVoices || cachedVoices.length === 0) {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      cachedVoices = window.speechSynthesis.getVoices();
+    }
+  }
+
+  const baseRate = role === 'guide' ? 0.92 : role === 'ivr' ? 1.0 : 1.05;
+  const fallbackPitch = role === 'guide' ? 1.25 : role === 'ivr' ? 1.1 : 0.8;
+
+  if (lang === 'hi') {
+    const hindiVoice = getBestVoice('hi');
+    if (!hindiVoice) {
+      return { voice: null, pitch: fallbackPitch, rate: baseRate };
+    }
+    // "For the Hindi speech fallback apply the same pitch rule"
+    return {
+      voice: hindiVoice,
+      pitch: fallbackPitch,
+      rate: baseRate,
+    };
+  }
+
+  // lang === 'en'
+  const englishVoices = (cachedVoices || []).filter(v =>
+    v.lang.toLowerCase().startsWith('en')
+  );
+
+  if (englishVoices.length === 0) {
+    return { voice: null, pitch: fallbackPitch, rate: baseRate };
+  }
+
+  const isFemaleRole = role === 'guide' || role === 'ivr';
+
+  const scoredVoices = englishVoices.map(v => {
+    let score = 0;
+    const name = v.name.toLowerCase();
+    const vLang = v.lang.toLowerCase();
+
+    // Prefer lang en-IN (+20), then en-GB (+12), then en-US (+8), other en (+4)
+    if (vLang === 'en-in' || vLang === 'en_in') score += 20;
+    else if (vLang === 'en-gb' || vLang === 'en_gb') score += 12;
+    else if (vLang === 'en-us' || vLang === 'en_us') score += 8;
+    else score += 4;
+
+    const matchesFemale = FEMALE_VOICE_REGEX.test(name);
+    const matchesMale = MALE_VOICE_REGEX.test(name);
+
+    if (isFemaleRole) {
+      if (matchesFemale) score += 50;
+      else if (matchesMale) score -= 50;
+    } else {
+      if (matchesMale) score += 50;
+      else if (matchesFemale) score -= 50;
+    }
+
+    if (/natural|neural|online/i.test(name)) score += 4;
+    if (/google/i.test(name)) score += 3;
+    if (!v.localService) score += 1;
+
+    const matchesTargetGender = isFemaleRole ? matchesFemale : matchesMale;
+    return { voice: v, score, matchesTargetGender };
+  });
+
+  scoredVoices.sort((a, b) => b.score - a.score);
+
+  const best = scoredVoices[0];
+  const rightGenderExists = best.matchesTargetGender;
+
+  let pitch = fallbackPitch;
+  if (rightGenderExists) {
+    pitch = role === 'guide' ? 1.05 : role === 'ivr' ? 1.0 : 0.95;
+  }
+
+  return {
+    voice: best.voice,
+    pitch,
+    rate: baseRate,
+  };
+}
+
 /**
  * Voice selection matching PRD / M1 rules:
  * - hi prefers hi-IN
@@ -69,11 +203,11 @@ function getBestVoice(lang: 'en' | 'hi'): SpeechSynthesisVoice | null {
       const name = v.name.toLowerCase();
       const vLang = v.lang.toLowerCase();
 
-      // Language preference: en-IN (+10), en-GB (+6), en-US (+4), other en (+2)
-      if (vLang === 'en-in' || vLang === 'en_in') score += 10;
-      else if (vLang === 'en-gb' || vLang === 'en_gb') score += 6;
-      else if (vLang === 'en-us' || vLang === 'en_us') score += 4;
-      else score += 2;
+      // Language preference: en-IN (+20), en-GB (+12), en-US (+8), other en (+4)
+      if (vLang === 'en-in' || vLang === 'en_in') score += 20;
+      else if (vLang === 'en-gb' || vLang === 'en_gb') score += 12;
+      else if (vLang === 'en-us' || vLang === 'en_us') score += 8;
+      else score += 4;
 
       if (/natural|neural|online/i.test(name)) score += 4;
       if (/google/i.test(name)) score += 3;
@@ -89,11 +223,11 @@ function getBestVoice(lang: 'en' | 'hi'): SpeechSynthesisVoice | null {
  * Queues utterances without canceling existing ones.
  * Fails silently if unsupported or blocked.
  */
-export function speak(text: string, lang: 'en' | 'hi') {
+export function speak(text: string, lang: 'en' | 'hi', role: VoiceRole = 'guide') {
   try {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
-    const voice = getBestVoice(lang);
+    const { voice, pitch, rate } = getVoiceAndSettings(lang, role);
     // If lang is 'hi' and no Hindi voice exists on device: do not speak at all
     if (lang === 'hi' && !voice) {
       return;
@@ -106,8 +240,8 @@ export function speak(text: string, lang: 'en' | 'hi') {
     } else {
       u.lang = lang === 'hi' ? 'hi-IN' : 'en-IN';
     }
-    u.rate = 0.95;
-    u.pitch = 0.9;
+    u.rate = rate;
+    u.pitch = pitch;
 
     // QUEUE utterance: do NOT call cancel() inside speak()
     window.speechSynthesis.speak(u);
@@ -240,7 +374,8 @@ export function playClip(
   key: string,
   fallbackText: string,
   lang: 'en' | 'hi',
-  soundOn: boolean = true
+  soundOn: boolean = true,
+  role?: VoiceRole
 ): Promise<void> {
   return new Promise<void>((resolve) => {
     // Stop any current speaking/waiting first
@@ -313,7 +448,9 @@ export function playClip(
       return;
     }
 
-    const voice = getBestVoice(lang);
+    const effectiveRole = role ?? inferRoleFromKey(key);
+    const { voice, pitch, rate } = getVoiceAndSettings(lang, effectiveRole);
+
     if (lang === 'hi' && !voice) {
       // No TTS voice on device for Hindi -> just wait clamp(...)
       const waitMs = Math.min(Math.max(fallbackText.length * 70, 1500), 8000);
@@ -335,8 +472,8 @@ export function playClip(
       } else {
         u.lang = lang === 'hi' ? 'hi-IN' : 'en-IN';
       }
-      u.rate = 0.95;
-      u.pitch = 0.9;
+      u.rate = rate;
+      u.pitch = pitch;
 
       let completed = false;
       const finishTTS = () => {
@@ -403,7 +540,8 @@ export function playLine({ scenarioId, nodeId, index, voiceLang, text, uiLang, u
     // If a Hindi clip is missing for a line, fall back to TTS in the UI language.
     const targetLang = (voiceLang === 'hi' && uiLang) ? uiLang : (voiceLang as 'en' | 'hi');
     const targetText = (voiceLang === 'hi' && uiText) ? uiText : text;
-    speak(targetText, targetLang);
+    const role = inferRoleFromKey(`${scenarioId}__${nodeId}__${index}`);
+    speak(targetText, targetLang, role);
   }
 }
 

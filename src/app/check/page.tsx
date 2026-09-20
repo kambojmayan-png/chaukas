@@ -264,7 +264,7 @@ export default function CheckPage() {
                 key={idx}
                 type="button"
                 onClick={() => handleExampleClick(ex.text)}
-                className="text-sm sm:text-base font-semibold bg-white text-[#1A1A1A] border border-[#1A1A1A]/15 rounded-[12px] shadow-[0_2px_6px_rgba(26,26,26,0.04)] px-4 py-2.5 min-h-[48px] hover:bg-[#FBF7F0] hover:border-[#1A1A1A]/30 active:scale-[0.98] transition-all cursor-pointer text-left"
+                className="text-sm sm:text-base font-semibold bg-white text-[#1A1A1A] border border-[#1A1A1A]/15 rounded-[12px] shadow-[0_2px_6px_rgba(26,26,26,0.04)] px-4 py-2.5 min-h-[48px] hover:bg-[#FBF7F0] hover:border-[#1A1A1A]/30 active:scale-[0.98] transition-all cursor-pointer text-left max-w-full break-words"
               >
                 {t(ex.labelKey, lang)}
               </button>
@@ -419,7 +419,7 @@ export default function CheckPage() {
               <span className="text-sm sm:text-base font-bold text-[#1A1A1A]/75 block">
                 {t('analysis_red_flags', lang)}:
               </span>
-              <div className="bg-white border-2 border-[#1A1A1A]/10 p-4 sm:p-5 rounded-[14px] text-lg leading-relaxed break-words whitespace-pre-wrap font-sans">
+              <div className="bg-white border-2 border-[#1A1A1A]/10 p-4 sm:p-5 rounded-[14px] text-lg leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap font-sans">
                 {renderHighlightedText()}
               </div>
             </div>

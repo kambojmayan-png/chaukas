@@ -188,8 +188,8 @@ export function Report({
                 key={s.id}
                 className="flex items-center justify-between p-3 bg-[#FBF7F0] border border-[#1A1A1A]/15 rounded-[12px] text-sm"
               >
-                <div className="space-y-0.5">
-                  <div className="font-bold text-[#1A1A1A]">
+                <div className="space-y-0.5 min-w-0 flex-1 pr-2 break-words">
+                  <div className="font-bold text-[#1A1A1A] break-words">
                     {t('drill_n_of_3', lang, { n: idx + 1, total: scenarios.length })}: {s.title[lang] || s.title.en}
                   </div>
                   <div className="text-xs text-[#1A1A1A]/70">
@@ -198,7 +198,7 @@ export function Report({
                       : t('zero_lost', lang)}
                   </div>
                 </div>
-                <div>{res ? getOutcomeBadge(res.outcome) : '—'}</div>
+                <div className="shrink-0">{res ? getOutcomeBadge(res.outcome) : '—'}</div>
               </div>
             );
           })}

@@ -46,7 +46,7 @@ export function SystemDialog({
           {messages.map((m, idx) => (
             <p
               key={idx}
-              className="text-sm text-[#111111] font-medium leading-normal bg-[#F6F3EC] p-3 rounded border border-[#111111]"
+              className="text-sm text-[#111111] font-medium leading-normal bg-[#F6F3EC] p-3 rounded border border-[#111111] break-words [overflow-wrap:anywhere]"
             >
               {m.text[lang] || m.text.en}
             </p>

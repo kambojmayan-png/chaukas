@@ -24,6 +24,7 @@ import {
   preloadClips,
   subscribeAudioState,
   type AudioPlaybackState,
+  type VoiceRole,
 } from '@/lib/speak';
 import { sendRun } from '@/lib/telemetry';
 import { SaralTopBar } from './SaralTopBar';
@@ -186,14 +187,14 @@ export function SaralFlow({
 
   // Safe play helper: stops previous, tracks sequence ID
   const playSequence = useCallback(
-    async (items: { key: string; text: string }[]) => {
+    async (items: { key: string; text: string; role?: VoiceRole }[]) => {
       stopSpeaking();
       playSeqIdRef.current += 1;
       const seqId = playSeqIdRef.current;
 
       for (let i = 0; i < items.length; i++) {
         if (playSeqIdRef.current !== seqId) break;
-        await playClip(items[i].key, items[i].text, lang, soundOn);
+        await playClip(items[i].key, items[i].text, lang, soundOn, items[i].role);
       }
     },
     [lang, soundOn]
@@ -745,6 +746,57 @@ export function SaralFlow({
     (convPhase === 'choices' || (convPhase === 'messages' && msgIndex === nodeMsgs.length - 1))
   );
 
+  const handleReplayConversation = () => {
+    if (isNavLocked()) return;
+    lockNav();
+    stopSpeaking();
+
+    if (!currentScenario || !drillState) return;
+    const node = currentScenario.nodes[drillState.nodeId];
+    if (!node) return;
+
+    const msgs = node.messages ?? [];
+    const latestMsgIdx =
+      convPhase === 'choices' || convPhase === 'input'
+        ? msgs.length - 1
+        : Math.min(msgIndex, msgs.length - 1);
+
+    const items: { key: string; text: string; role?: VoiceRole }[] = [];
+
+    if (latestMsgIdx >= 0 && msgs[latestMsgIdx]) {
+      const m = msgs[latestMsgIdx];
+      items.push({
+        key: `${sid}__${node.id}__${latestMsgIdx}`,
+        text: m.text[lang] || m.text.en,
+      });
+    }
+
+    if (showingChoices && node.choices && node.choices.length > 0) {
+      const choicesClip = `${sid}__${node.id}__choices`;
+      const choicesText = node.choices
+        .map((c, i) => `${i + 1}: ${c.label[lang] || c.label.en}`)
+        .join('. ');
+      items.push({
+        key: choicesClip,
+        text: choicesText,
+        role: 'guide',
+      });
+    } else if (node.input && (convPhase === 'input' || msgs.length === 0)) {
+      const keypadClip = node.input.kind === 'pin' ? 'narr__keypad_pin' : 'narr__keypad_otp';
+      const keypadText =
+        node.input.kind === 'pin' ? t('keypad_pin_help', lang) : t('keypad_otp_help', lang);
+      items.push({
+        key: keypadClip,
+        text: keypadText,
+        role: 'guide',
+      });
+    }
+
+    if (items.length > 0) {
+      playSequence(items);
+    }
+  };
+
   return (
     <SaralErrorBoundary lang={lang} soundOn={soundOn}>
       <main className="min-h-screen bg-[#FBF7F0] text-[#1A1A1A] flex flex-col justify-between p-3 sm:p-5 max-w-xl mx-auto antialiased">
@@ -940,11 +992,11 @@ export function SaralFlow({
         {/* SCREEN 4: PRACTICE PIN */}
         {screen === 'practice_pin' && (
           <div className="flex-1 flex flex-col justify-between items-center py-6 max-w-md mx-auto w-full my-auto space-y-6">
-            <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-6 sm:p-8 text-center space-y-4 shadow-sm my-auto">
+            <div className="w-full bg-white border-2 border-[#1A1A1A] rounded-[16px] p-4 sm:p-8 text-center space-y-4 shadow-sm my-auto">
               <span className="text-xl sm:text-2xl font-bold text-[#1A1A1A]/80 block">
                 {t('practice_pin_title', lang)}
               </span>
-              <div className="text-6xl sm:text-7xl font-black tracking-widest text-[#E8590C] py-2">
+              <div className="text-4xl xs:text-5xl sm:text-7xl font-black tracking-wider sm:tracking-widest text-[#E8590C] py-2 break-words">
                 {PRACTICE_PIN.split('').join(' ')}
               </div>
             </div>
@@ -1062,7 +1114,7 @@ export function SaralFlow({
                 }}
               />
             ) : currNode?.input && (convPhase === 'input' || (currNode.messages?.length ?? 0) === 0) ? (
-              <div className="my-auto w-full">
+              <div className="my-auto w-full space-y-3">
                 <SaralKeypad
                   kind={currNode.input.kind}
                   prompt={currNode.input.prompt[lang] || currNode.input.prompt.en}
@@ -1076,9 +1128,16 @@ export function SaralFlow({
                   onCancel={() => dispatchAction({ type: 'input_cancel' }, currentVisitKey)}
                   onWrongEntry={() => {
                     stopSpeaking();
-                    playClip('narr__wrong_pin', t('wrong_pin_text', lang), lang, soundOn);
+                    playClip('narr__wrong_pin', t('wrong_pin_text', lang), lang, soundOn, 'guide');
                   }}
                 />
+                <button
+                  type="button"
+                  onClick={handleReplayConversation}
+                  className="w-full min-h-[56px] py-3 px-4 bg-white text-[#1A1A1A] text-lg font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-sm hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer text-center"
+                >
+                  {t('replay', lang)}
+                </button>
               </div>
             ) : (
               <SaralConversation
@@ -1095,6 +1154,7 @@ export function SaralFlow({
                 onSkipMessage={() => {
                   stopSpeaking();
                 }}
+                onReplay={handleReplayConversation}
               />
             )}
           </div>
@@ -1130,7 +1190,7 @@ export function SaralFlow({
                       {titleText}
                     </h2>
                     {isScammed && res.lossInr > 0 && (
-                      <div className="text-2xl sm:text-3xl font-extrabold bg-white/20 px-4 py-2 rounded-full inline-block">
+                      <div className="text-xl sm:text-3xl font-extrabold bg-white/20 px-4 py-2 rounded-full inline-block max-w-full break-words">
                         {t('lost_amount', lang, { x: res.lossInr })}
                       </div>
                     )}
@@ -1254,7 +1314,7 @@ export function SaralFlow({
 
               return (
                 <div className="w-full space-y-5 my-auto" role="status" aria-live="polite">
-                  <h1 className="text-3xl sm:text-4xl font-black text-[#1A1A1A] leading-snug">
+                  <h1 className="text-3xl sm:text-4xl font-black text-[#1A1A1A] leading-snug break-words">
                     {t('final_title', lang, { x: notScammed, y: totalDone })}
                   </h1>
 
@@ -1284,7 +1344,7 @@ export function SaralFlow({
                       href={whatsappUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="w-full min-h-[64px] py-3.5 px-4 bg-[#2B8A3E] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-md hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
+                      className="w-full min-h-[64px] py-3.5 px-4 bg-[#2B8A3E] text-white text-xl sm:text-2xl font-bold rounded-[16px] border-2 border-[#1A1A1A] shadow-md hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 text-center break-words"
                     >
                       <span aria-hidden="true">📲</span>
                       <span>{t('send_family', lang)}</span>

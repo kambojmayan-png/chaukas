@@ -108,19 +108,19 @@ export function SaralLessonCards({
                 }`}
               >
                 {/* Scammer's Words in a bubble */}
-                <div className="bg-[#FBF7F0] border border-[#1A1A1A]/30 rounded-[12px] p-3 text-base sm:text-lg font-semibold text-[#1A1A1A] leading-relaxed">
+                <div className="bg-[#FBF7F0] border border-[#1A1A1A]/30 rounded-[12px] p-3 text-base sm:text-lg font-semibold text-[#1A1A1A] leading-relaxed break-words [overflow-wrap:anywhere]">
                   "{card.words}"
                 </div>
 
                 {/* Red chip with flag label */}
                 <div>
-                  <span className="inline-block bg-red-100 text-[#C92A2A] border-2 border-[#C92A2A]/40 text-sm font-bold px-3 py-1 rounded-full leading-normal">
+                  <span className="inline-block bg-red-100 text-[#C92A2A] border-2 border-[#C92A2A]/40 text-sm font-bold px-3 py-1 rounded-full leading-normal break-words">
                     🚩 {getFlagLabel(card.flag, lang)}
                   </span>
                 </div>
 
                 {/* Explanation sentence */}
-                <p className="text-lg sm:text-xl font-bold text-[#1A1A1A] leading-[1.7]">
+                <p className="text-lg sm:text-xl font-bold text-[#1A1A1A] leading-[1.7] break-words [overflow-wrap:anywhere]">
                   {card.explanation}
                 </p>
               </div>
@@ -130,7 +130,7 @@ export function SaralLessonCards({
       ) : (
         /* Fallback when < 2 flagged items seen */
         <div className="bg-white border-2 border-[#1A1A1A] rounded-[16px] p-4 sm:p-5 shadow-sm space-y-2">
-          <p className="text-lg sm:text-xl font-bold text-[#1A1A1A] leading-[1.7]">
+          <p className="text-lg sm:text-xl font-bold text-[#1A1A1A] leading-[1.7] break-words [overflow-wrap:anywhere]">
             {t(`flags_summary_${sid.replace(/-/g, '_')}`, lang)}
           </p>
         </div>
@@ -144,7 +144,7 @@ export function SaralLessonCards({
             {t('remember', lang)}
           </span>
         </div>
-        <p className="text-xl sm:text-2xl font-extrabold text-[#1A1A1A] leading-[1.7]">
+        <p className="text-xl sm:text-2xl font-extrabold text-[#1A1A1A] leading-[1.7] break-words [overflow-wrap:anywhere]">
           {scenario.rule[lang] || scenario.rule.en}
         </p>
       </div>
@@ -156,7 +156,7 @@ export function SaralLessonCards({
             <span aria-hidden="true">🚨</span>
             <span>1930</span>
           </div>
-          <p className="text-lg sm:text-xl font-bold text-[#1A1A1A] leading-relaxed">
+          <p className="text-lg sm:text-xl font-bold text-[#1A1A1A] leading-relaxed break-words [overflow-wrap:anywhere]">
             {t('helpline_card', lang)}
           </p>
         </div>

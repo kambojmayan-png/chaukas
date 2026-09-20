@@ -201,7 +201,7 @@ export default function JudgePage() {
                 href="https://github.com/kambojmayan-png/chaukas"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center min-h-[48px] px-5 py-2.5 bg-[#1A1A1A] text-white font-bold text-base rounded-[14px] shadow-[0_2px_8px_rgba(26,26,26,0.15)] hover:bg-[#333333] active:scale-[0.98] transition-all w-full text-center"
+                className="inline-flex items-center justify-center min-h-[48px] px-5 py-2.5 bg-[#1A1A1A] text-white font-bold text-xs sm:text-base rounded-[14px] shadow-[0_2px_8px_rgba(26,26,26,0.15)] hover:bg-[#333333] active:scale-[0.98] transition-all w-full max-w-full break-all text-center"
               >
                 {t('step4_btn', lang)}
               </a>
@@ -269,7 +269,7 @@ export default function JudgePage() {
               href="https://github.com/kambojmayan-png/chaukas"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center min-h-[48px] px-5 py-2.5 bg-[#E8590C] text-white font-bold text-base rounded-[14px] shadow-[0_2px_10px_rgba(232,89,12,0.2)] hover:bg-[#D44F0A] active:scale-[0.98] transition-all break-all text-center shrink-0"
+              className="inline-flex items-center justify-center min-h-[48px] px-5 py-2.5 bg-[#E8590C] text-white font-bold text-xs sm:text-base rounded-[14px] shadow-[0_2px_10px_rgba(232,89,12,0.2)] hover:bg-[#D44F0A] active:scale-[0.98] transition-all break-all text-center max-w-full"
             >
               <span>github.com/kambojmayan-png/chaukas</span>
               <span className="ml-2 shrink-0">↗</span>

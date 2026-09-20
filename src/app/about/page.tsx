@@ -132,10 +132,10 @@ export default function AboutPage() {
               <div className="pt-2">
                 <Link
                   href="/insights"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#FBF7F0] border border-[#1A1A1A]/15 rounded-full text-sm font-bold text-[#1A1A1A] hover:bg-white shadow-[0_2px_8px_rgba(26,26,26,0.04)] active:scale-[0.98] transition-all min-h-[48px]"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#FBF7F0] border border-[#1A1A1A]/15 rounded-[16px] text-sm font-bold text-[#1A1A1A] hover:bg-white shadow-[0_2px_8px_rgba(26,26,26,0.04)] active:scale-[0.98] transition-all min-h-[48px] max-w-full break-words [overflow-wrap:anywhere]"
                 >
                   <span className="w-2.5 h-2.5 rounded-full bg-[#2B8A3E] animate-pulse shrink-0" />
-                  <span>
+                  <span className="break-words [overflow-wrap:anywhere]">
                     {proof.n > 0 && proof.gap !== null
                       ? t('proof_gap_line', lang, {
                           runs: proof.runs,
@@ -249,10 +249,10 @@ export default function AboutPage() {
                   href="https://github.com/kambojmayan-png/chaukas"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center min-h-[48px] px-5 py-2.5 bg-[#1A1A1A] text-white font-bold text-base rounded-[14px] shadow-[0_2px_8px_rgba(26,26,26,0.15)] hover:bg-[#333333] active:scale-[0.98] transition-all shrink-0"
+                  className="inline-flex items-center justify-center min-h-[48px] px-5 py-2.5 bg-[#1A1A1A] text-white font-bold text-xs sm:text-base rounded-[14px] shadow-[0_2px_8px_rgba(26,26,26,0.15)] hover:bg-[#333333] active:scale-[0.98] transition-all max-w-full break-all text-center"
                 >
                   <span>github.com/kambojmayan-png/chaukas</span>
-                  <span className="ml-2">↗</span>
+                  <span className="ml-2 shrink-0">↗</span>
                 </a>
               </div>
             </Card>
