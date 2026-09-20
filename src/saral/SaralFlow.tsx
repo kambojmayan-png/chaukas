@@ -53,6 +53,7 @@ export interface SaralFlowProps {
   initialSoundOn?: boolean;
   isFamily?: boolean;
   onReturnHome: () => void;
+  initialScreen?: FlowScreen;
 }
 
 function markPracticeDone(sid: string) {
@@ -88,10 +89,11 @@ export function SaralFlow({
   initialSoundOn = true,
   isFamily = false,
   onReturnHome,
+  initialScreen = 'soundcheck',
 }: SaralFlowProps) {
   const [lang] = useLang();
   const [soundOn, setSoundOn] = useState<boolean>(initialSoundOn);
-  const [screen, setScreen] = useState<FlowScreen>('soundcheck');
+  const [screen, setScreen] = useState<FlowScreen>(initialScreen);
   const [practiceIdx, setPracticeIdx] = useState<number>(initialPracticeIdx);
   const [origin, setOrigin] = useState<string>('');
 

@@ -37,6 +37,7 @@ export function SaralApp() {
   const [lang] = useLang();
   const [screen, setScreen] = useState<'home' | 'flow'>('home');
   const [practiceIdx, setPracticeIdx] = useState<number>(0);
+  const [directStart, setDirectStart] = useState<boolean>(false);
   const [donePractices, setDonePractices] = useState<string[]>([]);
   const [isFamily, setIsFamily] = useState<boolean>(false);
 
@@ -52,6 +53,14 @@ export function SaralApp() {
       const params = new URLSearchParams(window.location.search);
       if (params.get('src') === 'family') {
         setIsFamily(true);
+      }
+
+      const practiceParam = params.get('practice');
+      if (practiceParam) {
+        const idx = SCENARIOS.findIndex((s) => s.id === practiceParam);
+        setPracticeIdx(idx !== -1 ? idx : 0);
+        setDirectStart(true);
+        setScreen('flow');
       }
 
       setDonePractices(getDonePractices());
@@ -73,6 +82,7 @@ export function SaralApp() {
     lockNav();
     unlockAudio();
     setPracticeIdx(0);
+    setDirectStart(false);
     setScreen('flow');
   };
 
@@ -81,6 +91,7 @@ export function SaralApp() {
     lockNav();
     unlockAudio();
     setPracticeIdx(idx);
+    setDirectStart(true);
     setScreen('flow');
   };
 
@@ -88,9 +99,13 @@ export function SaralApp() {
     return (
       <SaralFlow
         initialPracticeIdx={practiceIdx}
+        initialScreen={directStart ? 'precheck' : 'soundcheck'}
         initialSoundOn={true}
         isFamily={isFamily}
-        onReturnHome={() => setScreen('home')}
+        onReturnHome={() => {
+          setDirectStart(false);
+          setScreen('home');
+        }}
       />
     );
   }

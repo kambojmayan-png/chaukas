@@ -296,6 +296,30 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
     en: 'Paste an SMS or WhatsApp message',
     hi: 'SMS या WhatsApp मैसेज यहाँ पेस्ट करें'
   },
+  paste_button: {
+    en: '📋 Paste the message',
+    hi: '📋 मैसेज चिपकाएँ'
+  },
+  paste_help: {
+    en: 'Press and hold inside the box, then choose Paste.',
+    hi: 'डिब्बे के अंदर उँगली दबाकर रखिए, फिर Paste चुनिए।'
+  },
+  check_empty: {
+    en: 'First paste a message in the box above.',
+    hi: 'पहले ऊपर वाले डिब्बे में मैसेज चिपकाइए।'
+  },
+  check_page_intro_btn: {
+    en: '🔊 What does this page do?',
+    hi: '🔊 यह पेज क्या करता है'
+  },
+  replay_advice: {
+    en: '🔊 Replay advice',
+    hi: '🔊 दोबारा सुनें'
+  },
+  practise_this_scam: {
+    en: 'Practise this scam',
+    hi: 'इस ठगी से बचने का अभ्यास करें'
+  },
   check_message_button: { en: 'Check message', hi: 'मैसेज जाँचें' },
   try_an_example: { en: 'Try an example', hi: 'उदाहरण आज़माएँ' },
   practise_exact_scam: {

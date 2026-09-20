@@ -14,7 +14,7 @@ export function TopBar() {
       {/* Brand -> / */}
       <Link
         href="/"
-        className="inline-flex items-center gap-2.5 min-h-[48px] py-1 text-decoration-none group select-none"
+        className="inline-flex items-center gap-2.5 min-h-[48px] py-1 text-decoration-none group"
         aria-label="Chaukas Home"
       >
         <span
