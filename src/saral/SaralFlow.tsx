@@ -499,8 +499,11 @@ export function SaralFlow({
         }
       } else if (convPhase === 'input') {
         if (node.input) {
-          const keypadClip = node.input.kind === 'pin' ? 'narr__keypad_pin' : 'narr__keypad_otp';
-          const keypadText = node.input.prompt[lang] || node.input.prompt.en;
+          const isOtp = node.input.kind === 'otp';
+          const keypadClip = isOtp ? 'narr__otp_share' : 'narr__keypad_pin';
+          const keypadText = isOtp
+            ? `${t('otp_share_title', lang)}. ${t('otp_share_helper', lang)}`
+            : node.input.prompt[lang] || node.input.prompt.en;
 
           await playClip(keypadClip, keypadText, lang, soundOn);
 
@@ -617,26 +620,11 @@ export function SaralFlow({
   };
   dispatchActionRef.current = dispatchAction;
 
-  // Expected code for keypad in Screen 7
+  // Expected code for keypad in Screen 7 (PIN only; OTP sharing does not validate digits)
   const currentExpectedCode = (): string => {
     if (!currentScenario || !drillState) return '';
     const node = currentScenario.nodes[drillState.nodeId];
     if (node?.input?.kind === 'pin') return PRACTICE_PIN;
-    if (node?.input?.kind === 'otp') {
-      const match = node.messages?.find(m => m.via === 'sms');
-      if (match) {
-        const found = match.text.en.match(/\b\d{6}\b/) || match.text.hi?.match(/\b\d{6}\b/);
-        if (found) return found[0];
-      }
-      for (let i = drillState.path.length - 1; i >= 0; i--) {
-        const past = currentScenario.nodes[drillState.path[i]];
-        const sms = past?.messages?.find(m => m.via === 'sms');
-        if (sms) {
-          const found = sms.text.en.match(/\b\d{6}\b/) || sms.text.hi?.match(/\b\d{6}\b/);
-          if (found) return found[0];
-        }
-      }
-    }
     return '';
   };
 
@@ -808,9 +796,11 @@ export function SaralFlow({
         role: 'guide',
       });
     } else if (node.input && (convPhase === 'input' || msgs.length === 0)) {
-      const keypadClip = node.input.kind === 'pin' ? 'narr__keypad_pin' : 'narr__keypad_otp';
-      const keypadText =
-        node.input.kind === 'pin' ? t('keypad_pin_help', lang) : t('keypad_otp_help', lang);
+      const isOtp = node.input.kind === 'otp';
+      const keypadClip = isOtp ? 'narr__otp_share' : 'narr__keypad_pin';
+      const keypadText = isOtp
+        ? `${t('otp_share_title', lang)}. ${t('otp_share_helper', lang)}`
+        : t('keypad_pin_help', lang);
       items.push({
         key: keypadClip,
         text: keypadText,
@@ -1168,6 +1158,7 @@ export function SaralFlow({
               <div className="my-auto w-full space-y-3">
                 <SaralKeypad
                   kind={currNode.input.kind}
+                  purpose={currNode.input.kind === 'otp' ? 'share_otp' : 'enter_own_pin'}
                   prompt={currNode.input.prompt[lang] || currNode.input.prompt.en}
                   detail={currNode.input.detail[lang] || currNode.input.detail.en}
                   practicePin={PRACTICE_PIN}

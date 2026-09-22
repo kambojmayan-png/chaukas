@@ -833,34 +833,13 @@ function DrillRunner({
   const allMessages = [...scrollbackMessages, ...currentVisibleMessages];
   const smsBannerMessages = allMessages.filter(m => m.via === 'sms');
 
-  // Extract expectedCode for keypad validation
+  // Extract expectedCode for keypad validation (PIN only; share_otp does not validate digits)
   const expectedCode = useMemo(() => {
     if (node.input?.kind === 'pin') {
       return PRACTICE_PIN;
     }
-    if (node.input?.kind === 'otp') {
-      // The first 6-digit number found in the current node's message whose via === 'sms'
-      const currentSms = node.messages?.find(m => m.via === 'sms');
-      if (currentSms) {
-        const match =
-          currentSms.text.en.match(/\b\d{6}\b/) ||
-          currentSms.text.hi?.match(/\b\d{6}\b/);
-        if (match) return match[0];
-      }
-      // Also check scrollback
-      for (let i = state.path.length - 1; i >= 0; i--) {
-        const pastNode = scenario.nodes[state.path[i]];
-        const pastSms = pastNode?.messages?.find(m => m.via === 'sms');
-        if (pastSms) {
-          const match =
-            pastSms.text.en.match(/\b\d{6}\b/) ||
-            pastSms.text.hi?.match(/\b\d{6}\b/);
-          if (match) return match[0];
-        }
-      }
-    }
     return undefined;
-  }, [node, scenario.nodes, state.path]);
+  }, [node]);
 
   // Drill in progress inside PhoneFrame
   return (
@@ -974,6 +953,7 @@ function DrillRunner({
                   done && (
                     <PinPad
                       kind={node.input.kind}
+                      purpose={node.input.kind === 'otp' ? 'share_otp' : 'enter_own_pin'}
                       prompt={node.input.prompt[lang] || node.input.prompt.en}
                       detail={node.input.detail[lang] || node.input.detail.en}
                       practicePin={PRACTICE_PIN}

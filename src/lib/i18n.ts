@@ -183,6 +183,18 @@ export const DICTIONARY: Record<string, { en: string; hi: string }> = {
   },
   submit_pin: { en: 'Submit PIN', hi: 'PIN सबमिट करें' },
   submit_otp: { en: 'Submit OTP', hi: 'OTP सबमिट करें' },
+  otp_share_title: {
+    en: 'The caller is asking for this code',
+    hi: 'कॉल करने वाला यह कोड माँग रहा है',
+  },
+  otp_share_helper: {
+    en: 'A real bank never asks you to read out an OTP. To stay safe, do NOT enter it — press Go back.',
+    hi: 'कोई असली बैंक कभी OTP पढ़कर बताने को नहीं कहता। सुरक्षित रहने के लिए इसे मत डालिए — \'वापस जाएँ\' दबाइए।',
+  },
+  otp_read_out: {
+    en: 'Read it out',
+    hi: 'पढ़कर बता दें',
+  },
   sms_banner_title: { en: 'SMS · BANK ALERT', hi: 'SMS · बैंक अलर्ट' },
   now: { en: 'NOW', hi: 'अभी' },
   incoming_call: { en: 'Incoming Call…', hi: 'इनकमिंग कॉल…' },

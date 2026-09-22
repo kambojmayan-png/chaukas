@@ -6,18 +6,20 @@ import { t } from '@/lib/i18n';
 
 interface SaralKeypadProps {
   kind: 'pin' | 'otp';
+  purpose?: 'enter_own_pin' | 'share_otp';
   prompt: string;
   detail: string;
   practicePin: string;
-  expectedCode: string;
+  expectedCode?: string;
   lang: Lang;
   onSubmit: (len: number, hesitationMs: number) => void;
   onCancel: () => void;
-  onWrongEntry: () => void;
+  onWrongEntry?: () => void;
 }
 
 export function SaralKeypad({
   kind,
+  purpose,
   prompt,
   detail,
   practicePin,
@@ -35,7 +37,8 @@ export function SaralKeypad({
   const mountedAtRef = useRef<number>(Date.now());
   const firstKeyAtRef = useRef<number | null>(null);
 
-  const targetLen = kind === 'pin' ? 4 : 6;
+  const effectivePurpose = purpose ?? (kind === 'otp' ? 'share_otp' : 'enter_own_pin');
+  const targetLen = effectivePurpose === 'enter_own_pin' && kind === 'pin' ? 4 : 6;
 
   const handleDigit = (digit: string) => {
     if (firstKeyAtRef.current === null) {
@@ -55,12 +58,19 @@ export function SaralKeypad({
   };
 
   const handleSubmit = () => {
-    if (digits.length === 0) return;
+    if (digits.length !== targetLen) return;
 
     const hesitationMs =
       firstKeyAtRef.current !== null
         ? firstKeyAtRef.current - mountedAtRef.current
         : 0;
+
+    if (effectivePurpose === 'share_otp') {
+      setErrorMsg(null);
+      // Privacy rule: report only length and hesitationMs - never the digits
+      onSubmit(digits.length, hesitationMs);
+      return;
+    }
 
     const expected = expectedCode || (kind === 'pin' ? practicePin : '');
 
@@ -71,7 +81,7 @@ export function SaralKeypad({
       // Wrong entry: show wrong_pin_text, clear digits, play narr__wrong_pin
       setErrorMsg(t('wrong_pin_text', lang));
       setDigits('');
-      onWrongEntry();
+      onWrongEntry?.();
     }
   };
 
@@ -88,18 +98,23 @@ export function SaralKeypad({
         </div>
       )}
 
-      {/* PIN Practice Chip */}
-      {kind === 'pin' && (
+      {/* PIN Practice Chip (only for entering own PIN) */}
+      {effectivePurpose === 'enter_own_pin' && kind === 'pin' && (
         <div className="inline-block bg-[#FBF7F0] border-2 border-[#1A1A1A]/30 text-[#1A1A1A] px-3 py-0.5 sm:px-3.5 sm:py-1 rounded-full text-sm sm:text-base font-bold leading-normal">
           {t('practice_pin_chip', lang)}
         </div>
       )}
 
-      {/* Prompt */}
-      <div>
+      {/* Prompt / Title & Helper */}
+      <div className="space-y-1">
         <h3 className="text-lg sm:text-2xl font-bold text-[#1A1A1A] leading-snug">
-          {prompt}
+          {effectivePurpose === 'share_otp' ? t('otp_share_title', lang) : prompt}
         </h3>
+        {effectivePurpose === 'share_otp' && (
+          <p className="text-xs sm:text-sm text-[#1A1A1A]/80 leading-snug">
+            {t('otp_share_helper', lang)}
+          </p>
+        )}
       </div>
 
       {/* PIN/OTP Dots */}
@@ -177,7 +192,7 @@ export function SaralKeypad({
         </button>
       </div>
 
-      {/* Row for Go Back and OK ✓ */}
+      {/* Row for Go Back and OK / Read it out */}
       <div className="grid grid-cols-2 gap-2.5 pt-1 w-full max-w-[288px] mx-auto">
         <button
           type="button"
@@ -190,13 +205,13 @@ export function SaralKeypad({
           type="button"
           onClick={handleSubmit}
           disabled={!isReady}
-          className={`min-h-[48px] sm:min-h-[56px] py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-xl font-bold rounded-[14px] border-2 transition-all ${
+          className={`min-h-[48px] sm:min-h-[56px] py-2 sm:py-3 px-2 sm:px-3 text-base sm:text-xl font-bold rounded-[14px] border-2 transition-all ${
             isReady
               ? 'bg-[#E8590C] text-white border-[#1A1A1A] hover:opacity-95 active:scale-95 cursor-pointer shadow-sm'
               : 'bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed'
           }`}
         >
-          {t('ok', lang)}
+          {effectivePurpose === 'share_otp' ? t('otp_read_out', lang) : t('ok', lang)}
         </button>
       </div>
     </div>
